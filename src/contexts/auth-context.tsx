@@ -29,48 +29,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
+    const publicPages = ['/', '/about', '/careers', '/contact'];
+    const authPages = ['/auth', '/auth/google/callback'];
+    const isPublicPage = publicPages.includes(pathname);
+    const isAuthPage = authPages.some(p => pathname.startsWith(p));
+    const isOnboardingPage = pathname === '/onboarding';
+
     const storedToken = localStorage.getItem('authToken');
-    const isAuthPage = pathname === '/auth' || pathname.startsWith('/auth/google/callback');
-    const isPublicOnlyPage = isAuthPage || pathname === '/onboarding';
-    const isProtectedRoute = !isPublicOnlyPage;
 
-    const validateTokenAndRedirect = (token: string) => {
-      xanoAuth.getMe(token)
-        .then(userData => {
-          setUser(userData);
-          setToken(token);
-          
-          const isOnboarded = userData.onboarding_complete;
-
-          if (isPublicOnlyPage) {
-            router.push(isOnboarded ? '/dashboard' : '/onboarding');
-          } else if (!isOnboarded && pathname !== '/onboarding') {
-             router.push('/onboarding');
-          }
-        })
-        .catch(() => {
-          localStorage.removeItem('authToken');
-          setUser(null);
-          setToken(null);
-          if (isProtectedRoute) {
-            router.push('/auth');
-          }
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    };
-
-    if (storedToken) {
-      validateTokenAndRedirect(storedToken);
-    } else {
-      setUser(null);
-      setToken(null);
-      if (isProtectedRoute) {
+    if (!storedToken) {
+      // No token, user is not authenticated
+      setIsLoading(false);
+      if (!isPublicPage && !isAuthPage && !isOnboardingPage) {
         router.push('/auth');
       }
-      setIsLoading(false);
+      return;
     }
+
+    // Token exists, validate it
+    xanoAuth.getMe(storedToken)
+      .then(userData => {
+        setUser(userData);
+        setToken(storedToken);
+        const isOnboarded = userData.onboarding_complete;
+
+        if (isAuthPage) {
+          // If user is on login/signup page but is already logged in
+          router.push(isOnboarded ? '/dashboard' : '/onboarding');
+        } else if (isOnboardingPage && isOnboarded) {
+          // If user is on onboarding but has already completed it
+          router.push('/dashboard');
+        } else if (!isOnboardingPage && !isOnboarded && !isPublicPage) {
+          // If user is not onboarded and tries to access any other protected page
+          router.push('/onboarding');
+        }
+      })
+      .catch(() => {
+        // Token is invalid
+        localStorage.removeItem('authToken');
+        setUser(null);
+        setToken(null);
+        if (!isPublicPage && !isAuthPage) {
+          router.push('/auth');
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
