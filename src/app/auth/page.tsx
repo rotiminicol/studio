@@ -1,9 +1,20 @@
+'use client';
+
+import { useState } from 'react';
 import { AuthForm } from "@/components/auth/auth-form";
 import { Logo } from "@/components/logo";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function AuthPage() {
+  const [activeTab, setActiveTab] = useState('signin');
+
+  const signupImage = "https://firebasestudio.googleapis.com:443/v0/b/project-155455359929.appspot.com/o/images%2Fuploads%2F1723555314050_A.png?alt=media";
+  const loginImage = "https://firebasestudio.googleapis.com:443/v0/b/project-155455359929.appspot.com/o/images%2Fuploads%2F1723555546123_A.png?alt=media";
+  
+  const signupHint = "mobile finance";
+  const loginHint = "laptop finance";
+
   return (
     <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
       <div className="flex items-center justify-center p-6 lg:p-10 relative">
@@ -13,14 +24,15 @@ export default function AuthPage() {
             </Link>
         </div>
         <div className="w-full max-w-md">
-            <AuthForm />
+            <AuthForm onTabChange={setActiveTab} />
         </div>
       </div>
       <div className="hidden lg:block relative">
         <Image
-          src="https://placehold.co/1080x1920.png"
-          alt="A person holding a phone displaying an expense tracking app."
-          data-ai-hint="mobile finance"
+          key={activeTab}
+          src={activeTab === 'signin' ? loginImage : signupImage}
+          alt="A person managing finances on a device."
+          data-ai-hint={activeTab === 'signin' ? loginHint : signupHint}
           layout="fill"
           objectFit="cover"
           className="opacity-90"

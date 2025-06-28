@@ -9,7 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Chrome, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
-export function AuthForm() {
+interface AuthFormProps {
+    onTabChange: (tab: string) => void;
+}
+
+export function AuthForm({ onTabChange }: AuthFormProps) {
     const { login, signup, isLoading } = useAuth();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -41,7 +45,10 @@ export function AuthForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="signin" className="w-full" onValueChange={(value) => setActiveTab(value)}>
+        <Tabs defaultValue="signin" className="w-full" onValueChange={(value) => {
+            setActiveTab(value);
+            onTabChange(value);
+        }}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
