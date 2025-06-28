@@ -33,9 +33,8 @@ export default function AuthPage() {
           src={activeTab === 'signin' ? loginImage : signupImage}
           alt="A person managing finances on a device."
           data-ai-hint={activeTab === 'signin' ? loginHint : signupHint}
-          layout="fill"
-          objectFit="cover"
-          className="opacity-90"
+          fill
+          className="object-cover opacity-90"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
          <div className="absolute bottom-10 left-10 text-white z-10">

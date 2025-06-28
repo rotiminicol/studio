@@ -30,34 +30,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const storedToken = localStorage.getItem('authToken');
-    if (storedToken) {
-      setToken(storedToken);
-      xanoAuth.getMe(storedToken)
+    const isAuthPage = pathname === '/auth' || pathname.startsWith('/auth/google/callback');
+    const isProtectedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/onboarding');
+
+    const validateTokenAndRedirect = (token: string) => {
+      xanoAuth.getMe(token)
         .then(userData => {
           setUser(userData);
-           // If user is authenticated but not onboarded, and not already on onboarding page
-          if (!userData.onboarding_complete && pathname !== '/onboarding') {
+          setToken(token);
+          
+          const isOnboarded = userData.onboarding_complete;
+
+          // If the user is on the auth page but is already logged in, redirect them.
+          if (isAuthPage) {
+            router.push(isOnboarded ? '/dashboard' : '/onboarding');
+          } 
+          // If the user is on a protected page but shouldn't be (e.g., not onboarded)
+          else if (isProtectedRoute && !isOnboarded && pathname !== '/onboarding') {
             router.push('/onboarding');
           }
         })
         .catch(() => {
-          // Token is invalid or expired
+          // Token is invalid, clear it
           localStorage.removeItem('authToken');
-          setToken(null);
           setUser(null);
-          if (pathname.startsWith('/dashboard') || pathname.startsWith('/onboarding')) {
+          setToken(null);
+          // If they were trying to access a protected page, send them to login.
+          if (isProtectedRoute) {
             router.push('/auth');
           }
         })
-        .finally(() => setIsLoading(false));
+        .finally(() => {
+          setIsLoading(false);
+        });
+    };
+
+    if (storedToken) {
+      validateTokenAndRedirect(storedToken);
     } else {
-      setIsLoading(false);
-       if (pathname.startsWith('/dashboard') || pathname.startsWith('/onboarding')) {
+      // No token, so not authenticated
+      setUser(null);
+      setToken(null);
+      if (isProtectedRoute) {
         router.push('/auth');
       }
+      setIsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+
 
   const handleAuthSuccess = async (authToken: string) => {
     localStorage.setItem('authToken', authToken);
