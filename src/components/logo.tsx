@@ -22,12 +22,11 @@ export function Logo({ className }: { className?: string }) {
           fill="url(#logoGradient)"
         />
         <path
-          d="M10 10L22 22M10 22L22 10"
+          d="M13 9H19.5C21.9853 9 24 11.0147 24 13.5V13.5C24 15.9853 21.9853 18 19.5 18H13M13 18V9M13 18H18"
           stroke="hsl(var(--primary-foreground))"
-          strokeWidth="2"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          transform="rotate(45 16 16)"
         />
       </svg>
       <span className="font-bold text-xl font-headline">Fluxpense</span>

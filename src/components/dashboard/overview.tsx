@@ -1,31 +1,73 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowDown, ArrowUp, DollarSign, Receipt } from "lucide-react";
-import { mockExpenses, categoryBudgets } from "@/lib/data";
+import { DollarSign, Receipt, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
+import { useData } from "@/contexts/data-context";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Pie, PieChart, Cell, ResponsiveContainer, Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from "recharts";
+import { Pie, PieChart, Cell, Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from "recharts";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
-const pieChartData = categoryBudgets.map(cb => ({ name: cb.category, value: cb.spent })).filter(d => d.value > 0);
-
-const lineChartData = mockExpenses.reduce((acc, expense) => {
-    const date = new Date(expense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const existing = acc.find(item => item.date === date);
-    if (existing) {
-        existing.total += expense.amount;
-    } else {
-        acc.push({ date, total: expense.amount });
-    }
-    return acc;
-}, [] as {date: string; total: number}[]).reverse();
+function OverviewSkeleton() {
+    return (
+        <div className="grid gap-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <Card><CardHeader><Skeleton className="h-5 w-3/4" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /><Skeleton className="h-4 w-1/3 mt-2" /></CardContent></Card>
+                <Card><CardHeader><Skeleton className="h-5 w-3/4" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /><Skeleton className="h-4 w-1/3 mt-2" /></CardContent></Card>
+                <Card><CardHeader><Skeleton className="h-5 w-3/4" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /><Skeleton className="h-4 w-1/3 mt-2" /></CardContent></Card>
+                <Card><CardHeader><Skeleton className="h-5 w-3/4" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /><Skeleton className="h-4 w-1/3 mt-2" /></CardContent></Card>
+            </div>
+             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+                <Card className="lg:col-span-2"><CardHeader><CardTitle>Expenses by Category</CardTitle></CardHeader><CardContent><Skeleton className="h-[250px] w-full rounded-full" /></CardContent></Card>
+                <Card className="lg:col-span-3"><CardHeader><CardTitle>Daily Spend</CardTitle></CardHeader><CardContent><Skeleton className="h-[250px] w-full" /></CardContent></Card>
+            </div>
+            <Card>
+                <CardHeader><CardTitle>Recent Expenses</CardTitle></CardHeader>
+                <CardContent><Skeleton className="h-40 w-full" /></CardContent>
+            </Card>
+        </div>
+    )
+}
 
 export function Overview() {
-  const totalSpent = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
-  const totalBudget = categoryBudgets.reduce((sum, cb) => sum + cb.budget, 0);
+  const { expenses, budgets, loading } = useData();
+
+  const { totalSpent, totalBudget, topCategory, pieChartData, lineChartData } = useMemo(() => {
+    const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalBudget = budgets.reduce((sum, cb) => sum + cb.amount, 0);
+
+    const categorySpending = expenses.reduce((acc, expense) => {
+        const categoryName = expense.category?.name || 'Uncategorized';
+        acc[categoryName] = (acc[categoryName] || 0) + expense.amount;
+        return acc;
+    }, {} as Record<string, number>);
+
+    const topCategory = Object.keys(categorySpending).reduce((a, b) => categorySpending[a] > categorySpending[b] ? a : b, 'None');
+
+    const pieChartData = Object.entries(categorySpending).map(([name, value]) => ({ name, value })).filter(d => d.value > 0);
+
+    const lineChartData = expenses.reduce((acc, expense) => {
+        const date = new Date(expense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const existing = acc.find(item => item.date === date);
+        if (existing) {
+            existing.total += expense.amount;
+        } else {
+            acc.push({ date, total: expense.amount });
+        }
+        return acc;
+    }, [] as {date: string; total: number}[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    return { totalSpent, totalBudget, topCategory, pieChartData, lineChartData };
+  }, [expenses, budgets]);
+
+
+  if (loading) {
+    return <OverviewSkeleton />;
+  }
 
   return (
     <div className="grid gap-6">
@@ -56,7 +98,7 @@ export function Overview() {
             <Receipt className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{mockExpenses.length}</div>
+            <div className="text-2xl font-bold">+{expenses.length}</div>
             <p className="text-xs text-muted-foreground">+5 since last week</p>
           </CardContent>
         </Card>
@@ -66,7 +108,7 @@ export function Overview() {
             <ArrowUp className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Travel</div>
+            <div className="text-2xl font-bold">{topCategory}</div>
             <p className="text-xs text-muted-foreground">This month's biggest spend</p>
           </CardContent>
         </Card>
@@ -76,6 +118,7 @@ export function Overview() {
         <Card className="lg:col-span-2">
             <CardHeader>
                 <CardTitle>Expenses by Category</CardTitle>
+                <CardDescription>A breakdown of your spending by category.</CardDescription>
             </CardHeader>
             <CardContent>
                 <ChartContainer config={{}} className="mx-auto aspect-square h-[250px]">
@@ -93,13 +136,14 @@ export function Overview() {
         <Card className="lg:col-span-3">
             <CardHeader>
                 <CardTitle>Daily Spend</CardTitle>
+                 <CardDescription>Your spending activity over the last days.</CardDescription>
             </CardHeader>
             <CardContent>
                  <ChartContainer config={{}} className="h-[250px] w-full">
                     <LineChart data={lineChartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} />
-                        <YAxis tickFormatter={(value) => `$${value}`} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} />
+                        <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis tickFormatter={(value) => `$${value}`} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
                         <RechartsTooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
                         <Line type="monotone" dataKey="total" stroke="hsl(var(--primary))" strokeWidth={2} dot={{r: 4, fill: 'hsl(var(--primary))'}} />
                     </LineChart>
@@ -111,6 +155,7 @@ export function Overview() {
       <Card>
         <CardHeader>
           <CardTitle>Recent Expenses</CardTitle>
+          <CardDescription>Your 5 most recent transactions.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -124,11 +169,11 @@ export function Overview() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockExpenses.slice(0, 5).map((expense) => (
+              {expenses.slice(0, 5).map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell className="font-medium">{expense.vendor}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{expense.category}</Badge>
+                    <Badge variant="outline">{expense.category?.name || 'N/A'}</Badge>
                   </TableCell>
                   <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
                   <TableCell>{expense.source}</TableCell>

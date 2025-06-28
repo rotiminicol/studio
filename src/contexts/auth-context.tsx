@@ -1,16 +1,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { xanoAuth } from '@/lib/xano';
 import { useToast } from '@/hooks/use-toast';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  // add other user fields from your Xano user table
-}
+import type { User } from '@/lib/types';
 
 interface AuthContextType {
   user: User | null;
@@ -19,6 +13,7 @@ interface AuthContextType {
   signup: (details: any) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  isAuthenticated: boolean;
   continueWithGoogle: (code: string) => Promise<void>;
 }
 
@@ -29,37 +24,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
   const { toast } = useToast();
 
   useEffect(() => {
     const storedToken = localStorage.getItem('authToken');
     if (storedToken) {
+      setToken(storedToken);
       xanoAuth.getMe(storedToken)
         .then(userData => {
           setUser(userData);
-          setToken(storedToken);
         })
         .catch(() => {
           // Token is invalid or expired
           localStorage.removeItem('authToken');
           setToken(null);
           setUser(null);
+          if (pathname.startsWith('/dashboard')) {
+            router.push('/auth');
+          }
         })
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
+       if (pathname.startsWith('/dashboard')) {
+        router.push('/auth');
+      }
     }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  const handleAuthSuccess = async (authToken: string) => {
+    localStorage.setItem('authToken', authToken);
+    const userData = await xanoAuth.getMe(authToken);
+    setUser(userData);
+    setToken(authToken);
+    if (userData.onboarding_complete) {
+        router.push('/dashboard');
+    } else {
+        router.push('/onboarding');
+    }
+  }
 
   const login = async (credentials: any) => {
     setIsLoading(true);
     try {
       const { authToken } = await xanoAuth.login(credentials);
-      localStorage.setItem('authToken', authToken);
-      const userData = await xanoAuth.getMe(authToken);
-      setUser(userData);
-      setToken(authToken);
-      router.push('/dashboard');
+      await handleAuthSuccess(authToken);
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
       setUser(null);
@@ -73,11 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const { authToken } = await xanoAuth.signup(details);
-      localStorage.setItem('authToken', authToken);
-      const userData = await xanoAuth.getMe(authToken);
-      setUser(userData);
-      setToken(authToken);
-      router.push('/onboarding');
+      await handleAuthSuccess(authToken);
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Signup Failed', description: error.message });
       setUser(null);
@@ -99,11 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const redirectUri = `${window.location.origin}/auth/google/callback`;
       const { authToken } = await xanoAuth.continueGoogleLogin(code, redirectUri);
-      localStorage.setItem('authToken', authToken);
-      const userData = await xanoAuth.getMe(authToken);
-      setUser(userData);
-      setToken(authToken);
-      router.push('/dashboard');
+      await handleAuthSuccess(authToken);
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Google Login Failed', description: error.message });
       setUser(null);
@@ -114,7 +117,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = { user, token, login, signup, logout, isLoading, continueWithGoogle };
+  const isAuthenticated = !isLoading && !!token && !!user;
+
+  const value = { user, token, login, signup, logout, isLoading, isAuthenticated, continueWithGoogle };
 
   return (
     <AuthContext.Provider value={value}>

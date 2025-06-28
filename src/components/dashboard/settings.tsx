@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,9 +8,59 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { categoryBudgets } from "@/lib/data";
+import { useData } from "@/contexts/data-context";
+import { Loader2 } from "lucide-react";
+import type { Budget } from "@/lib/types";
 
 export function SettingsTab() {
+  const { budgets, loading, updateBudget } = useData();
+  const [localBudgets, setLocalBudgets] = useState<Budget[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    // Deep copy to prevent modifying original context state directly
+    setLocalBudgets(JSON.parse(JSON.stringify(budgets)));
+  }, [budgets]);
+  
+  const handleBudgetChange = (id: number, newAmount: number) => {
+    setLocalBudgets(prev => prev.map(b => b.id === id ? {...b, amount: newAmount} : b));
+  }
+
+  const handleSaveBudgets = async () => {
+    setIsSaving(true);
+    const updatedBudgets = localBudgets.filter((localBudget, index) => {
+        const originalBudget = budgets.find(b => b.id === localBudget.id);
+        return originalBudget && originalBudget.amount !== localBudget.amount;
+    });
+
+    await Promise.all(
+        updatedBudgets.map(b => updateBudget(b.id, { amount: b.amount }))
+    );
+    setIsSaving(false);
+  }
+
+  if (loading) {
+    return (
+        <div className="grid gap-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Budget Management</CardTitle>
+                    <CardDescription>Set and adjust your monthly spending budgets for each category.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                    {[...Array(4)].map((_, i) => (
+                        <div key={i} className="space-y-2">
+                             <div className="flex justify-between items-center mb-2">
+                                <Loader2 className="animate-spin" />
+                            </div>
+                        </div>
+                    ))}
+                </CardContent>
+            </Card>
+        </div>
+    )
+  }
+
   return (
     <div className="grid gap-6">
       <Card>
@@ -20,25 +71,28 @@ export function SettingsTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
-          {categoryBudgets.map((cat) => {
-            const percentage = (cat.spent / cat.budget) * 100;
+          {localBudgets.map((cat) => {
+            const percentage = cat.amount > 0 ? (cat.spent / cat.amount) * 100 : 0;
             return (
-              <div key={cat.category}>
+              <div key={cat.id}>
                 <div className="flex justify-between items-center mb-2">
-                    <Label className="text-lg font-medium">{cat.category}</Label>
-                    <span className="text-muted-foreground font-mono text-sm">${cat.spent.toFixed(2)} / ${cat.budget.toFixed(2)}</span>
+                    <Label className="text-lg font-medium">{cat.category?.name || 'Unnamed Category'}</Label>
+                    <span className="text-muted-foreground font-mono text-sm">${cat.spent.toFixed(2)} / ${cat.amount.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <Progress value={percentage} className="h-3" />
                 </div>
                  <div className="flex items-center gap-4 mt-2">
-                    <Slider defaultValue={[cat.budget]} max={2000} step={50} />
-                    <Input className="w-24" defaultValue={cat.budget} />
+                    <Slider value={[cat.amount]} max={2000} step={50} onValueChange={(val) => handleBudgetChange(cat.id, val[0])} />
+                    <Input className="w-28" value={cat.amount} onChange={(e) => handleBudgetChange(cat.id, parseFloat(e.target.value) || 0)} />
                 </div>
               </div>
             );
           })}
-           <Button>Save Budgets</Button>
+           <Button onClick={handleSaveBudgets} disabled={isSaving}>
+            {isSaving && <Loader2 className="animate-spin mr-2" />}
+            Save Budgets
+           </Button>
         </CardContent>
       </Card>
 

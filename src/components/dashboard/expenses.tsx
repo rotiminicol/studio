@@ -12,10 +12,15 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, UploadCloud, Bot, CheckCircle } from "lucide-react";
 import Image from "next/image";
 import { Skeleton } from "../ui/skeleton";
+import { useData } from "@/contexts/data-context";
+import { NewExpense, Category } from "@/lib/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format } from "date-fns";
 
 export function Expenses() {
   const { toast } = useToast();
-  
+  const { categories, addExpense } = useData();
+
   // State for receipt scanner
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -26,6 +31,8 @@ export function Expenses() {
   const [emailContent, setEmailContent] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const [importedData, setImportedData] = useState<ImportExpenseDataFromEmailOutput | null>(null);
+
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -77,68 +84,91 @@ export function Expenses() {
         setIsImporting(false);
     }
   };
+  
+  const handleSaveExpense = async (data: any, source: 'Receipt' | 'Email') => {
+    setIsSaving(true);
+    try {
+        const newExpense: NewExpense = {
+            vendor: data.vendor,
+            date: data.date,
+            amount: data.amount,
+            tax: data.tax,
+            items: JSON.stringify(data.items),
+            category_id: data.category_id,
+            source: source,
+            notes: source === 'Email' ? `Imported from email` : `Scanned from receipt`
+        };
+        await addExpense(newExpense);
+        if (source === 'Receipt') setScannedData(null);
+        if (source === 'Email') setImportedData(null);
+    } catch(err) {
+        // toast is handled in context
+    } finally {
+        setIsSaving(false);
+    }
+  }
 
-  const ScannedDataForm = ({data}: {data: ScanReceiptOutput}) => (
-    <div className="space-y-4 pt-4 border-t mt-4">
-        <h3 className="font-semibold text-lg flex items-center gap-2"><CheckCircle className="text-green-500" /> Extracted Data</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-                <Label>Vendor</Label>
-                <Input defaultValue={data.vendor} />
-            </div>
-            <div className="space-y-1">
-                <Label>Date</Label>
-                <Input type="date" defaultValue={data.date} />
-            </div>
-            <div className="space-y-1">
-                <Label>Amount</Label>
-                <Input type="number" defaultValue={data.amount} />
-            </div>
-            <div className="space-y-1">
-                <Label>Tax</Label>
-                <Input type="number" defaultValue={data.tax} />
-            </div>
-        </div>
-        <div className="space-y-1">
-            <Label>Items</Label>
-            <Textarea defaultValue={data.items.join("\n")} rows={3} />
-        </div>
-        <Button className="w-full">Save Expense</Button>
-    </div>
-  );
 
-  const ImportedDataForm = ({data}: {data: ImportExpenseDataFromEmailOutput}) => (
-    <div className="space-y-4 pt-4 border-t mt-4">
-        <h3 className="font-semibold text-lg flex items-center gap-2"><CheckCircle className="text-green-500" /> Extracted Data</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-                <Label>Vendor</Label>
-                <Input defaultValue={data.vendor} />
+  const DataForm = ({data, source}: {data: ScanReceiptOutput | ImportExpenseDataFromEmailOutput, source: 'Receipt' | 'Email'}) => {
+    const [formData, setFormData] = useState({
+        ...data,
+        date: data.date ? format(new Date(data.date), 'yyyy-MM-dd') : '',
+        category_id: source === 'Email' && 'category' in data ? (categories.find(c => c.name.toLowerCase() === data.category.toLowerCase())?.id || 0) : 0,
+    });
+
+    const handleSave = () => {
+        if (!formData.category_id) {
+            toast({ title: "Category required", description: "Please select a category for this expense.", variant: "destructive" });
+            return;
+        }
+        handleSaveExpense(formData, source);
+    }
+
+    return (
+        <div className="space-y-4 pt-4 border-t mt-4">
+            <h3 className="font-semibold text-lg flex items-center gap-2"><CheckCircle className="text-green-500" /> Extracted Data</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                    <Label>Vendor</Label>
+                    <Input value={formData.vendor} onChange={(e) => setFormData({...formData, vendor: e.target.value})} />
+                </div>
+                <div className="space-y-1">
+                    <Label>Date</Label>
+                    <Input type="date" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
+                </div>
+                <div className="space-y-1">
+                    <Label>Amount</Label>
+                    <Input type="number" value={formData.amount} onChange={(e) => setFormData({...formData, amount: parseFloat(e.target.value) || 0})} />
+                </div>
+                <div className="space-y-1">
+                    <Label>Tax</Label>
+                    <Input type="number" value={formData.tax} onChange={(e) => setFormData({...formData, tax: parseFloat(e.target.value) || 0})} />
+                </div>
             </div>
             <div className="space-y-1">
-                <Label>Date</Label>
-                <Input type="date" defaultValue={data.date} />
-            </div>
-            <div className="space-y-1">
-                <Label>Amount</Label>
-                <Input type="number" defaultValue={data.amount} />
-            </div>
-            <div className="space-y-1">
-                <Label>Tax</Label>
-                <Input type="number" defaultValue={data.tax} />
-            </div>
-             <div className="space-y-1 md:col-span-2">
                 <Label>Category</Label>
-                <Input defaultValue={data.category} />
+                <Select value={String(formData.category_id)} onValueChange={(value) => setFormData({...formData, category_id: parseInt(value)})}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {categories.map((cat: Category) => (
+                            <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
+            <div className="space-y-1">
+                <Label>Items</Label>
+                <Textarea value={Array.isArray(formData.items) ? formData.items.join("\n") : ''} onChange={(e) => setFormData({...formData, items: e.target.value.split('\n')})} rows={3} />
+            </div>
+            <Button className="w-full" onClick={handleSave} disabled={isSaving}>
+                {isSaving && <Loader2 className="animate-spin mr-2" />}
+                Save Expense
+            </Button>
         </div>
-        <div className="space-y-1">
-            <Label>Items</Label>
-            <Textarea defaultValue={data.items.join("\n")} rows={3} />
-        </div>
-        <Button className="w-full">Save Expense</Button>
-    </div>
-  )
+    );
+  }
 
   const LoadingSkeleton = () => (
     <div className="space-y-4 pt-4 border-t mt-4">
@@ -182,7 +212,7 @@ export function Expenses() {
           </Button>
 
           {isScanning && <LoadingSkeleton />}
-          {scannedData && <ScannedDataForm data={scannedData} />}
+          {scannedData && <DataForm data={scannedData} source="Receipt" />}
         </CardContent>
       </Card>
       
@@ -203,7 +233,7 @@ export function Expenses() {
                 {isImporting ? "Importing with AI..." : "Import with AI"}
             </Button>
              {isImporting && <LoadingSkeleton />}
-             {importedData && <ImportedDataForm data={importedData} />}
+             {importedData && <DataForm data={importedData} source="Email" />}
         </CardContent>
       </Card>
     </div>

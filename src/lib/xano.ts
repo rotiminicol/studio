@@ -55,5 +55,11 @@ export const xanoApi = (token: string) => {
         getBudgets: () => xanoFetch(`${fluxpenseApiUrl}/budget`, { headers }),
         addBudget: (body: any) => xanoFetch(`${fluxpenseApiUrl}/budget`, { method: 'POST', body: JSON.stringify(body), headers }),
         updateBudget: (id: number, body: any) => xanoFetch(`${fluxpenseApiUrl}/budget/${id}`, { method: 'PATCH', body: JSON.stringify(body), headers }),
+        
+        // Receipts
+        addReceipt: (body: any) => xanoFetch(`${fluxpenseApiUrl}/receipt`, { method: 'POST', body: JSON.stringify(body), headers }),
+
+        // Email Imports
+        addEmailImport: (body: any) => xanoFetch(`${fluxpenseApiUrl}/email_import`, { method: 'POST', body: JSON.stringify(body), headers }),
     };
 };
