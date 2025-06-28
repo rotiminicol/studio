@@ -15,7 +15,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   continueWithGoogle: (code: string) => Promise<void>;
-  completeOnboarding: () => Promise<void>;
+  completeOnboarding: (data: { account_type: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,7 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const storedToken = localStorage.getItem('authToken');
     const isAuthPage = pathname === '/auth' || pathname.startsWith('/auth/google/callback');
-    const isProtectedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/onboarding');
+    const isPublicOnlyPage = isAuthPage || pathname === '/onboarding';
+    const isProtectedRoute = !isPublicOnlyPage;
 
     const validateTokenAndRedirect = (token: string) => {
       xanoAuth.getMe(token)
@@ -41,21 +42,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           const isOnboarded = userData.onboarding_complete;
 
-          // If the user is on the auth page but is already logged in, redirect them.
-          if (isAuthPage) {
+          if (isPublicOnlyPage) {
             router.push(isOnboarded ? '/dashboard' : '/onboarding');
-          } 
-          // If the user is on a protected page but shouldn't be (e.g., not onboarded)
-          else if (isProtectedRoute && !isOnboarded && pathname !== '/onboarding') {
-            router.push('/onboarding');
+          } else if (!isOnboarded && pathname !== '/onboarding') {
+             router.push('/onboarding');
           }
         })
         .catch(() => {
-          // Token is invalid, clear it
           localStorage.removeItem('authToken');
           setUser(null);
           setToken(null);
-          // If they were trying to access a protected page, send them to login.
           if (isProtectedRoute) {
             router.push('/auth');
           }
@@ -68,7 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedToken) {
       validateTokenAndRedirect(storedToken);
     } else {
-      // No token, so not authenticated
       setUser(null);
       setToken(null);
       if (isProtectedRoute) {
@@ -92,7 +87,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             router.push('/onboarding');
         }
     } catch (error) {
-        // Handle case where getMe fails after getting a token
         toast({ variant: 'destructive', title: 'Authentication Failed', description: 'Could not retrieve user details.' });
         localStorage.removeItem('authToken');
         setToken(null);
@@ -151,16 +145,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const completeOnboarding = async () => {
+  const completeOnboarding = async (data: { account_type: string }) => {
     if (!token) return;
     setIsLoading(true);
     try {
-      // Assuming Xano returns the updated user object
-      const updatedUser = await xanoAuth.updateMe(token, { onboarding_complete: true });
+      const payload = { 
+        onboarding_complete: true,
+        ...data,
+      };
+      const updatedUser = await xanoAuth.updateMe(token, payload);
       setUser(updatedUser);
       router.push('/dashboard');
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Onboarding Failed', description: 'Could not save your onboarding status.' });
+      toast({ variant: 'destructive', title: 'Onboarding Failed', description: 'Could not save your settings.' });
     } finally {
       setIsLoading(false);
     }

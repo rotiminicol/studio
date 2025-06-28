@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Briefcase, CheckCircle, Loader2, Mail, PiggyBank, Smile, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
-
+import { cn } from "@/lib/utils";
 
 const totalSteps = 5;
 
@@ -16,11 +16,23 @@ export function OnboardingForm() {
   const [step, setStep] = useState(1);
   const { completeOnboarding, isLoading } = useAuth();
 
+  const [accountType, setAccountType] = useState("personal");
+  const [budget, setBudget] = useState("");
+  const [teammateEmail, setTeammateEmail] = useState("");
+
+  const handleFinish = () => {
+    if (isLoading) return;
+    console.log("Onboarding data captured:", { accountType, budget, teammateEmail });
+    // Only account_type is saved to the user record for now.
+    // Budget and team features can be expanded later.
+    completeOnboarding({ account_type: accountType });
+  };
+
   const handleNext = () => {
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      completeOnboarding();
+      handleFinish();
     }
   };
 
@@ -68,9 +80,9 @@ export function OnboardingForm() {
         )}
         {step === 2 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                <Button variant="outline" className="h-24 flex flex-col gap-2"><PiggyBank/>Personal</Button>
-                <Button variant="outline" className="h-24 flex flex-col gap-2"><Briefcase/>Business</Button>
-                <Button variant="outline" className="h-24 flex flex-col gap-2"><CheckCircle/>Both</Button>
+                <Button variant={accountType === 'personal' ? 'default' : 'outline'} className="h-24 flex flex-col gap-2" onClick={() => setAccountType('personal')}><PiggyBank/>Personal</Button>
+                <Button variant={accountType === 'business' ? 'default' : 'outline'} className="h-24 flex flex-col gap-2" onClick={() => setAccountType('business')}><Briefcase/>Business</Button>
+                <Button variant={accountType === 'both' ? 'default' : 'outline'} className="h-24 flex flex-col gap-2" onClick={() => setAccountType('both')}><CheckCircle/>Both</Button>
             </div>
         )}
         {step === 3 && (
@@ -86,7 +98,7 @@ export function OnboardingForm() {
                 <PiggyBank className="w-16 h-16 mx-auto text-primary" />
                 <div className="space-y-2">
                     <Label htmlFor="budget">Monthly Budget Goal</Label>
-                    <Input id="budget" type="number" placeholder="$2,000" />
+                    <Input id="budget" type="number" placeholder="$2,000" value={budget} onChange={(e) => setBudget(e.target.value)} />
                 </div>
                  <p className="text-xs text-muted-foreground text-center">You can set more specific budgets for categories later.</p>
             </div>
@@ -96,9 +108,9 @@ export function OnboardingForm() {
                 <UserPlus className="w-16 h-16 mx-auto text-primary" />
                 <div className="space-y-2">
                     <Label htmlFor="teammate-email">Teammate's Email</Label>
-                    <Input id="teammate-email" type="email" placeholder="teammate@example.com" />
+                    <Input id="teammate-email" type="email" placeholder="teammate@example.com" value={teammateEmail} onChange={(e) => setTeammateEmail(e.target.value)} />
                 </div>
-                <Button className="w-full">Send Invite</Button>
+                <Button className="w-full" onClick={() => alert(`Invite sent to ${teammateEmail}!`)}>Send Invite</Button>
             </div>
         )}
       </CardContent>
@@ -107,7 +119,7 @@ export function OnboardingForm() {
           Back
         </Button>
         <div className="flex items-center gap-4">
-            {step > 1 && <Button variant="ghost" onClick={handleNext}>Skip</Button>}
+            {step > 1 && step < totalSteps && <Button variant="ghost" onClick={handleNext}>Skip</Button>}
             <Button onClick={handleNext} disabled={isLoading}>
                 {isLoading && step === totalSteps && <Loader2 className="animate-spin mr-2" />}
                 {step === totalSteps ? "Finish" : "Continue"}
