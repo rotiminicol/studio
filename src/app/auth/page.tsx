@@ -19,8 +19,8 @@ export default function AuthPage() {
       <div className="hidden lg:block relative">
         <Image
           src="https://placehold.co/1080x1920.png"
-          alt="Abstract 3D shapes"
-          data-ai-hint="abstract 3d graphic"
+          alt="A person holding a phone displaying an expense tracking app."
+          data-ai-hint="mobile finance"
           layout="fill"
           objectFit="cover"
           className="opacity-90"
