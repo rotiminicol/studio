@@ -22,7 +22,7 @@ const ScanReceiptOutputSchema = z.object({
   vendor: z.string().describe('The name of the vendor.'),
   date: z.string().describe('The date on the receipt (YYYY-MM-DD).'),
   amount: z.number().describe('The total amount on the receipt.'),
-  tax: z.number().describe('The tax amount on the receipt.'),
+  tax: z.number().describe('The tax amount on the receipt. If not present, use 0.'),
   items: z.array(z.string()).describe('A list of items purchased.'),
 });
 export type ScanReceiptOutput = z.infer<typeof ScanReceiptOutputSchema>;
@@ -35,24 +35,18 @@ const prompt = ai.definePrompt({
   name: 'scanReceiptPrompt',
   input: {schema: ScanReceiptInputSchema},
   output: {schema: ScanReceiptOutputSchema},
-  prompt: `You are an expert receipt data extractor.
+  prompt: `You are an expert financial assistant AI. Your task is to accurately extract information from a receipt image.
+Analyze the receipt image provided and extract the following details:
+- Vendor name (e.g., "Starbucks", "Walmart")
+- Date of the transaction in YYYY-MM-DD format.
+- The final total amount of the bill.
+- The total tax amount. If not present, use 0.
+- A list of all individual items purchased.
 
-  Analyze the receipt image and extract the following information:
-  - Vendor name
-  - Date (YYYY-MM-DD)
-  - Total amount
-  - Tax amount
-  - List of items purchased
+Return ONLY a single, valid JSON object matching the specified output schema. Do not include any explanatory text, greetings, or additional formatting like markdown code blocks.
 
-  Receipt Image: {{media url=photoDataUri}}
-  {
-    "vendor": "",
-    "date": "",
-    "amount": 0,
-    "tax": 0,
-    "items": []
-  }
-  `,
+Receipt Image: {{media url=photoDataUri}}
+`,
 });
 
 const scanReceiptFlow = ai.defineFlow(

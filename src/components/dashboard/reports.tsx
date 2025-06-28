@@ -12,8 +12,8 @@ import { useData } from "@/contexts/data-context";
 import { cn } from "@/lib/utils";
 import { format, isWithinInterval } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell } from "recharts";
+import { ChartContainer } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
@@ -47,8 +47,8 @@ export function Reports() {
     }, {} as Record<string, number>);
 
     return { 
-        categoryBreakdown: Object.entries(categoryBreakdown).map(([name, amount]) => ({ name, amount })),
-        vendorSpend: Object.entries(vendorSpend).map(([name, amount]) => ({ name, amount })),
+        categoryBreakdown: Object.entries(categoryBreakdown).map(([name, amount]) => ({ name, amount })).sort((a, b) => b.amount - a.amount),
+        vendorSpend: Object.entries(vendorSpend).map(([name, amount]) => ({ name, amount })).sort((a, b) => b.amount - a.amount),
     };
   }, [filteredExpenses]);
 
@@ -138,10 +138,10 @@ export function Reports() {
                 <ChartContainer config={{}} className="mx-auto aspect-square h-[300px]">
                     <BarChart data={categoryBreakdown} layout="horizontal" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" type="category" />
-                        <YAxis dataKey="amount" type="number" />
+                        <XAxis dataKey="name" type="category" tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis dataKey="amount" type="number" tickFormatter={(value) => `$${value}`} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
                         <RechartsTooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))'}}/>
-                        <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
+                        <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
                             {categoryBreakdown.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
@@ -156,10 +156,10 @@ export function Reports() {
             </CardHeader>
             <CardContent>
                  <ChartContainer config={{}} className="h-[300px] w-full">
-                    <BarChart data={vendorSpend.slice(0, 10)} layout="vertical" margin={{ left: 30 }}>
+                    <BarChart data={vendorSpend.slice(0, 10)} layout="vertical" margin={{ left: 30, right: 20 }}>
                         <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                         <XAxis type="number" hide />
-                        <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={80} interval={0} />
+                        <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={100} interval={0} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} />
                         <RechartsTooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))'}}/>
                         <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
                     </BarChart>
@@ -193,7 +193,7 @@ export function Reports() {
                   <TableCell className="text-right font-semibold">${expense.amount.toFixed(2)}</TableCell>
                 </TableRow>
               ))}
-              {filteredExpenses.length === 0 && <TableRow><TableCell colSpan={5} className="text-center">No expenses found for the selected filters.</TableCell></TableRow>}
+              {filteredExpenses.length === 0 && <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">No expenses found for the selected filters.</TableCell></TableRow>}
             </TableBody>
           </Table>
         </CardContent>

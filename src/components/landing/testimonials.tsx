@@ -7,7 +7,7 @@ const testimonials = [
     name: "Sarah L.",
     role: "Freelance Designer",
     avatar: "https://placehold.co/100x100.png",
-    aiHint: "woman smiling",
+    aiHint: "woman smiling professional",
     text: "Fluxpense has been a game-changer for my business. The receipt scanning is incredibly accurate and saves me hours every month. The UI is just beautiful!",
     rating: 5
   },
@@ -15,7 +15,7 @@ const testimonials = [
     name: "Mike R.",
     role: "Startup Founder",
     avatar: "https://placehold.co/100x100.png",
-    aiHint: "man portrait",
+    aiHint: "man portrait professional",
     text: "As a startup, every penny counts. Fluxpense helps us track our burn rate in real-time with its amazing reports. The team onboarding was a breeze.",
     rating: 5
   },
@@ -23,7 +23,7 @@ const testimonials = [
     name: "Jessica P.",
     role: "Sales Manager",
     avatar: "https://placehold.co/100x100.png",
-    aiHint: "woman professional",
+    aiHint: "woman corporate headshot",
     text: "I used to dread filing my travel expenses. With Fluxpense, I just forward my booking emails and it's all done automatically. Simply magical!",
     rating: 5
   }

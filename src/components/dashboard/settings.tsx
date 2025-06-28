@@ -11,11 +11,19 @@ import { Switch } from "@/components/ui/switch";
 import { useData } from "@/contexts/data-context";
 import { Loader2 } from "lucide-react";
 import type { Budget } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 
 export function SettingsTab() {
   const { budgets, loading, updateBudget } = useData();
+  const { toast } = useToast();
   const [localBudgets, setLocalBudgets] = useState<Budget[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Local state for notification toggles
+  const [weeklySummary, setWeeklySummary] = useState(true);
+  const [budgetAlerts, setBudgetAlerts] = useState(true);
+  const [promotionalUpdates, setPromotionalUpdates] = useState(false);
+
 
   useEffect(() => {
     // Deep copy to prevent modifying original context state directly
@@ -28,15 +36,24 @@ export function SettingsTab() {
 
   const handleSaveBudgets = async () => {
     setIsSaving(true);
-    const updatedBudgets = localBudgets.filter((localBudget, index) => {
+    const budgetsToUpdate = localBudgets.filter((localBudget) => {
         const originalBudget = budgets.find(b => b.id === localBudget.id);
         return originalBudget && originalBudget.amount !== localBudget.amount;
     });
+    
+    if (budgetsToUpdate.length === 0) {
+        toast({title: "No changes to save", description: "You haven't made any changes to your budgets."});
+        setIsSaving(false);
+        return;
+    }
 
-    await Promise.all(
-        updatedBudgets.map(b => updateBudget(b.id, { amount: b.amount }))
-    );
-    setIsSaving(false);
+    try {
+      await Promise.all(
+          budgetsToUpdate.map(b => updateBudget(b.id, { amount: b.amount }))
+      );
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   if (loading) {
@@ -84,7 +101,7 @@ export function SettingsTab() {
                 </div>
                  <div className="flex items-center gap-4 mt-2">
                     <Slider value={[cat.amount]} max={2000} step={50} onValueChange={(val) => handleBudgetChange(cat.id, val[0])} />
-                    <Input className="w-28" value={cat.amount} onChange={(e) => handleBudgetChange(cat.id, parseFloat(e.target.value) || 0)} />
+                    <Input className="w-28" type="number" value={cat.amount} onChange={(e) => handleBudgetChange(cat.id, parseFloat(e.target.value) || 0)} />
                 </div>
               </div>
             );
@@ -106,24 +123,24 @@ export function SettingsTab() {
         <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
-                    <Label>Weekly Summary Email</Label>
+                    <Label htmlFor="weekly-summary">Weekly Summary Email</Label>
                     <p className="text-sm text-muted-foreground">Get a report of your spending every week.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch id="weekly-summary" checked={weeklySummary} onCheckedChange={setWeeklySummary} />
             </div>
             <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
-                    <Label>Budget Alerts</Label>
+                    <Label htmlFor="budget-alerts">Budget Alerts</Label>
                     <p className="text-sm text-muted-foreground">Notify me when I'm approaching a budget limit.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch id="budget-alerts" checked={budgetAlerts} onCheckedChange={setBudgetAlerts} />
             </div>
              <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
-                    <Label>Promotional Updates</Label>
+                    <Label htmlFor="promotional-updates">Promotional Updates</Label>
                     <p className="text-sm text-muted-foreground">Receive news about new features and offers.</p>
                 </div>
-                <Switch />
+                <Switch id="promotional-updates" checked={promotionalUpdates} onCheckedChange={setPromotionalUpdates} />
             </div>
         </CardContent>
       </Card>

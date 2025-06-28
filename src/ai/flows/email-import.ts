@@ -24,9 +24,9 @@ const ImportExpenseDataFromEmailOutputSchema = z.object({
   vendor: z.string().describe('The name of the vendor.'),
   date: z.string().describe('The date of the expense (YYYY-MM-DD).'),
   amount: z.number().describe('The amount of the expense.'),
-  tax: z.number().describe('The tax amount of the expense.'),
+  tax: z.number().describe('The tax amount of the expense. If not specified, use 0.'),
   items: z.array(z.string()).describe('The list of items purchased.'),
-  category: z.string().describe('The category of the expense.'),
+  category: z.string().describe("A suggested category for the expense. Choose from: Travel, Food, Supplies, Utilities, Entertainment, Other."),
 });
 export type ImportExpenseDataFromEmailOutput = z.infer<
   typeof ImportExpenseDataFromEmailOutputSchema
@@ -43,18 +43,17 @@ const prompt = ai.definePrompt({
   input: {schema: ImportExpenseDataFromEmailInputSchema},
   output: {schema: ImportExpenseDataFromEmailOutputSchema},
   prompt: `You are an AI assistant that extracts expense data from emails.
+Analyze the email content provided and extract the following information:
+- Vendor: The name of the vendor (e.g., Amazon, Uber, Delta Airlines).
+- Date: The date of the expense in YYYY-MM-DD format.
+- Amount: The total amount of the expense.
+- Tax: The tax amount. If not specified, use 0.
+- Items: A list of items or services from the expense.
+- Category: A general category for the expense. Choose from: Travel, Food, Supplies, Utilities, Entertainment, Other.
 
-  Analyze the email content provided and extract the following information:
+Return ONLY a single, valid JSON object matching the specified output schema. Do not include any extra text or markdown.
 
-  - Vendor: The name of the vendor where the expense occurred.
-  - Date: The date of the expense in YYYY-MM-DD format.
-  - Amount: The total amount of the expense.
-  - Tax: The tax amount included in the expense.
-  - Items: A list of items purchased in the expense.
-  - Category: The category that best fits the expense.
-
-  Email Content: {{{emailContent}}}
-  \n  Return the extracted information in JSON format.
+Email Content: {{{emailContent}}}
   `,
 });
 

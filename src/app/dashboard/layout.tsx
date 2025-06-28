@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { DataProvider } from "@/contexts/data-context";
+import { useData } from "@/contexts/data-context";
 import {
   SidebarProvider,
   Sidebar,
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +27,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import {
   BarChart2,
@@ -37,8 +39,13 @@ import {
   Bell,
   Loader2,
   PlusCircle,
+  FileWarning,
+  Check,
 } from "lucide-react";
 import { AddExpenseDialog } from "@/components/dashboard/add-expense-dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import type { Notification } from "@/lib/types";
 
 const menuItems = [
   {
@@ -57,11 +64,34 @@ const menuItems = [
     icon: BarChart2,
   },
   {
+    href: "/dashboard/notifications",
+    label: "Notifications",
+    icon: Bell,
+  },
+  {
     href: "/dashboard/settings",
     label: "Settings",
     icon: Settings,
   },
 ];
+
+function NotificationItem({ notification, onRead }: { notification: Notification; onRead: (id: number) => void; }) {
+    const Icon = notification.type === 'budget' ? FileWarning : Check;
+    return (
+        <DropdownMenuItem className="flex items-start gap-3" onSelect={(e) => e.preventDefault()}>
+            <Icon className={cn("mt-1 h-4 w-4 shrink-0", notification.type === 'budget' ? "text-amber-500" : "text-green-500")} />
+            <div className="flex-1">
+                <p className="font-semibold text-sm">{notification.title}</p>
+                <p className="text-xs text-muted-foreground">{notification.message}</p>
+            </div>
+            {!notification.is_read && (
+              <Button variant="outline" size="sm" className="h-auto px-1.5 py-0.5" onClick={() => onRead(notification.id)}>
+                <Check className="h-3 w-3" />
+              </Button>
+            )}
+        </DropdownMenuItem>
+    )
+}
 
 export default function DashboardLayout({
   children,
@@ -69,10 +99,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { user, logout, isLoading, isAuthenticated } = useAuth();
+  const { user, logout } = useAuth();
+  const { notifications, unreadNotificationCount, markNotificationRead, markAllNotificationsRead, loading } = useData();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
 
-  if (isLoading) {
+  if (loading) {
     return (
         <div className="min-h-screen flex items-center justify-center">
             <Loader2 className="w-8 h-8 animate-spin" />
@@ -80,9 +111,11 @@ export default function DashboardLayout({
     )
   }
   
-  if (!isAuthenticated) {
+  if (!user) {
     return null;
   }
+
+  const unreadNotifications = notifications.filter(n => !n.is_read);
 
   return (
     <DataProvider>
@@ -91,7 +124,7 @@ export default function DashboardLayout({
           <SidebarHeader>
             <Logo />
           </SidebarHeader>
-          <SidebarContent>
+          <SidebarContent className="no-scrollbar">
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
@@ -99,6 +132,9 @@ export default function DashboardLayout({
                      <SidebarMenuButton tooltip={item.label} isActive={pathname === item.href}>
                       <item.icon />
                       <span>{item.label}</span>
+                       {item.href === '/dashboard/notifications' && unreadNotificationCount > 0 && (
+                          <SidebarMenuBadge>{unreadNotificationCount}</SidebarMenuBadge>
+                       )}
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
@@ -130,14 +166,44 @@ export default function DashboardLayout({
             <div className="flex-1">
               {/* Can add breadcrumbs or page title here */}
             </div>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Bell className="h-5 w-5" />
-              <span className="sr-only">Toggle notifications</span>
-            </Button>
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="icon" className="rounded-full">
-                  <CircleUser className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="rounded-full relative">
+                  <Bell className="h-5 w-5" />
+                  {unreadNotificationCount > 0 && (
+                      <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-destructive ring-2 ring-background" />
+                  )}
+                  <span className="sr-only">Toggle notifications</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80">
+                  <DropdownMenuLabel className="flex items-center justify-between">
+                    <span>Notifications</span>
+                    {unreadNotificationCount > 0 && <Badge variant="secondary">{unreadNotificationCount} New</Badge>}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <ScrollArea className="h-[300px] no-scrollbar">
+                    <DropdownMenuGroup>
+                      {notifications.length > 0 ? (
+                        notifications.slice(0,10).map(n => <NotificationItem key={n.id} notification={n} onRead={markNotificationRead} />)
+                      ) : (
+                        <p className="text-center text-sm text-muted-foreground py-4">No notifications yet.</p>
+                      )}
+                    </DropdownMenuGroup>
+                  </ScrollArea>
+                   <DropdownMenuSeparator />
+                   <DropdownMenuItem asChild>
+                     <Link href="/dashboard/notifications" className="justify-center">View all notifications</Link>
+                   </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="rounded-full flex items-center gap-2 px-2">
+                   <p className="text-sm font-medium hidden md:block">{user?.name}</p>
+                   <CircleUser className="h-6 w-6" />
                   <span className="sr-only">Toggle user menu</span>
                 </Button>
               </DropdownMenuTrigger>

@@ -1,30 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { CreditCard, DollarSign, Zap } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-
-function SpinningCoin() {
-  return (
-    <div className="w-20 h-20 [perspective:1000px]">
-      <div className="relative w-full h-full animate-spin-y [transform-style:preserve-3d]">
-        <div className="absolute w-full h-full flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent [backface-visibility:hidden]">
-          <DollarSign className="w-10 h-10 text-primary-foreground" />
-        </div>
-        <div className="absolute w-full h-full flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent [transform:rotateY(180deg)] [backface-visibility:hidden]">
-          <Zap className="w-10 h-10 text-primary-foreground" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export function Hero() {
   return (
-    <section className="relative w-full py-20 md:py-32 overflow-hidden">
+    <section className="relative w-full py-20 md:py-28 overflow-hidden">
       <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[10px_10px] dark:bg-grid-slate-400/[0.05]"></div>
-      <div className="container max-w-screen-xl mx-auto text-center relative">
-        <div className="absolute -top-20 -left-20 w-40 h-40 bg-accent/20 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-primary/20 rounded-full blur-3xl animate-float [animation-delay:-3s]"></div>
+      <div className="container max-w-screen-xl mx-auto text-center relative z-10">
         
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter mb-6 font-headline">
           Effortless Expense Mastery.
@@ -46,24 +28,17 @@ export function Hero() {
           </Button>
         </div>
       </div>
-      <div className="hidden md:block absolute top-1/2 left-1/4 -translate-y-1/2 -translate-x-1/2 [perspective:1000px]">
-        <Card className="p-4 animate-float [animation-delay:-1s] rotate-[-15deg] glassmorphism">
-          <div className="flex items-center gap-2">
-            <CreditCard className="w-6 h-6 text-primary" />
-            <p className="font-bold">New Expense: Lunch</p>
-          </div>
-        </Card>
-      </div>
-       <div className="hidden md:block absolute top-1/4 right-1/4 translate-y-1/2 translate-x-1/2 [perspective:1000px]">
-        <Card className="p-4 animate-float [animation-delay:-2s] rotate-[15deg] glassmorphism">
-          <div className="flex items-center gap-2">
-            <Zap className="w-6 h-6 text-accent" />
-            <p className="font-bold">AI Categorized</p>
-          </div>
-        </Card>
-      </div>
-      <div className="hidden lg:block absolute bottom-10 left-1/2 -translate-x-1/2">
-        <SpinningCoin />
+      <div className="relative mt-16 md:mt-24 h-64 md:h-96 w-full flex justify-center items-center">
+         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10"></div>
+          <Image 
+            src="https://placehold.co/1200x600.png"
+            data-ai-hint="futuristic finance 3d"
+            alt="3D representation of financial data and AI"
+            width={1200}
+            height={600}
+            className="object-contain"
+            priority
+          />
       </div>
     </section>
   );

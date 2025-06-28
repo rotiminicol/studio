@@ -61,5 +61,10 @@ export const xanoApi = (token: string) => {
 
         // Email Imports
         addEmailImport: (body: any) => xanoFetch(`${fluxpenseApiUrl}/email_import`, { method: 'POST', body: JSON.stringify(body), headers }),
+
+        // Notifications
+        getNotifications: () => xanoFetch(`${fluxpenseApiUrl}/notification`, { headers }),
+        markNotificationRead: (id: number) => xanoFetch(`${fluxpenseApiUrl}/notification/${id}`, { method: 'PATCH', body: JSON.stringify({ is_read: true }), headers }),
+        markAllNotificationsRead: () => xanoFetch(`${fluxpenseApiUrl}/notifications/mark_all_read`, { method: 'POST', headers }), // Assuming this endpoint exists
     };
 };

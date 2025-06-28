@@ -45,5 +45,15 @@ export interface Expense {
   category?: Category;
 }
 
+export interface Notification {
+    id: number;
+    created_at: number;
+    user_id: number;
+    title: string;
+    message: string;
+    type: 'budget' | 'expense' | 'system' | 'report';
+    is_read: boolean;
+}
+
 // For creating a new expense
 export type NewExpense = Omit<Expense, 'id' | 'created_at' | 'user_id' | 'category'>;

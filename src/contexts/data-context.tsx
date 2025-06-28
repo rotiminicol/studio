@@ -3,17 +3,21 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useAuth } from './auth-context';
 import { xanoApi } from '@/lib/xano';
-import type { Expense, Category, Budget, NewExpense } from '@/lib/types';
+import type { Expense, Category, Budget, NewExpense, Notification } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 interface DataContextType {
   expenses: Expense[];
   categories: Category[];
   budgets: Budget[];
+  notifications: Notification[];
+  unreadNotificationCount: number;
   loading: boolean;
   refetchData: () => void;
   addExpense: (expense: NewExpense) => Promise<void>;
   updateBudget: (id: number, budget: Partial<Budget>) => Promise<void>;
+  markNotificationRead: (id: number) => Promise<void>;
+  markAllNotificationsRead: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -25,6 +29,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [loading, setLoading] = useState(true);
   
   const fetchData = useCallback(async () => {
@@ -32,10 +38,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const api = xanoApi(token);
-      const [expensesData, categoriesData, budgetsData] = await Promise.all([
+      const [expensesData, categoriesData, budgetsData, notificationsData] = await Promise.all([
         api.getExpenses(),
         api.getCategories(),
         api.getBudgets(),
+        api.getNotifications(),
       ]);
 
       const categoryMap = new Map(categoriesData.map((cat: Category) => [cat.id, cat]));
@@ -49,10 +56,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
         ...bud,
         category: categoryMap.get(bud.category_id),
       }));
+      
+      const sortedNotifications = notificationsData.sort((a: Notification, b: Notification) => b.created_at - a.created_at);
 
       setExpenses(processedExpenses);
       setCategories(categoriesData);
       setBudgets(processedBudgets);
+      setNotifications(sortedNotifications);
+      setUnreadNotificationCount(sortedNotifications.filter((n: Notification) => !n.is_read).length);
 
     } catch (error) {
       console.error("Failed to fetch data", error);
@@ -94,16 +105,49 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error("Failed to update budget", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update your budget.' });
     }
-  }
+  };
+
+  const markNotificationRead = async (id: number) => {
+    if (!token) return;
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    setUnreadNotificationCount(prev => Math.max(0, prev - 1));
+    const api = xanoApi(token);
+    try {
+        await api.markNotificationRead(id);
+    } catch (error) {
+        console.error("Failed to mark notification as read", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not update notification status.' });
+        fetchData(); // Re-sync with backend on failure
+    }
+  };
+
+  const markAllNotificationsRead = async () => {
+    if (!token) return;
+    setNotifications(prev => prev.map(n => ({...n, is_read: true})));
+    setUnreadNotificationCount(0);
+    const api = xanoApi(token);
+    try {
+        await api.markAllNotificationsRead();
+        await fetchData(); // We should refetch to be sure
+    } catch (error) {
+        console.error("Failed to mark all notifications as read", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not update notifications.' });
+        fetchData(); // Re-sync
+    }
+  };
 
   const value = {
     expenses,
     categories,
     budgets,
+    notifications,
+    unreadNotificationCount,
     loading,
     refetchData: fetchData,
     addExpense,
-    updateBudget
+    updateBudget,
+    markNotificationRead,
+    markAllNotificationsRead,
   };
 
   return (
