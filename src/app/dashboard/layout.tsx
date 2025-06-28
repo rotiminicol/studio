@@ -33,6 +33,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
 
 const menuItems = [
   {
@@ -63,6 +64,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { logout } = useAuth();
 
   return (
     <SidebarProvider>
@@ -78,11 +80,9 @@ export default function DashboardLayout({
         <SidebarFooter>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Log out" asChild>
-                        <Link href="/">
-                            <LogOut />
-                            <span>Log out</span>
-                        </Link>
+                    <SidebarMenuButton tooltip="Log out" onClick={() => logout()}>
+                        <LogOut />
+                        <span>Log out</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
@@ -111,8 +111,8 @@ export default function DashboardLayout({
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/">Log out</Link>
+              <DropdownMenuItem onSelect={() => logout()}>
+                Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
