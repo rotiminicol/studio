@@ -65,6 +65,9 @@ const importExpenseDataFromEmailFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error("AI failed to generate a valid response for the email.");
+    }
+    return output;
   }
 );

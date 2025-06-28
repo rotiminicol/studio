@@ -15,6 +15,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   continueWithGoogle: (code: string) => Promise<void>;
+  completeOnboarding: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,20 +35,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       xanoAuth.getMe(storedToken)
         .then(userData => {
           setUser(userData);
+           // If user is authenticated but not onboarded, and not already on onboarding page
+          if (!userData.onboarding_complete && pathname !== '/onboarding') {
+            router.push('/onboarding');
+          }
         })
         .catch(() => {
           // Token is invalid or expired
           localStorage.removeItem('authToken');
           setToken(null);
           setUser(null);
-          if (pathname.startsWith('/dashboard')) {
+          if (pathname.startsWith('/dashboard') || pathname.startsWith('/onboarding')) {
             router.push('/auth');
           }
         })
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
-       if (pathname.startsWith('/dashboard')) {
+       if (pathname.startsWith('/dashboard') || pathname.startsWith('/onboarding')) {
         router.push('/auth');
       }
     }
@@ -56,13 +61,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleAuthSuccess = async (authToken: string) => {
     localStorage.setItem('authToken', authToken);
-    const userData = await xanoAuth.getMe(authToken);
-    setUser(userData);
     setToken(authToken);
-    if (userData.onboarding_complete) {
-        router.push('/dashboard');
-    } else {
-        router.push('/onboarding');
+    try {
+        const userData = await xanoAuth.getMe(authToken);
+        setUser(userData);
+        if (userData.onboarding_complete) {
+            router.push('/dashboard');
+        } else {
+            router.push('/onboarding');
+        }
+    } catch (error) {
+        // Handle case where getMe fails after getting a token
+        toast({ variant: 'destructive', title: 'Authentication Failed', description: 'Could not retrieve user details.' });
+        localStorage.removeItem('authToken');
+        setToken(null);
+        setUser(null);
     }
   }
 
@@ -117,9 +130,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const completeOnboarding = async () => {
+    if (!token) return;
+    setIsLoading(true);
+    try {
+      // Assuming Xano returns the updated user object
+      const updatedUser = await xanoAuth.updateMe(token, { onboarding_complete: true });
+      setUser(updatedUser);
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Onboarding Failed', description: 'Could not save your onboarding status.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const isAuthenticated = !isLoading && !!token && !!user;
 
-  const value = { user, token, login, signup, logout, isLoading, isAuthenticated, continueWithGoogle };
+  const value = { user, token, login, signup, logout, isLoading, isAuthenticated, continueWithGoogle, completeOnboarding };
 
   return (
     <AuthContext.Provider value={value}>

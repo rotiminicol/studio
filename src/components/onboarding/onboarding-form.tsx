@@ -6,20 +6,21 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Briefcase, CheckCircle, Mail, PiggyBank, Smile, UserPlus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Briefcase, CheckCircle, Loader2, Mail, PiggyBank, Smile, UserPlus } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
+
 
 const totalSteps = 5;
 
 export function OnboardingForm() {
   const [step, setStep] = useState(1);
-  const router = useRouter();
+  const { completeOnboarding, isLoading } = useAuth();
 
   const handleNext = () => {
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      router.push("/dashboard");
+      completeOnboarding();
     }
   };
 
@@ -102,12 +103,13 @@ export function OnboardingForm() {
         )}
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={handleBack} disabled={step === 1}>
+        <Button variant="outline" onClick={handleBack} disabled={step === 1 || isLoading}>
           Back
         </Button>
         <div className="flex items-center gap-4">
             {step > 1 && <Button variant="ghost" onClick={handleNext}>Skip</Button>}
-            <Button onClick={handleNext}>
+            <Button onClick={handleNext} disabled={isLoading}>
+                {isLoading && step === totalSteps && <Loader2 className="animate-spin mr-2" />}
                 {step === totalSteps ? "Finish" : "Continue"}
             </Button>
         </div>

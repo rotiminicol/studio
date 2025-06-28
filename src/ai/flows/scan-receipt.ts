@@ -23,7 +23,7 @@ const ScanReceiptOutputSchema = z.object({
   date: z.string().describe('The date on the receipt (YYYY-MM-DD).'),
   amount: z.number().describe('The total amount on the receipt.'),
   tax: z.number().describe('The tax amount on the receipt. If not present, use 0.'),
-  items: z.array(z.string()).describe('A list of items purchased.'),
+  items: z.array(z.string()).describe('A list of all individual items purchased.'),
 });
 export type ScanReceiptOutput = z.infer<typeof ScanReceiptOutputSchema>;
 
@@ -57,6 +57,9 @@ const scanReceiptFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error("AI failed to generate a valid response for the receipt.");
+    }
+    return output;
   }
 );
