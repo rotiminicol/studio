@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
@@ -34,8 +35,10 @@ import {
   CircleUser,
   LogOut,
   Bell,
-  Loader2
+  Loader2,
+  PlusCircle,
 } from "lucide-react";
+import { AddExpenseDialog } from "@/components/dashboard/add-expense-dialog";
 
 const menuItems = [
   {
@@ -67,6 +70,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const { user, logout, isLoading, isAuthenticated } = useAuth();
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -113,6 +117,14 @@ export default function DashboardLayout({
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
+           <div className="fixed bottom-6 right-6 z-50">
+              <Button size="icon" className="rounded-full w-14 h-14 button-glow" onClick={() => setIsAddExpenseOpen(true)}>
+                  <PlusCircle className="w-8 h-8"/>
+                  <span className="sr-only">Add Expense</span>
+              </Button>
+          </div>
+          <AddExpenseDialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen} />
+
           <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-lg px-4 md:px-6">
             <SidebarTrigger className="md:hidden" />
             <div className="flex-1">
@@ -139,7 +151,7 @@ export default function DashboardLayout({
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/dashboard/settings">Settings</Link></DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => logout()}>

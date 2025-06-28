@@ -29,17 +29,17 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Product</h4>
             <ul className="space-y-2">
-              <li><Link href="#features" className="text-muted-foreground hover:text-foreground">Features</Link></li>
-              <li><Link href="#pricing" className="text-muted-foreground hover:text-foreground">Pricing</Link></li>
-              <li><Link href="#faq" className="text-muted-foreground hover:text-foreground">FAQ</Link></li>
+              <li><Link href="/#features" className="text-muted-foreground hover:text-foreground">Features</Link></li>
+              <li><Link href="/#pricing" className="text-muted-foreground hover:text-foreground">Pricing</Link></li>
+              <li><Link href="/#faq" className="text-muted-foreground hover:text-foreground">FAQ</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Company</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-foreground">About Us</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground">Careers</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground">Contact</a></li>
+              <li><Link href="/about" className="text-muted-foreground hover:text-foreground">About Us</Link></li>
+              <li><Link href="/careers" className="text-muted-foreground hover:text-foreground">Careers</Link></li>
+              <li><Link href="/contact" className="text-muted-foreground hover:text-foreground">Contact</Link></li>
             </ul>
           </div>
           <div>

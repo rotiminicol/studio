@@ -8,10 +8,10 @@ import { Logo } from "@/components/logo";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const navLinks = [
-  { href: "#features", label: "Features" },
-  { href: "#testimonials", label: "Testimonials" },
-  { href: "#pricing", label: "Pricing" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#features", label: "Features" },
+  { href: "/#testimonials", label: "Testimonials" },
+  { href: "/#pricing", label: "Pricing" },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 export function Header() {
@@ -20,7 +20,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
-        <Logo />
+        <Link href="/">
+            <Logo />
+        </Link>
 
         {isMobile ? (
           <Sheet>
