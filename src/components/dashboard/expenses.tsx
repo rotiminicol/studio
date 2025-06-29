@@ -37,11 +37,40 @@ export function Expenses() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+      // Validate file size (5MB limit)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (selectedFile.size > maxSize) {
+        toast({ 
+          title: "File too large", 
+          description: "Please select an image smaller than 5MB.", 
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      // Validate file type
+      const validTypes = ['image/png', 'image/jpeg', 'image/webp'];
+      if (!validTypes.includes(selectedFile.type)) {
+        toast({ 
+          title: "Invalid file type", 
+          description: "Please select a PNG, JPG, or WEBP image.", 
+          variant: "destructive" 
+        });
+        return;
+      }
+
       setFile(selectedFile);
       setScannedData(null);
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewUrl(reader.result as string);
+      };
+      reader.onerror = () => {
+        toast({ 
+          title: "File read error", 
+          description: "Could not read the selected file. Please try again.", 
+          variant: "destructive" 
+        });
       };
       reader.readAsDataURL(selectedFile);
     }
@@ -200,7 +229,7 @@ export function Expenses() {
                 <>
                   <UploadCloud className="w-12 h-12 text-muted-foreground" />
                   <span className="mt-2 text-sm font-medium">Click or drag to upload</span>
-                  <span className="mt-1 text-xs text-muted-foreground">PNG, JPG, or WEBP</span>
+                  <span className="mt-1 text-xs text-muted-foreground">PNG, JPG, or WEBP (max 5MB)</span>
                 </>
               )}
             </Label>
