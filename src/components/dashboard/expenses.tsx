@@ -34,7 +34,66 @@ export function Expenses() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const resizeImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+
+      img.onload = () => {
+        // Set maximum dimensions
+        const maxWidth = 2000;
+        const maxHeight = 2000;
+        
+        let { width, height } = img;
+        
+        // Calculate new dimensions while maintaining aspect ratio
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+
+        // Set canvas dimensions
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw and resize image
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to data URL with compression
+        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        resolve(resizedDataUrl);
+      };
+
+      img.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+
+      // Create object URL for the image
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       // Validate file size (5MB limit)
@@ -59,20 +118,21 @@ export function Expenses() {
         return;
       }
 
-      setFile(selectedFile);
-      setScannedData(null);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.onerror = () => {
+      try {
+        setFile(selectedFile);
+        setScannedData(null);
+        
+        // Resize image to ensure compatibility with AI service
+        const resizedDataUrl = await resizeImage(selectedFile);
+        setPreviewUrl(resizedDataUrl);
+      } catch (error) {
+        console.error('Error processing image:', error);
         toast({ 
-          title: "File read error", 
-          description: "Could not read the selected file. Please try again.", 
+          title: "Image processing error", 
+          description: "Could not process the selected image. Please try a different image.", 
           variant: "destructive" 
         });
-      };
-      reader.readAsDataURL(selectedFile);
+      }
     }
   };
 
