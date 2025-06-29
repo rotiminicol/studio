@@ -39,7 +39,7 @@ export default function AuthPage() {
         <div className="relative h-full">
           <Image
             key={activeTab}
-            src={activeTab === 'signin' ? "/laptop.png" : "/istockphoto-1342222498-612x612.jpg"}
+            src={activeTab === 'signin' ? "/pexels-michael-block-1691617-3225517.jpg" : "/pexels-maxfrancis-2246476.jpg"}
             alt={activeTab === 'signin' ? "Professional using laptop for expense management" : "Mobile expense tracking"}
             fill
             className="object-cover transition-opacity duration-500"

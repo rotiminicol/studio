@@ -14,11 +14,11 @@ import Image from "next/image";
 const totalSteps = 5;
 
 const stepImages = [
-  "/mobile-phone-app-money-budget-260nw-2032739561.webp",
-  "/istockphoto-1342222498-612x612.jpg",
-  "/laptop.png",
-  "/Project Expense Tracking A Step-by-Step Guide to Efficient Cost Management.png",
-  "/istockphoto-1424757003-612x612.jpg"
+  "/pexels-n-voitkevich-7172774.jpg",
+  "/pexels-michael-block-1691617-3225517.jpg",
+  "/pexels-maxfrancis-2246476.jpg",
+  "/pexels-willsantos-2026960.jpg",
+  "/pexels-sanaan-3052361 (1).jpg"
 ];
 
 export function OnboardingForm() {

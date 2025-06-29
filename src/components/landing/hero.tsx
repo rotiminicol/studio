@@ -77,16 +77,16 @@ export function Hero() {
           <div className="relative">
             <div className="relative z-10">
               <Image 
-                src="/mobile-phone-app-money-budget-260nw-2032739561.webp"
-                alt="Fluxpense mobile app showing expense tracking interface"
+                src="/pexels-n-voitkevich-7172774.jpg"
+                alt="Financial data analysis and expense tracking"
                 width={600}
                 height={600}
-                className="object-contain mx-auto animate-float"
+                className="object-contain mx-auto animate-float rounded-2xl shadow-2xl"
                 priority
               />
             </div>
             
-            {/* Floating cards around the phone */}
+            {/* Floating cards around the image */}
             <div className="absolute top-10 -left-10 bg-white dark:bg-card p-4 rounded-xl shadow-lg animate-float border" style={{animationDelay: '1s'}}>
               <div className="text-sm font-medium text-green-600">+$2,450</div>
               <div className="text-xs text-muted-foreground">Saved this month</div>

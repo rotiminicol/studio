@@ -6,24 +6,21 @@ const testimonials = [
   {
     name: "Sarah L.",
     role: "Freelance Designer",
-    avatar: "https://placehold.co/100x100.png",
-    aiHint: "woman smiling professional",
+    avatar: "/pexels-willsantos-2026960.jpg",
     text: "Fluxpense has been a game-changer for my business. The receipt scanning is incredibly accurate and saves me hours every month. The UI is just beautiful!",
     rating: 5
   },
   {
     name: "Mike R.",
     role: "Startup Founder",
-    avatar: "https://placehold.co/100x100.png",
-    aiHint: "man portrait professional",
+    avatar: "/pexels-sanaan-3052361 (1).jpg",
     text: "As a startup, every penny counts. Fluxpense helps us track our burn rate in real-time with its amazing reports. The team onboarding was a breeze.",
     rating: 5
   },
   {
     name: "Jessica P.",
     role: "Sales Manager",
-    avatar: "https://placehold.co/100x100.png",
-    aiHint: "woman corporate headshot",
+    avatar: "/pexels-n-voitkevich-7172774 copy.jpg",
     text: "I used to dread filing my travel expenses. With Fluxpense, I just forward my booking emails and it's all done automatically. Simply magical!",
     rating: 5
   }
@@ -39,7 +36,7 @@ export function Testimonials() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="p-6 glassmorphism">
+            <Card key={index} className="p-6 glassmorphism animate-float" style={{animationDelay: `${index * 0.2}s`}}>
               <CardContent className="p-0">
                 <div className="flex mb-4">
                   {Array(testimonial.rating).fill(0).map((_, i) => (
@@ -48,9 +45,11 @@ export function Testimonials() {
                 </div>
                 <p className="text-muted-foreground mb-6">"{testimonial.text}"</p>
                 <div className="flex items-center">
-                  <Avatar>
-                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} data-ai-hint={testimonial.aiHint} />
-                    <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                  <Avatar className="border-2 border-primary/20">
+                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white">
+                      {testimonial.name.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="ml-4">
                     <p className="font-semibold">{testimonial.name}</p>
