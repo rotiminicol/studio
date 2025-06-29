@@ -201,7 +201,7 @@ export function AddExpenseDialog({ open, onOpenChange }: AddExpenseDialogProps) 
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                     Cancel
                 </Button>
-                <Button type="submit" disabled={isSaving}>
+                <Button type="submit" disabled={isSaving} className="button-glow">
                     {isSaving && <Loader2 className="animate-spin mr-2" />}
                     Save Expense
                 </Button>

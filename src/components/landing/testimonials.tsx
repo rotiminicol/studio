@@ -30,7 +30,7 @@ export function Testimonials() {
   return (
     <section id="testimonials" className="py-20 md:py-28">
       <div className="container max-w-screen-xl">
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 animate-in fade-in-0 slide-in-from-bottom-8 duration-500">
           <h2 className="text-3xl md:text-4xl font-bold">Loved by Professionals Worldwide</h2>
           <p className="text-lg text-muted-foreground mt-2">Don't just take our word for it. Here's what our users are saying.</p>
         </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useData } from "@/contexts/data-context";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   SidebarProvider,
   Sidebar,
@@ -14,13 +15,13 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
-  SidebarTrigger,
   SidebarFooter,
   SidebarMenuBadge,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent
 } from "@/components/ui/sidebar";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -54,7 +55,8 @@ import {
   Zap,
   Shield,
   Database,
-  Crown
+  Crown,
+  Menu,
 } from "lucide-react";
 import { AddExpenseDialog } from "@/components/dashboard/add-expense-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -62,72 +64,22 @@ import { cn } from "@/lib/utils";
 import type { Notification } from "@/lib/types";
 
 const mainMenuItems = [
-  {
-    href: "/dashboard",
-    label: "Overview",
-    icon: Home,
-    description: "Dashboard overview"
-  },
-  {
-    href: "/dashboard/expenses",
-    label: "Expenses",
-    icon: Receipt,
-    description: "Manage expenses"
-  },
-  {
-    href: "/dashboard/reports",
-    label: "Reports",
-    icon: BarChart2,
-    description: "Analytics & insights"
-  },
+  { href: "/dashboard", label: "Overview", icon: Home, description: "Dashboard overview" },
+  { href: "/dashboard/expenses", label: "Expenses", icon: Receipt, description: "Manage expenses" },
+  { href: "/dashboard/reports", label: "Reports", icon: BarChart2, description: "Analytics & insights" },
 ];
 
 const toolsMenuItems = [
-  {
-    href: "/dashboard/budgets",
-    label: "Budgets",
-    icon: Target,
-    description: "Budget management"
-  },
-  {
-    href: "/dashboard/categories",
-    label: "Categories",
-    icon: Database,
-    description: "Expense categories"
-  },
-  {
-    href: "/dashboard/integrations",
-    label: "Integrations",
-    icon: Zap,
-    description: "Connected apps"
-  },
+  { href: "/dashboard/budgets", label: "Budgets", icon: Target, description: "Budget management" },
+  { href: "/dashboard/categories", label: "Categories", icon: Database, description: "Expense categories" },
+  { href: "/dashboard/integrations", label: "Integrations", icon: Zap, description: "Connected apps" },
 ];
 
 const accountMenuItems = [
-  {
-    href: "/dashboard/notifications",
-    label: "Notifications",
-    icon: Bell,
-    description: "Alerts & updates"
-  },
-  {
-    href: "/dashboard/team",
-    label: "Team",
-    icon: Users,
-    description: "Team management"
-  },
-  {
-    href: "/subscription",
-    label: "Subscription",
-    icon: Crown,
-    description: "Manage subscription"
-  },
-  {
-    href: "/dashboard/settings",
-    label: "Settings",
-    icon: Settings,
-    description: "Account settings"
-  },
+  { href: "/dashboard/notifications", label: "Notifications", icon: Bell, description: "Alerts & updates" },
+  { href: "/dashboard/team", label: "Team", icon: Users, description: "Team management" },
+  { href: "/subscription", label: "Subscription", icon: Crown, description: "Manage subscription" },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings, description: "Account settings" },
 ];
 
 function NotificationItem({ notification, onRead }: { notification: Notification; onRead: (id: number) => void; }) {
@@ -148,6 +100,64 @@ function NotificationItem({ notification, onRead }: { notification: Notification
     )
 }
 
+function MobileBottomNav({ onAddExpenseClick, accountItems, toolItems }: { onAddExpenseClick: () => void; accountItems: typeof accountMenuItems; toolItems: typeof toolsMenuItems; }) {
+  const pathname = usePathname();
+  const mainNavItems = [
+    { href: "/dashboard", label: "Home", icon: Home },
+    { href: "/dashboard/expenses", label: "Expenses", icon: Receipt },
+    { href: "/dashboard/reports", label: "Reports", icon: BarChart2 },
+  ];
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t bg-background/95 backdrop-blur-sm">
+      <div className="flex justify-around items-center h-16">
+        {mainNavItems.map((item) => (
+          <Link key={item.href} href={item.href} className={cn(
+            "flex flex-col items-center justify-center gap-1 w-full h-full transition-colors",
+            pathname === item.href ? "text-primary" : "text-muted-foreground hover:text-primary"
+          )}>
+            <item.icon className="w-6 h-6" />
+            <span className="text-xs">{item.label}</span>
+          </Link>
+        ))}
+        <button onClick={onAddExpenseClick} className="flex flex-col items-center justify-center gap-1 text-primary w-full h-full">
+            <div className="w-12 h-12 -mt-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center button-glow shadow-2xl">
+                <PlusCircle className="w-8 h-8"/>
+            </div>
+            <span className="text-xs -mt-1">Add New</span>
+        </button>
+        <Sheet>
+            <SheetTrigger asChild>
+                <button className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary w-full h-full">
+                    <Menu className="w-6 h-6" />
+                    <span className="text-xs">More</span>
+                </button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="rounded-t-2xl h-[80%] flex flex-col">
+                <div className="text-center font-bold text-lg py-2">More Options</div>
+                <ScrollArea className="flex-1 -mx-6 px-6">
+                    <nav className="flex flex-col gap-2 py-4">
+                        {[...toolItems, ...accountItems].map(item => (
+                             <Link key={item.href} href={item.href} className="flex items-center gap-4 p-4 rounded-lg hover:bg-muted">
+                                 <div className="p-2 bg-muted rounded-full">
+                                    <item.icon className="w-5 h-5 text-primary" />
+                                 </div>
+                                 <div>
+                                    <div className="font-semibold">{item.label}</div>
+                                    <div className="text-sm text-muted-foreground">{item.description}</div>
+                                 </div>
+                             </Link>
+                        ))}
+                    </nav>
+                </ScrollArea>
+            </SheetContent>
+        </Sheet>
+      </div>
+    </div>
+  );
+}
+
+
 export function DashboardApp({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
@@ -157,7 +167,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-accent/10">
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-4 animate-in fade-in duration-500">
               <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold">Loading your dashboard...</h3>
@@ -180,10 +190,9 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
           </SidebarHeader>
           
           <SidebarContent className="no-scrollbar">
-            {/* Main Navigation */}
             <SidebarGroup>
-              <SidebarGroupLabel className="text-primary font-semibold">
-                <Sparkles className="w-4 h-4 mr-2" />
+              <SidebarGroupLabel className="text-primary font-semibold flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
                 Main
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -191,18 +200,9 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
                   {mainMenuItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                       <Link href={item.href}>
-                         <SidebarMenuButton 
-                           tooltip={item.description} 
-                           isActive={pathname === item.href}
-                           className="group hover:bg-primary/10 data-[active=true]:bg-primary/20 data-[active=true]:border-primary/30"
-                         >
+                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group data-[active=true]:bg-primary/20 data-[active=true]:border-primary/30">
                           <item.icon className="group-hover:text-primary transition-colors" />
                           <span>{item.label}</span>
-                           {item.href === '/dashboard/notifications' && unreadNotificationCount > 0 && (
-                              <SidebarMenuBadge className="bg-primary text-primary-foreground">
-                                {unreadNotificationCount}
-                              </SidebarMenuBadge>
-                           )}
                         </SidebarMenuButton>
                       </Link>
                     </SidebarMenuItem>
@@ -211,10 +211,9 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {/* Tools */}
             <SidebarGroup>
-              <SidebarGroupLabel className="text-accent font-semibold">
-                <Zap className="w-4 h-4 mr-2" />
+              <SidebarGroupLabel className="text-accent font-semibold flex items-center gap-2">
+                <Zap className="w-4 h-4" />
                 Tools
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -222,11 +221,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
                   {toolsMenuItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                       <Link href={item.href}>
-                         <SidebarMenuButton 
-                           tooltip={item.description} 
-                           isActive={pathname === item.href}
-                           className="group hover:bg-accent/10 data-[active=true]:bg-accent/20"
-                         >
+                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group data-[active=true]:bg-accent/20">
                           <item.icon className="group-hover:text-accent transition-colors" />
                           <span>{item.label}</span>
                         </SidebarMenuButton>
@@ -237,10 +232,9 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {/* Account */}
             <SidebarGroup>
-              <SidebarGroupLabel className="text-muted-foreground font-semibold">
-                <Shield className="w-4 h-4 mr-2" />
+              <SidebarGroupLabel className="text-muted-foreground font-semibold flex items-center gap-2">
+                <Shield className="w-4 h-4" />
                 Account
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -248,11 +242,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
                   {accountMenuItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                       <Link href={item.href}>
-                         <SidebarMenuButton 
-                           tooltip={item.description} 
-                           isActive={pathname === item.href}
-                           className="group hover:bg-muted/50 data-[active=true]:bg-muted"
-                         >
+                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group">
                           <item.icon className="group-hover:text-foreground transition-colors" />
                           <span>{item.label}</span>
                            {item.href === '/dashboard/notifications' && unreadNotificationCount > 0 && (
@@ -266,12 +256,11 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {/* Help */}
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Help & Support">
+                    <SidebarMenuButton tooltip={{children: "Help & Support", side:'right'}}>
                       <HelpCircle />
                       <span>Help & Support</span>
                     </SidebarMenuButton>
@@ -284,7 +273,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
           <SidebarFooter className="border-t border-primary/20">
               <SidebarMenu>
                   <SidebarMenuItem>
-                      <SidebarMenuButton tooltip="Log out" onClick={() => logout()} className="hover:bg-destructive/10 hover:text-destructive">
+                      <SidebarMenuButton tooltip={{children: "Log out", side:'right'}} onClick={() => logout()} className="hover:bg-destructive/10 hover:text-destructive">
                           <LogOut />
                           <span>Log out</span>
                       </SidebarMenuButton>
@@ -294,28 +283,15 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
         </Sidebar>
         
         <SidebarInset>
-           {/* Floating Add Button */}
-           <div className="fixed bottom-6 right-6 z-50">
-              <Button 
-                size="icon" 
-                className="rounded-full w-16 h-16 button-glow shadow-2xl hover:scale-110 transition-all duration-300" 
-                onClick={() => setIsAddExpenseOpen(true)}
-              >
-                  <PlusCircle className="w-8 h-8"/>
-                  <span className="sr-only">Add Expense</span>
-              </Button>
-          </div>
           <AddExpenseDialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen} />
 
           <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-lg px-4 md:px-6 border-primary/20">
-            <SidebarTrigger className="md:hidden" />
-            <div className="flex-1">
-              {/* Breadcrumbs could go here */}
-            </div>
+             {/* This empty div is for potential breadcrumbs or page titles */}
+            <div className="flex-1"></div>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full relative hover:bg-primary/10">
+                <Button variant="ghost" size="icon" className="rounded-full relative hover:bg-primary/10 animate-float" style={{animationDelay: '0.5s'}}>
                   <Bell className="h-5 w-5" />
                   {unreadNotificationCount > 0 && (
                       <span className="absolute -top-1 -right-1 block h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold animate-pulse">
@@ -325,7 +301,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
                   <span className="sr-only">Toggle notifications</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuContent align="end" className="w-80 animate-in fade-in-0 zoom-in-95">
                   <DropdownMenuLabel className="flex items-center justify-between">
                     <span>Notifications</span>
                     {unreadNotificationCount > 0 && (
@@ -353,7 +329,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="rounded-full flex items-center gap-2 px-2 hover:bg-primary/10">
+                <Button variant="ghost" className="rounded-full flex items-center gap-2 px-2 hover:bg-primary/10 animate-float" style={{animationDelay: '0.7s'}}>
                    <div className="hidden md:block text-right">
                      <p className="text-sm font-medium">{user?.name}</p>
                      <p className="text-xs text-muted-foreground">{user?.email}</p>
@@ -364,7 +340,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
                   <span className="sr-only">Toggle user menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 animate-in fade-in-0 zoom-in-95">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user?.name}</p>
@@ -398,9 +374,12 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
-          <main className="flex-1 p-4 sm:p-6 md:p-8 bg-gradient-to-br from-background via-primary/5 to-accent/10 min-h-screen">
-            {children}
+          <main className="flex-1 p-4 sm:p-6 md:p-8 bg-gradient-to-br from-background via-primary/5 to-accent/10 min-h-screen pb-24 md:pb-8">
+            <div className="animate-in fade-in-0 slide-in-from-bottom-8 duration-500">
+                {children}
+            </div>
           </main>
+          <MobileBottomNav onAddExpenseClick={() => setIsAddExpenseOpen(true)} accountItems={accountMenuItems} toolItems={toolsMenuItems} />
         </SidebarInset>
       </SidebarProvider>
   );

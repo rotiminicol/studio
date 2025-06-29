@@ -12,6 +12,7 @@ import { useData } from "@/contexts/data-context";
 import { Loader2 } from "lucide-react";
 import type { Budget } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "../ui/skeleton";
 
 export function SettingsTab() {
   const { budgets, loading, updateBudget } = useData();
@@ -19,14 +20,12 @@ export function SettingsTab() {
   const [localBudgets, setLocalBudgets] = useState<Budget[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Local state for notification toggles
   const [weeklySummary, setWeeklySummary] = useState(true);
   const [budgetAlerts, setBudgetAlerts] = useState(true);
   const [promotionalUpdates, setPromotionalUpdates] = useState(false);
 
 
   useEffect(() => {
-    // Deep copy to prevent modifying original context state directly
     setLocalBudgets(JSON.parse(JSON.stringify(budgets)));
   }, [budgets]);
   
@@ -56,31 +55,23 @@ export function SettingsTab() {
     }
   }
 
-  if (loading) {
-    return (
-        <div className="grid gap-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Budget Management</CardTitle>
-                    <CardDescription>Set and adjust your monthly spending budgets for each category.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                    {[...Array(4)].map((_, i) => (
-                        <div key={i} className="space-y-2">
-                             <div className="flex justify-between items-center mb-2">
-                                <Loader2 className="animate-spin" />
-                            </div>
-                        </div>
-                    ))}
-                </CardContent>
-            </Card>
-        </div>
-    )
-  }
+  const BudgetSkeleton = () => (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center mb-2">
+        <Skeleton className="h-5 w-24" />
+        <Skeleton className="h-4 w-32" />
+      </div>
+      <Skeleton className="h-3 w-full" />
+      <div className="flex items-center gap-4 mt-2">
+        <Skeleton className="h-5 flex-grow" />
+        <Skeleton className="h-10 w-28" />
+      </div>
+    </div>
+  );
 
   return (
     <div className="grid gap-6">
-      <Card>
+      <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
         <CardHeader>
           <CardTitle>Budget Management</CardTitle>
           <CardDescription>
@@ -88,32 +79,38 @@ export function SettingsTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
-          {localBudgets.map((cat) => {
-            const percentage = cat.amount > 0 ? (cat.spent / cat.amount) * 100 : 0;
-            return (
-              <div key={cat.id}>
-                <div className="flex justify-between items-center mb-2">
-                    <Label className="text-lg font-medium">{cat.category?.name || 'Unnamed Category'}</Label>
-                    <span className="text-muted-foreground font-mono text-sm">${cat.spent.toFixed(2)} / ${cat.amount.toFixed(2)}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Progress value={percentage} className="h-3" />
-                </div>
-                 <div className="flex items-center gap-4 mt-2">
-                    <Slider value={[cat.amount]} max={2000} step={50} onValueChange={(val) => handleBudgetChange(cat.id, val[0])} />
-                    <Input className="w-28" type="number" value={cat.amount} onChange={(e) => handleBudgetChange(cat.id, parseFloat(e.target.value) || 0)} />
-                </div>
-              </div>
-            );
-          })}
-           <Button onClick={handleSaveBudgets} disabled={isSaving}>
-            {isSaving && <Loader2 className="animate-spin mr-2" />}
-            Save Budgets
-           </Button>
+          {loading ? (
+             [...Array(4)].map((_, i) => <BudgetSkeleton key={i} />)
+          ) : (
+            <>
+              {localBudgets.map((cat, index) => {
+                const percentage = cat.amount > 0 ? (cat.spent / cat.amount) * 100 : 0;
+                return (
+                  <div key={cat.id} className="animate-in fade-in-0" style={{animationDelay: `${index * 100}ms`}}>
+                    <div className="flex justify-between items-center mb-2">
+                        <Label className="text-lg font-medium">{cat.category?.name || 'Unnamed Category'}</Label>
+                        <span className="text-muted-foreground font-mono text-sm">${cat.spent.toFixed(2)} / ${cat.amount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Progress value={percentage} className="h-3" />
+                    </div>
+                    <div className="flex items-center gap-4 mt-2">
+                        <Slider value={[cat.amount]} max={2000} step={50} onValueChange={(val) => handleBudgetChange(cat.id, val[0])} />
+                        <Input className="w-28" type="number" value={cat.amount} onChange={(e) => handleBudgetChange(cat.id, parseFloat(e.target.value) || 0)} />
+                    </div>
+                  </div>
+                );
+              })}
+              <Button onClick={handleSaveBudgets} disabled={isSaving} className="button-glow">
+                {isSaving && <Loader2 className="animate-spin mr-2" />}
+                Save Budgets
+              </Button>
+            </>
+          )}
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '200ms'}}>
         <CardHeader>
           <CardTitle>Notifications</CardTitle>
           <CardDescription>

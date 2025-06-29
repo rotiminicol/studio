@@ -45,15 +45,14 @@ export function AuthForm({ onTabChange }: AuthFormProps) {
 
   return (
     <div className="relative">
-      {/* Floating background elements */}
       <div className="absolute -top-10 -left-10 w-20 h-20 bg-primary/20 rounded-full blur-xl animate-float"></div>
       <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-accent/20 rounded-full blur-xl animate-float" style={{animationDelay: '2s'}}></div>
       
-      <Card className="w-full max-w-md glassmorphism border-primary/20 shadow-2xl">
+      <Card className="w-full max-w-md glassmorphism border-primary/20 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-500">
         <CardHeader className="text-center relative">
           <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center shadow-lg">
-              <Sparkles className="w-8 h-8 text-white animate-pulse" />
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center shadow-lg animate-float">
+              <Sparkles className="w-8 h-8 text-white animate-pulse-glow" />
             </div>
           </div>
           <CardTitle className="text-2xl mt-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -210,7 +209,7 @@ export function AuthForm({ onTabChange }: AuthFormProps) {
               <span className="w-full border-t border-primary/20" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
+              <span className="bg-card px-2 text-muted-foreground">
                 Or continue with
               </span>
             </div>

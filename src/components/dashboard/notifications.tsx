@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Bell, Check, FileWarning, Wallet } from "lucide-react";
 import { format, formatRelative, isSameDay, isYesterday } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "../ui/skeleton";
 
 export function Notifications() {
   const { notifications, markAllNotificationsRead, loading } = useData();
@@ -36,8 +37,19 @@ export function Notifications() {
     }
   }
 
+  const NotificationSkeleton = () => (
+    <div className="flex items-start gap-4 p-4 rounded-lg border">
+        <Skeleton className="w-10 h-10 rounded-full" />
+        <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+        </div>
+        <Skeleton className="h-4 w-20" />
+    </div>
+  )
+
   return (
-    <Card>
+    <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -52,15 +64,22 @@ export function Notifications() {
       </CardHeader>
       <CardContent>
         {loading ? (
-            <p>Loading notifications...</p>
+           <div className="space-y-4">
+             {[...Array(5)].map((_, i) => <NotificationSkeleton key={i} />)}
+           </div>
         ) : Object.keys(groupedNotifications).length > 0 ? (
           <div className="space-y-8">
             {Object.entries(groupedNotifications).map(([groupTitle, notifs]) => (
               <div key={groupTitle}>
-                <h3 className="text-lg font-semibold mb-4">{groupTitle}</h3>
+                <h3 className="text-lg font-semibold mb-4 animate-in fade-in-0" style={{animationDelay: '100ms'}}>{groupTitle}</h3>
                 <div className="space-y-4">
-                  {notifs.map((notification) => (
-                    <div key={notification.id} className={cn("flex items-start gap-4 p-4 rounded-lg border", !notification.is_read && "bg-muted/50")}>
+                  {notifs.map((notification, index) => (
+                    <div key={notification.id} className={cn(
+                        "flex items-start gap-4 p-4 rounded-lg border transition-colors hover:bg-muted/50 animate-in fade-in-0 slide-in-from-bottom-4", 
+                        !notification.is_read && "bg-muted/50"
+                      )}
+                      style={{animationDelay: `${150 + index * 50}ms`}}
+                    >
                         <div className="p-2 bg-background rounded-full">{getIcon(notification.type)}</div>
                         <div className="flex-1">
                             <p className="font-semibold">{notification.title}</p>
@@ -76,7 +95,7 @@ export function Notifications() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
+          <div className="text-center py-16 animate-in fade-in-0 duration-500">
             <Bell className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-4 text-lg font-semibold">All caught up!</h3>
             <p className="mt-1 text-sm text-muted-foreground">You have no new notifications.</p>
