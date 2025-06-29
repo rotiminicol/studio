@@ -53,46 +53,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return;
     }
+    
+    // If we have a token but no user object yet, fetch the user data.
+    if (!user) {
+        xanoAuth.getMe(storedToken)
+          .then(userData => {
+            setUser(userData);
+            setToken(storedToken);
+          })
+          .catch((error) => {
+            console.error('Token validation failed:', error);
+            localStorage.removeItem('authToken');
+            setUser(null);
+            setToken(null);
+            if (!isPublicPage && !isAuthPage) {
+              router.push('/auth');
+            }
+          })
+          .finally(() => {
+            setIsLoading(false);
+          });
+        return; // Exit here and wait for re-render after user state is set.
+    }
 
-    xanoAuth.getMe(storedToken)
-      .then(userData => {
-        setUser(userData);
-        setToken(storedToken);
-        const isOnboarded = userData.onboarding_complete;
+    // From here on, we assume `user` object exists.
+    const isOnboarded = user.onboarding_complete;
 
-        if (isAuthPage) {
-          router.push(isOnboarded ? '/dashboard' : '/onboarding');
-        } else if (isOnboardingPage && isOnboarded) {
-          router.push('/dashboard');
-        } else if (!isOnboardingPage && !isOnboarded && !isPublicPage && !isAuthPage) {
-          router.push('/onboarding');
+    if (isAuthPage) {
+        // If on an auth page but logged in, redirect away.
+        router.push(isOnboarded ? '/dashboard' : '/onboarding');
+    } else if (isOnboardingPage) {
+        // If on onboarding page...
+        if (isOnboarded) {
+            // ...but already onboarded, redirect to dashboard.
+            router.push('/dashboard');
         }
-      })
-      .catch((error) => {
-        console.error('Token validation failed:', error);
-        localStorage.removeItem('authToken');
-        setUser(null);
-        setToken(null);
-        if (!isPublicPage && !isAuthPage) {
-          router.push('/auth');
+    } else if (!isPublicPage) {
+        // For any other protected page...
+        if (!isOnboarded) {
+            // ...if not onboarded, force back to onboarding.
+            router.push('/onboarding');
         }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [pathname, mounted, router]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, mounted, user]);
+
 
   const handleAuthSuccess = async (authToken: string) => {
     localStorage.setItem('authToken', authToken);
-    setToken(authToken);
     try {
         const userData = await xanoAuth.getMe(authToken);
+        // Set user and token to trigger the useEffect for routing
         setUser(userData);
-        if (userData.onboarding_complete) {
-            router.push('/dashboard');
-        } else {
-            router.push('/onboarding');
-        }
+        setToken(authToken);
     } catch (error) {
         console.error('Failed to get user data after auth:', error);
         toast({ variant: 'destructive', title: 'Authentication Failed', description: 'Could not retrieve user details.' });
@@ -202,25 +215,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     
     try {
-      // Attempt to save to the backend. This is expected to fail if the endpoint doesn't exist.
       await xanoAuth.updateMe(token, payload);
     } catch (error) {
-      // Gracefully handle the error without blocking the user.
       console.warn(
-        'Onboarding data could not be saved to the backend. This is likely due to a missing API endpoint (e.g., PATCH /auth/me). Proceeding with local state update.',
+        'Onboarding data could not be saved to the backend. This is likely due to a missing API endpoint. Proceeding with local state update.',
         error
       );
     } finally {
-      // Whether the API call succeeded or failed, update the local state to unblock the user.
       const updatedUser = { ...user, ...payload };
-      setUser(updatedUser);
+      setUser(updatedUser); // This will trigger the useEffect to handle navigation
       
       toast({ 
         title: 'Setup Complete!', 
         description: 'Welcome to your Fluxpense dashboard!' 
       });
       
-      router.push('/dashboard');
       setIsLoading(false);
     }
   };
@@ -229,7 +238,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = { user, token, login, signup, logout, isLoading, isAuthenticated, continueWithGoogle, completeOnboarding };
 
-  if (!mounted && !['/', '/auth', '/onboarding'].some(p => pathname.startsWith(p))) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
