@@ -9,6 +9,10 @@ export default {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        'hero-gradient': 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
+        'accent-gradient': 'linear-gradient(135deg, hsl(var(--accent)), hsl(var(--destructive)))',
+      },
       fontFamily: {
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],
@@ -70,6 +74,8 @@ export default {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 4px)',
         sm: 'calc(var(--radius) - 8px)',
+        xl: '1rem',
+        '2xl': '1.5rem',
       },
       keyframes: {
         'accordion-down': {

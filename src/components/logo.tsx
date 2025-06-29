@@ -6,7 +6,7 @@ export function Logo({ className }: { className?: string }) {
     <div className={cn("flex items-center gap-3 group", className)}>
       <div className="relative">
         <Image
-          src="/Fluxpense Logo – Blue and Green with Arrow Icon.png"
+          src="/logo.png"
           alt="Fluxpense Logo"
           width={40}
           height={40}
