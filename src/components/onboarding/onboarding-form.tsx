@@ -15,11 +15,11 @@ import Link from "next/link";
 const totalSteps = 5;
 
 const stepImages = [
-  "/pexels-n-voitkevich-7172774.jpg",
-  "/pexels-michael-block-1691617-3225517.jpg",
-  "/pexels-maxfrancis-2246476.jpg",
-  "/pexels-willsantos-2026960.jpg",
-  "/pexels-sanaan-3052361 (1).jpg"
+  "/1.jpg",
+  "/2.jpg",
+  "/3.jpg",
+  "/4.jpg",
+  "/5.jpg"
 ];
 
 export function OnboardingForm() {
@@ -87,16 +87,16 @@ export function OnboardingForm() {
       
       <div className="relative z-10 min-h-screen lg:grid lg:grid-cols-2">
         {/* Left side - Form - Full half screen */}
-        <div className="flex flex-col min-h-screen lg:bg-background/95 lg:backdrop-blur-sm">
-          {/* Logo positioned in form area */}
+        <div className="flex flex-col min-h-screen lg:bg-background/95 lg:backdrop-blur-sm relative">
+          {/* Logo positioned on the form */}
           <div className="absolute top-8 left-8 z-20">
             <Link href="/">
-              <Logo variant="default" size="md" />
+              <Logo variant="bird" size="md" />
             </Link>
           </div>
           
           {/* Form container - takes full height and centers content */}
-          <div className="flex-1 flex flex-col justify-center p-6">
+          <div className="flex-1 flex flex-col justify-center p-6 lg:p-12">
             <Card className="w-full max-w-md mx-auto bg-transparent border-none shadow-none lg:glassmorphism lg:border-primary/20 lg:shadow-2xl lg:rounded-2xl">
               <CardHeader className="text-center p-0 lg:p-6">
                 <div className="flex items-center justify-center mb-4">

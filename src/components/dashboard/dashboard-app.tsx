@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
@@ -57,11 +57,14 @@ import {
   Database,
   Crown,
   Menu,
+  Plus,
+  DollarSign,
 } from "lucide-react";
 import { AddExpenseDialog } from "@/components/dashboard/add-expense-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/lib/types";
+import Image from "next/image";
 
 const mainMenuItems = [
   { href: "/dashboard", label: "Overview", icon: Home, description: "Dashboard overview" },
@@ -82,22 +85,35 @@ const accountMenuItems = [
   { href: "/dashboard/settings", label: "Settings", icon: Settings, description: "Account settings" },
 ];
 
+// Background images for different sections
+const backgroundImages = [
+  "/1.jpg", "/2.jpg", "/3.jpg", "/4.jpg", "/5.jpg", "/6.jpg", 
+  "/7.jpg", "/8.jpg", "/9.jpg", "/10.jpg", "/11.jpg", "/12.jpg", "/13.jpg"
+];
+
+// Floating notification data
+const floatingNotifications = [
+  { id: 1, message: "Receipt scanned successfully!", type: "success", icon: Receipt },
+  { id: 2, message: "Budget alert: 80% of monthly limit used", type: "warning", icon: Target },
+  { id: 3, message: "New AI insights available", type: "info", icon: Sparkles },
+  { id: 4, message: "You saved $45 this week!", type: "success", icon: TrendingUp },
+];
+
 function NotificationItem({ notification, onRead }: { notification: Notification; onRead: (id: number) => void; }) {
-    const Icon = notification.type === 'budget' ? FileWarning : Check;
-    return (
-        <DropdownMenuItem className="flex items-start gap-3" onSelect={(e) => e.preventDefault()}>
-            <Icon className={cn("mt-1 h-4 w-4 shrink-0", notification.type === 'budget' ? "text-amber-500" : "text-green-500")} />
-            <div className="flex-1">
-                <p className="font-semibold text-sm">{notification.title}</p>
-                <p className="text-xs text-muted-foreground">{notification.message}</p>
-            </div>
-            {!notification.is_read && (
-              <Button variant="outline" size="sm" className="h-auto px-1.5 py-0.5" onClick={() => onRead(notification.id)}>
-                <Check className="h-3 w-3" />
-              </Button>
-            )}
-        </DropdownMenuItem>
-    )
+  const Icon = notification.type === 'budget' ? FileWarning : Check;
+  return (
+    <DropdownMenuItem 
+      className={`flex flex-col items-start p-3 cursor-pointer transition-all duration-200 hover:bg-primary/5 ${!notification.is_read ? 'bg-primary/10' : ''}`}
+      onClick={() => onRead(notification.id)}
+    >
+      <div className="flex items-center gap-2 w-full">
+        <Icon className={cn("mt-1 h-4 w-4 shrink-0", notification.type === 'budget' ? "text-amber-500" : "text-green-500")} />
+        <span className="font-medium text-sm">{notification.title}</span>
+        {!notification.is_read && <Badge variant="secondary" className="ml-auto text-xs">New</Badge>}
+      </div>
+      <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
+    </DropdownMenuItem>
+  );
 }
 
 function MobileBottomNav({ onAddExpenseClick, accountItems, toolItems }: { onAddExpenseClick: () => void; accountItems: typeof accountMenuItems; toolItems: typeof toolsMenuItems; }) {
@@ -109,60 +125,85 @@ function MobileBottomNav({ onAddExpenseClick, accountItems, toolItems }: { onAdd
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t bg-background/95 backdrop-blur-sm">
-      <div className="flex justify-around items-center h-16">
+    <div className="fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-lg border-t border-border md:hidden z-50">
+      <div className="flex justify-around items-center p-2">
         {mainNavItems.map((item) => (
-          <Link key={item.href} href={item.href} className={cn(
-            "flex flex-col items-center justify-center gap-1 w-full h-full transition-colors",
-            pathname === item.href ? "text-primary" : "text-muted-foreground hover:text-primary"
-          )}>
-            <item.icon className="w-6 h-6" />
-            <span className="text-xs">{item.label}</span>
-          </Link>
+          <Button variant="ghost" size="sm" asChild className="flex flex-col items-center gap-1 h-auto py-2">
+            <Link href={item.href}>
+              <item.icon className="w-4 h-4" />
+              <span className="text-xs">{item.label}</span>
+            </Link>
+          </Button>
         ))}
-        <button onClick={onAddExpenseClick} className="flex flex-col items-center justify-center gap-1 text-primary w-full h-full">
-            <div className="w-12 h-12 -mt-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center button-glow shadow-2xl">
-                <PlusCircle className="w-8 h-8"/>
-            </div>
-            <span className="text-xs -mt-1">Add New</span>
-        </button>
-        <Sheet>
-            <SheetTrigger asChild>
-                <button className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary w-full h-full">
-                    <Menu className="w-6 h-6" />
-                    <span className="text-xs">More</span>
-                </button>
-            </SheetTrigger>
-            <SheetContent side="bottom" className="rounded-t-2xl h-[80%] flex flex-col">
-                <div className="text-center font-bold text-lg py-2">More Options</div>
-                <ScrollArea className="flex-1 -mx-6 px-6">
-                    <nav className="flex flex-col gap-2 py-4">
-                        {[...toolItems, ...accountItems].map(item => (
-                             <Link key={item.href} href={item.href} className="flex items-center gap-4 p-4 rounded-lg hover:bg-muted">
-                                 <div className="p-2 bg-muted rounded-full">
-                                    <item.icon className="w-5 h-5 text-primary" />
-                                 </div>
-                                 <div>
-                                    <div className="font-semibold">{item.label}</div>
-                                    <div className="text-sm text-muted-foreground">{item.description}</div>
-                                 </div>
-                             </Link>
-                        ))}
-                    </nav>
-                </ScrollArea>
-            </SheetContent>
-        </Sheet>
+        <Button 
+          onClick={onAddExpenseClick}
+          size="sm" 
+          className="flex flex-col items-center gap-1 h-auto py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          <Plus className="w-4 h-4" />
+          <span className="text-xs">Add</span>
+        </Button>
+        <Button variant="ghost" size="sm" asChild className="flex flex-col items-center gap-1 h-auto py-2">
+          <Link href="/dashboard/settings">
+            <Settings className="w-4 h-4" />
+            <span className="text-xs">Settings</span>
+          </Link>
+        </Button>
       </div>
     </div>
   );
 }
-
 
 export function DashboardApp({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const { notifications, unreadNotificationCount, markNotificationRead, loading } = useData();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [floatingNotificationIndex, setFloatingNotificationIndex] = useState(0);
+  const [showFloatingNotification, setShowFloatingNotification] = useState(false);
+
+  // Simulate notifications
+  useEffect(() => {
+    const mockNotifications: Notification[] = [
+      {
+        id: 1,
+        title: "Receipt Processed",
+        message: "Your Starbucks receipt has been processed successfully",
+        type: "success",
+        is_read: false,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 2,
+        title: "Budget Alert",
+        message: "You've used 80% of your dining budget this month",
+        type: "warning",
+        is_read: false,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 3,
+        title: "AI Insights",
+        message: "New spending insights are available for review",
+        type: "info",
+        is_read: true,
+        created_at: new Date().toISOString()
+      }
+    ];
+    
+    markNotificationRead(mockNotifications[0].id);
+  }, [markNotificationRead]);
+
+  // Floating notification carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowFloatingNotification(true);
+      setTimeout(() => setShowFloatingNotification(false), 3000);
+      setFloatingNotificationIndex((prev) => (prev + 1) % floatingNotifications.length);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   if (loading) {
     return (
@@ -182,11 +223,17 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
     return null;
   }
 
+  // Get current background image based on pathname
+  const getBackgroundImage = () => {
+    const pathIndex = pathname.length % backgroundImages.length;
+    return backgroundImages[pathIndex];
+  };
+
   return (
       <SidebarProvider>
         <Sidebar variant="floating" collapsible="icon" className="border-primary/20">
           <SidebarHeader className="border-b border-primary/20">
-            <Logo variant="default" size="md" />
+            <Logo variant="aiiit" size="md" />
           </SidebarHeader>
           
           <SidebarContent className="no-scrollbar">
@@ -200,7 +247,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
                   {mainMenuItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                       <Link href={item.href}>
-                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group data-[active=true]:bg-primary/20 data-[active=true]:border-primary/30">
+                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group data-[active=true]:bg-primary/20 data-[active=true]:border-primary/30 hover:scale-105 transition-all duration-200">
                           <item.icon className="group-hover:text-primary transition-colors" />
                           <span>{item.label}</span>
                         </SidebarMenuButton>
@@ -221,7 +268,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
                   {toolsMenuItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                       <Link href={item.href}>
-                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group data-[active=true]:bg-accent/20">
+                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group data-[active=true]:bg-accent/20 hover:scale-105 transition-all duration-200">
                           <item.icon className="group-hover:text-accent transition-colors" />
                           <span>{item.label}</span>
                         </SidebarMenuButton>
@@ -242,7 +289,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
                   {accountMenuItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                       <Link href={item.href}>
-                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group">
+                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group hover:scale-105 transition-all duration-200">
                           <item.icon className="group-hover:text-foreground transition-colors" />
                           <span>{item.label}</span>
                            {item.href === '/dashboard/notifications' && unreadNotificationCount > 0 && (
@@ -260,7 +307,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton tooltip={{children: "Help & Support", side:'right'}}>
+                    <SidebarMenuButton tooltip={{children: "Help & Support", side:'right'}} className="hover:scale-105 transition-all duration-200">
                       <HelpCircle />
                       <span>Help & Support</span>
                     </SidebarMenuButton>
@@ -273,7 +320,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
           <SidebarFooter className="border-t border-primary/20">
               <SidebarMenu>
                   <SidebarMenuItem>
-                      <SidebarMenuButton tooltip={{children: "Log out", side:'right'}} onClick={() => logout()} className="hover:bg-destructive/10 hover:text-destructive">
+                      <SidebarMenuButton tooltip={{children: "Log out", side:'right'}} onClick={() => logout()} className="hover:bg-destructive/10 hover:text-destructive hover:scale-105 transition-all duration-200">
                           <LogOut />
                           <span>Log out</span>
                       </SidebarMenuButton>
@@ -284,6 +331,53 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
         
         <SidebarInset>
           <AddExpenseDialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen} />
+
+          {/* Background Image */}
+          <div className="fixed inset-0 z-0">
+            <Image
+              src={getBackgroundImage()}
+              alt="Dashboard background"
+              fill
+              className="object-cover opacity-10"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/60 to-background/80"></div>
+          </div>
+
+          {/* Floating Notification */}
+          {showFloatingNotification && (
+            <div className="fixed top-20 right-4 z-50 animate-in slide-in-from-right duration-300">
+              <div className="bg-card/90 backdrop-blur-lg border border-primary/20 rounded-lg p-4 shadow-lg max-w-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                    <floatingNotifications[floatingNotificationIndex].icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{floatingNotifications[floatingNotificationIndex].message}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Floating Stats Cards */}
+          <div className="fixed top-32 left-4 z-40 space-y-4">
+            <div className="bg-card/80 backdrop-blur-lg border border-primary/20 rounded-lg p-3 shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-green-500" />
+                <span className="text-sm font-medium">$2,450</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Saved this month</p>
+            </div>
+            
+            <div className="bg-card/80 backdrop-blur-lg border border-accent/20 rounded-lg p-3 shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-accent" />
+                <span className="text-sm font-medium">+15%</span>
+              </div>
+              <p className="text-xs text-muted-foreground">vs last month</p>
+            </div>
+          </div>
 
           <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-lg px-4 md:px-6 border-primary/20">
              {/* This empty div is for potential breadcrumbs or page titles */}
@@ -358,7 +452,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/subscription" className="flex items-center">
-                    <Crown className="w-4 h-4 mr-2" />
+                    <Sparkles className="w-4 h-4 mr-2" />
                     Subscription
                   </Link>
                 </DropdownMenuItem>
@@ -374,12 +468,17 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
-          <main className="flex-1 p-4 sm:p-6 md:p-8 bg-gradient-to-br from-background via-primary/5 to-accent/10 min-h-screen pb-24 md:pb-8">
+          <main className="flex-1 p-4 sm:p-6 md:p-8 min-h-screen pb-24 md:pb-8 relative z-10">
             <div className="animate-in fade-in-0 slide-in-from-bottom-8 duration-500">
                 {children}
             </div>
           </main>
-          <MobileBottomNav onAddExpenseClick={() => setIsAddExpenseOpen(true)} accountItems={accountMenuItems} toolItems={toolsMenuItems} />
+          
+          <MobileBottomNav 
+            onAddExpenseClick={() => setIsAddExpenseOpen(true)} 
+            accountItems={accountMenuItems} 
+            toolItems={toolsMenuItems} 
+          />
         </SidebarInset>
       </SidebarProvider>
   );

@@ -48,12 +48,12 @@ const plans = [
 export function Pricing() {
   return (
     <section id="pricing" className="py-20 md:py-28 bg-muted/30 dark:bg-card">
-      <div className="container max-w-screen-xl">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold">Find the Perfect Plan</h2>
-          <p className="text-lg text-muted-foreground mt-2">Start for free, upgrade as you grow.</p>
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="flex flex-col items-center justify-center text-center mb-12">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 max-w-4xl">Find the Perfect Plan</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl">Start for free, upgrade as you grow.</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan) => (
             <Card key={plan.name} className={`flex flex-col ${plan.popular ? 'border-primary shadow-lg button-glow' : ''}`}>
               <CardHeader>

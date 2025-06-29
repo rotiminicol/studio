@@ -71,6 +71,28 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  /* Enhanced Typography */
+  .font-headline {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  
+  .font-display {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
+  
+  .font-bold {
+    font-weight: 700;
+  }
+  
+  .font-black {
+    font-weight: 900;
   }
 }
 
@@ -93,6 +115,60 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Enhanced 3D Logo Effects */
+  .logo-3d-shadow {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+  }
+
+  .logo-3d-glow {
+    filter: drop-shadow(0 0 10px hsl(var(--primary))) drop-shadow(0 0 20px hsl(var(--accent)));
+  }
+
+  .logo-text-3d {
+    text-shadow: 
+      2px 2px 0px rgba(0, 0, 0, 0.3),
+      4px 4px 0px rgba(0, 0, 0, 0.2),
+      0 0 10px hsl(var(--primary)),
+      0 0 20px hsl(var(--accent));
+  }
+  
+  /* Enhanced Text Effects */
+  .text-hero {
+    text-shadow: 
+      0 0 20px hsl(var(--primary)),
+      0 0 40px hsl(var(--accent)),
+      0 0 60px hsl(var(--primary));
+  }
+  
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 3s ease-in-out infinite;
+  }
+  
+  /* Enhanced Button Effects */
+  .btn-hero {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease-in-out infinite;
+    box-shadow: 
+      0 0 20px hsl(var(--primary)),
+      0 0 40px hsl(var(--accent)),
+      0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  .btn-hero:hover {
+    background-size: 150% 150%;
+    transform: translateY(-2px);
+    box-shadow: 
+      0 0 30px hsl(var(--primary)),
+      0 0 60px hsl(var(--accent)),
+      0 12px 48px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -132,6 +208,80 @@
   }
 }
 
+@keyframes logo-3d-float {
+  0%, 100% {
+    transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: translateY(-8px) rotateX(2deg) rotateY(-2deg);
+  }
+  50% {
+    transform: translateY(-15px) rotateX(0deg) rotateY(0deg);
+  }
+  75% {
+    transform: translateY(-8px) rotateX(-2deg) rotateY(2deg);
+  }
+}
+
+@keyframes logo-3d-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px hsl(var(--primary))) drop-shadow(0 0 10px hsl(var(--accent)));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px hsl(var(--primary))) drop-shadow(0 0 25px hsl(var(--accent))) drop-shadow(0 0 35px hsl(var(--primary)));
+  }
+}
+
+@keyframes text-3d-shift {
+  0%, 100% {
+    transform: translateX(0px) translateY(0px);
+  }
+  25% {
+    transform: translateX(1px) translateY(1px);
+  }
+  50% {
+    transform: translateX(2px) translateY(2px);
+  }
+  75% {
+    transform: translateX(1px) translateY(1px);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes hero-text-glow {
+  0%, 100% {
+    text-shadow: 
+      0 0 20px hsl(var(--primary)),
+      0 0 40px hsl(var(--accent));
+  }
+  50% {
+    text-shadow: 
+      0 0 30px hsl(var(--primary)),
+      0 0 60px hsl(var(--accent)),
+      0 0 80px hsl(var(--primary));
+  }
+}
+
+@keyframes logo-spin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
@@ -146,4 +296,34 @@
 
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-logo-3d-float {
+  animation: logo-3d-float 8s ease-in-out infinite;
+}
+
+.animate-logo-3d-glow {
+  animation: logo-3d-glow 3s ease-in-out infinite;
+}
+
+.animate-text-3d-shift {
+  animation: text-3d-shift 4s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  animation: gradient-shift 3s ease-in-out infinite;
+}
+
+.animate-hero-text-glow {
+  animation: hero-text-glow 4s ease-in-out infinite;
+}
+
+.animate-logo-spin {
+  animation: logo-spin 6s ease-in-out infinite;
+}
+
+html, body {
+  @apply no-scrollbar;
+  overflow-x: hidden;
+  overflow-y: auto;
 }

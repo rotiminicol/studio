@@ -1,9 +1,9 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { xanoAuth } from '@/lib/xano';
+import { mockAuth } from '@/lib/mock-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import type { User } from '@/lib/types';
@@ -22,6 +22,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Check if we should use mock auth (when API URLs are not configured)
+const useMockAuth = () => {
+  return !process.env.NEXT_PUBLIC_XANO_AUTH_API_URL || 
+         process.env.NEXT_PUBLIC_XANO_AUTH_API_URL === 'undefined';
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -30,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
+  const isMockAuth = useMockAuth();
 
   useEffect(() => {
     setMounted(true);
@@ -56,7 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // If we have a token but no user object yet, fetch the user data.
     if (!user) {
-        xanoAuth.getMe(storedToken)
+        const authMethod = isMockAuth ? mockAuth : xanoAuth;
+        authMethod.getMe(storedToken)
           .then(userData => {
             setUser(userData);
             setToken(storedToken);
@@ -102,7 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleAuthSuccess = async (authToken: string) => {
     localStorage.setItem('authToken', authToken);
     try {
-        const userData = await xanoAuth.getMe(authToken);
+        const authMethod = isMockAuth ? mockAuth : xanoAuth;
+        const userData = await authMethod.getMe(authToken);
         // Set user and token to trigger the useEffect for routing
         setUser(userData);
         setToken(authToken);
@@ -110,21 +119,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Failed to get user data after auth:', error);
         toast({ variant: 'destructive', title: 'Authentication Failed', description: 'Could not retrieve user details.' });
         localStorage.removeItem('authToken');
-        setToken(null);
         setUser(null);
+        setToken(null);
     }
   }
 
   const login = async (credentials: any) => {
     setIsLoading(true);
     try {
-      const response = await xanoAuth.login(credentials);
+      const authMethod = isMockAuth ? mockAuth : xanoAuth;
+      const response = await authMethod.login(credentials);
       const authToken = response.authToken || response.token || response.access_token;
       
       if (!authToken) throw new Error('No authentication token received from server');
       
       await handleAuthSuccess(authToken);
       toast({ title: 'Welcome back!', description: 'You have been successfully logged in.' });
+      // Login users are redirected to dashboard in the useEffect (if already onboarded)
     } catch (error: any) {
       console.error('Login error:', error);
       toast({ 
@@ -142,13 +153,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = async (details: any) => {
     setIsLoading(true);
     try {
-      const response = await xanoAuth.signup(details);
+      const authMethod = isMockAuth ? mockAuth : xanoAuth;
+      const response = await authMethod.signup(details);
       const authToken = response.authToken || response.token || response.access_token;
       
       if (!authToken) throw new Error('No authentication token received from server');
       
       await handleAuthSuccess(authToken);
       toast({ title: 'Account Created!', description: 'Welcome to Fluxpense! Let\'s get you set up.' });
+      // Signup users are redirected to onboarding in the useEffect
     } catch (error: any) {
       console.error('Signup error:', error);
       toast({ 
@@ -175,7 +188,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const redirectUri = `${window.location.origin}/auth/google/callback`;
-      const response = await xanoAuth.continueGoogleLogin(code, redirectUri);
+      const authMethod = isMockAuth ? mockAuth : xanoAuth;
+      const response = await authMethod.continueGoogleLogin(code, redirectUri);
       const authToken = response.authToken || response.token || response.access_token;
       
       if (!authToken) throw new Error('No authentication token received from Google login');
@@ -199,50 +213,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const completeOnboarding = async (data: { account_type: string }) => {
     if (!token || !user) {
-      toast({ 
-        variant: 'destructive', 
-        title: 'Authentication Error', 
-        description: 'User session not found. Please log in again.' 
-      });
-      router.push('/auth');
+      toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to complete onboarding.' });
       return;
     }
-    
+
     setIsLoading(true);
-    const payload = { 
-      onboarding_complete: true,
-      account_type: data.account_type,
-    };
-    
     try {
-      // We are trying to update the user record. In Xano, this is often done with a PATCH or POST to the /auth/me endpoint.
-      // If this specific endpoint doesn't exist, it will fail, but we'll handle that gracefully.
-      await xanoAuth.updateMe(token, payload);
-    } catch (error) {
-      // This warning is for you, the developer. It means the backend endpoint is missing,
-      // but we will proceed with the local state update to not block the user.
-      console.warn(
-        "Onboarding error:",
-        error
-      );
-    } finally {
-      // We optimistically update the user state on the client.
-      const updatedUser = { ...user, ...payload };
-      setUser(updatedUser); 
-      
-      toast({ 
-        title: 'Setup Complete!', 
-        description: 'Welcome to your Fluxpense dashboard!' 
+      const authMethod = isMockAuth ? mockAuth : xanoAuth;
+      const updatedUser = await authMethod.updateMe(token, {
+        ...data,
+        onboarding_complete: true
       });
       
+      setUser(updatedUser);
+      toast({ title: 'Onboarding Complete!', description: 'Welcome to Fluxpense! You\'re all set up.' });
+      router.push('/dashboard');
+    } catch (error: any) {
+      console.error('Onboarding error:', error);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Onboarding Failed', 
+        description: error.message || 'An unexpected error occurred during onboarding.' 
+      });
+    } finally {
       setIsLoading(false);
-      // The useEffect hook will now see that onboarding is complete and navigate to the dashboard.
     }
   };
 
-  const isAuthenticated = !isLoading && !!token && !!user;
-
-  const value = { user, token, login, signup, logout, isLoading, isAuthenticated, continueWithGoogle, completeOnboarding };
+  const value = { user, token, login, signup, logout, isLoading, isAuthenticated: !!user, continueWithGoogle, completeOnboarding };
 
   if (isLoading || !mounted) {
     return (

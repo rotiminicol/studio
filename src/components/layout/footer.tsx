@@ -10,7 +10,7 @@ export function Footer() {
       <div className="container max-w-screen-2xl">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="flex flex-col gap-4">
-            <Logo variant="feather" size="md" />
+            <Logo variant="bird" size="md" />
             <p className="text-muted-foreground">
               Effortless Expense Mastery. Powered by AI.
             </p>

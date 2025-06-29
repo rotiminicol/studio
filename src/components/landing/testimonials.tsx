@@ -6,21 +6,21 @@ const testimonials = [
   {
     name: "Sarah L.",
     role: "Freelance Designer",
-    avatar: "/pexels-willsantos-2026960.jpg",
+    avatar: "/9.jpg",
     text: "Fluxpense has been a game-changer for my business. The receipt scanning is incredibly accurate and saves me hours every month. The UI is just beautiful!",
     rating: 5
   },
   {
     name: "Mike R.",
     role: "Startup Founder",
-    avatar: "/pexels-sanaan-3052361 (1).jpg",
+    avatar: "/10.jpg",
     text: "As a startup, every penny counts. Fluxpense helps us track our burn rate in real-time with its amazing reports. The team onboarding was a breeze.",
     rating: 5
   },
   {
     name: "Jessica P.",
     role: "Sales Manager",
-    avatar: "/pexels-n-voitkevich-7172774 copy.jpg",
+    avatar: "/11.jpg",
     text: "I used to dread filing my travel expenses. With Fluxpense, I just forward my booking emails and it's all done automatically. Simply magical!",
     rating: 5
   }
@@ -29,12 +29,12 @@ const testimonials = [
 export function Testimonials() {
   return (
     <section id="testimonials" className="py-20 md:py-28">
-      <div className="container max-w-screen-xl">
-        <div className="text-center mb-12 animate-in fade-in-0 slide-in-from-bottom-8 duration-500">
-          <h2 className="text-3xl md:text-4xl font-bold">Loved by Professionals Worldwide</h2>
-          <p className="text-lg text-muted-foreground mt-2">Don't just take our word for it. Here's what our users are saying.</p>
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="flex flex-col items-center justify-center text-center mb-12 animate-in fade-in-0 slide-in-from-bottom-8 duration-500">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 max-w-4xl">Loved by Professionals Worldwide</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl">Don't just take our word for it. Here's what our users are saying.</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {testimonials.map((testimonial, index) => (
             <Card key={index} className="p-6 glassmorphism animate-float" style={{animationDelay: `${index * 0.2}s`}}>
               <CardContent className="p-0">

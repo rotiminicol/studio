@@ -26,13 +26,13 @@ const faqs = [
 export function Faq() {
   return (
     <section id="faq" className="py-20 md:py-28">
-      <div className="container max-w-screen-xl">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold">Frequently Asked Questions</h2>
-          <p className="text-lg text-muted-foreground mt-2">Have questions? We have answers.</p>
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="flex flex-col items-center justify-center text-center mb-12">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 max-w-4xl">Frequently Asked Questions</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl">Have questions? We have answers.</p>
         </div>
         <div className="flex justify-center">
-          <div className="w-full max-w-3xl">
+          <div className="w-full max-w-4xl">
             <Accordion type="single" collapsible className="w-full">
               {faqs.map((faq, index) => (
                 <AccordionItem key={index} value={`item-${index}`}>
