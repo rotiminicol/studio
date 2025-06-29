@@ -31,25 +31,25 @@ async function xanoFetch(url: string, options: RequestInit = {}) {
 }
 
 export const xanoAuth = {
-  login: (body: any) => xanoFetch(`${authApiUrl}/login`, { 
+  login: (body: any) => xanoFetch(`${authApiUrl}/auth/login`, { 
     method: 'POST', 
     body: JSON.stringify(body) 
   }),
   
-  signup: (body: any) => xanoFetch(`${authApiUrl}/signup`, { 
+  signup: (body: any) => xanoFetch(`${authApiUrl}/auth/signup`, { 
     method: 'POST', 
     body: JSON.stringify(body) 
   }),
   
-  getMe: (token: string) => xanoFetch(`${authApiUrl}/me`, { 
+  getMe: (token: string) => xanoFetch(`${authApiUrl}/auth/me`, { 
     headers: { 'Authorization': `Bearer ${token}` } 
   }),
   
   updateMe: (token: string, body: any) => {
     // We assume a PATCH request is the correct method for updates, as it's a common REST convention.
     // If your Xano backend uses a different method (like POST), you would change it here.
-    return xanoFetch(`${authApiUrl}/me`, { 
-      method: 'PATCH',
+    return xanoFetch(`${authApiUrl}/auth/me`, { 
+      method: 'POST',
       body: JSON.stringify(body), 
       headers: { 'Authorization': `Bearer ${token}` } 
     });
