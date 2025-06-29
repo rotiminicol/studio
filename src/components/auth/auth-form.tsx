@@ -48,21 +48,21 @@ export function AuthForm({ onTabChange }: AuthFormProps) {
       <div className="absolute -top-10 -left-10 w-20 h-20 bg-primary/20 rounded-full blur-xl animate-float"></div>
       <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-accent/20 rounded-full blur-xl animate-float" style={{animationDelay: '2s'}}></div>
       
-      <Card className="w-full max-w-md glassmorphism border-primary/20 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-500">
-        <CardHeader className="text-center relative">
+      <Card className="w-full max-w-md bg-transparent border-none shadow-none lg:glassmorphism lg:border-primary/20 lg:shadow-2xl animate-in fade-in-0 zoom-in-95 duration-500 lg:rounded-2xl">
+        <CardHeader className="text-center relative p-0 lg:p-6">
           <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center shadow-lg animate-float">
               <Sparkles className="w-8 h-8 text-white animate-pulse-glow" />
             </div>
           </div>
-          <CardTitle className="text-2xl mt-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <CardTitle className="text-2xl mt-12 pt-6 lg:pt-0 lg:mt-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Welcome to Fluxpense
           </CardTitle>
-          <CardDescription className="text-base">
+          <CardDescription className="text-base px-4 lg:px-0">
             Join thousands of professionals who trust AI to manage their expenses
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 pt-6 lg:p-6 lg:pt-0">
           <Tabs defaultValue="signin" className="w-full" onValueChange={(value) => {
               setActiveTab(value);
               onTabChange(value);

@@ -25,11 +25,11 @@ export default function AuthPage() {
             </Link>
           </div>
           
-          <div className="flex-1 flex items-center justify-center p-6 lg:p-10">
+          <div className="flex-1 flex flex-col justify-center p-6">
             <div className="absolute top-20 right-10 w-16 h-16 bg-primary/20 rounded-full blur-xl animate-float"></div>
             <div className="absolute bottom-20 left-10 w-20 h-20 bg-accent/20 rounded-full blur-xl animate-float" style={{animationDelay: '3s'}}></div>
             
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-md mx-auto">
               <AuthForm onTabChange={setActiveTab} />
             </div>
           </div>

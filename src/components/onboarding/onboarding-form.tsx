@@ -96,16 +96,16 @@ export function OnboardingForm() {
           </div>
           
           {/* Form container - takes full height and centers content */}
-          <div className="flex-1 flex items-center justify-center p-6 lg:p-10">
-            <Card className="w-full max-w-md glassmorphism border-primary/20 shadow-2xl">
-              <CardHeader className="text-center">
+          <div className="flex-1 flex flex-col justify-center p-6">
+            <Card className="w-full max-w-md mx-auto bg-transparent border-none shadow-none lg:glassmorphism lg:border-primary/20 lg:shadow-2xl lg:rounded-2xl">
+              <CardHeader className="text-center p-0 lg:p-6">
                 <div className="flex items-center justify-center mb-4">
                   <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center shadow-lg">
                     <Sparkles className="w-8 h-8 text-white animate-pulse" />
                   </div>
                 </div>
                 
-                <div className="mb-6">
+                <div className="mb-6 px-4 lg:px-0">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-muted-foreground">Step {step} of {totalSteps}</span>
                     <span className="text-sm text-primary font-medium">{Math.round(progress)}% Complete</span>
@@ -116,12 +116,13 @@ export function OnboardingForm() {
                 <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   {stepTitles[step - 1]}
                 </CardTitle>
-                <CardDescription className="text-base">
+                <CardDescription className="text-base px-4 lg:px-0">
                   {stepDescriptions[step - 1]}
                 </CardDescription>
               </CardHeader>
               
-              <CardContent className="min-h-[300px] flex items-center justify-center">
+              <CardContent className="min-h-[300px] flex items-center justify-center p-0 pt-6 lg:p-6 lg:pt-0">
+                <div className="w-full px-4 lg:px-0">
                 {step === 1 && (
                     <div className="text-center space-y-6">
                         <div className="relative">
@@ -294,9 +295,10 @@ export function OnboardingForm() {
                         </div>
                     </div>
                 )}
+                </div>
               </CardContent>
               
-              <CardFooter className="flex justify-between">
+              <CardFooter className="flex justify-between p-0 pt-6 lg:p-6 lg:pt-0">
                 <Button variant="outline" onClick={handleBack} disabled={step === 1 || isLoading}>
                   Back
                 </Button>
