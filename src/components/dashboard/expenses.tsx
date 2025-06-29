@@ -89,7 +89,11 @@ export function Expenses() {
       toast({ title: "Scan Complete!", description: "Expense data extracted successfully." });
     } catch (error) {
       console.error(error);
-      toast({ title: "Scan Failed", description: "Could not extract data from the receipt.", variant: "destructive" });
+      toast({ 
+        title: "Scan Failed", 
+        description: "The image could not be processed. Please ensure the image is clear, not corrupted, and contains readable receipt text. Try taking a new photo with better lighting or uploading a different format.", 
+        variant: "destructive" 
+      });
     } finally {
       setIsScanning(false);
     }

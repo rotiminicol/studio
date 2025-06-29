@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useRouter, usePathname } from 'next/navigation';
 import { xanoAuth } from '@/lib/xano';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 import type { User } from '@/lib/types';
 
 interface AuthContextType {
@@ -24,11 +25,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const publicPages = ['/', '/about', '/careers', '/contact'];
     const authPages = ['/auth', '/auth/google/callback'];
     const isPublicPage = publicPages.includes(pathname);
@@ -78,8 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => {
         setIsLoading(false);
       });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, mounted, router]);
 
   const handleAuthSuccess = async (authToken: string) => {
     localStorage.setItem('authToken', authToken);
@@ -262,6 +269,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = !isLoading && !!token && !!user;
 
   const value = { user, token, login, signup, logout, isLoading, isAuthenticated, continueWithGoogle, completeOnboarding };
+
+  // Show loading state for protected routes until client-side auth is determined
+  if (!mounted) {
+    const publicPages = ['/', '/about', '/careers', '/contact'];
+    const isPublicPage = publicPages.includes(pathname);
+    
+    if (!isPublicPage) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      );
+    }
+  }
 
   return (
     <AuthContext.Provider value={value}>
