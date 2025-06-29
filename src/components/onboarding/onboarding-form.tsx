@@ -91,7 +91,7 @@ export function OnboardingForm() {
           {/* Logo positioned in form area */}
           <div className="absolute top-8 left-8 z-20">
             <Link href="/">
-              <Logo />
+              <Logo variant="default" size="md" />
             </Link>
           </div>
           

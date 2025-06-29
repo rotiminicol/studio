@@ -186,7 +186,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <Sidebar variant="floating" collapsible="icon" className="border-primary/20">
           <SidebarHeader className="border-b border-primary/20">
-            <Logo />
+            <Logo variant="default" size="md" />
           </SidebarHeader>
           
           <SidebarContent className="no-scrollbar">
