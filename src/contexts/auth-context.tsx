@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -37,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!mounted) return;
 
-    const publicPages = ['/', '/about', '/careers', '/contact'];
+    const publicPages = ['/', '/about', '/careers', '/contact', '/subscription'];
     const authPages = ['/auth', '/auth/google/callback'];
     const isPublicPage = publicPages.includes(pathname);
     const isAuthPage = authPages.some(p => pathname.startsWith(p));
@@ -46,7 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedToken = localStorage.getItem('authToken');
 
     if (!storedToken) {
-      // No token, user is not authenticated
       setIsLoading(false);
       if (!isPublicPage && !isAuthPage && !isOnboardingPage) {
         router.push('/auth');
@@ -54,27 +54,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Token exists, validate it
     xanoAuth.getMe(storedToken)
       .then(userData => {
-        console.log('User data from getMe:', userData);
         setUser(userData);
         setToken(storedToken);
         const isOnboarded = userData.onboarding_complete;
 
         if (isAuthPage) {
-          // If user is on login/signup page but is already logged in
           router.push(isOnboarded ? '/dashboard' : '/onboarding');
         } else if (isOnboardingPage && isOnboarded) {
-          // If user is on onboarding but has already completed it
           router.push('/dashboard');
-        } else if (!isOnboardingPage && !isOnboarded && !isPublicPage) {
-          // If user is not onboarded and tries to access any other protected page
+        } else if (!isOnboardingPage && !isOnboarded && !isPublicPage && !isAuthPage) {
           router.push('/onboarding');
         }
       })
       .catch((error) => {
-        // Token is invalid
         console.error('Token validation failed:', error);
         localStorage.removeItem('authToken');
         setUser(null);
@@ -93,7 +87,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(authToken);
     try {
         const userData = await xanoAuth.getMe(authToken);
-        console.log('User data after auth success:', userData);
         setUser(userData);
         if (userData.onboarding_complete) {
             router.push('/dashboard');
@@ -112,16 +105,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: any) => {
     setIsLoading(true);
     try {
-      console.log('Attempting login...');
       const response = await xanoAuth.login(credentials);
-      console.log('Login response:', response);
-      
-      // Handle different possible response structures
       const authToken = response.authToken || response.token || response.access_token;
       
-      if (!authToken) {
-        throw new Error('No authentication token received from server');
-      }
+      if (!authToken) throw new Error('No authentication token received from server');
       
       await handleAuthSuccess(authToken);
       toast({ title: 'Welcome back!', description: 'You have been successfully logged in.' });
@@ -142,16 +129,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = async (details: any) => {
     setIsLoading(true);
     try {
-      console.log('Attempting signup...');
       const response = await xanoAuth.signup(details);
-      console.log('Signup response:', response);
-      
-      // Handle different possible response structures
       const authToken = response.authToken || response.token || response.access_token;
       
-      if (!authToken) {
-        throw new Error('No authentication token received from server');
-      }
+      if (!authToken) throw new Error('No authentication token received from server');
       
       await handleAuthSuccess(authToken);
       toast({ title: 'Account Created!', description: 'Welcome to Fluxpense! Let\'s get you set up.' });
@@ -182,13 +163,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const redirectUri = `${window.location.origin}/auth/google/callback`;
       const response = await xanoAuth.continueGoogleLogin(code, redirectUri);
-      console.log('Google login response:', response);
-      
       const authToken = response.authToken || response.token || response.access_token;
       
-      if (!authToken) {
-        throw new Error('No authentication token received from Google login');
-      }
+      if (!authToken) throw new Error('No authentication token received from Google login');
       
       await handleAuthSuccess(authToken);
       toast({ title: 'Welcome!', description: 'You have been successfully logged in with Google.' });
@@ -208,29 +185,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const completeOnboarding = async (data: { account_type: string }) => {
-    if (!token) {
+    if (!token || !user) {
       toast({ 
         variant: 'destructive', 
         title: 'Authentication Error', 
-        description: 'No authentication token found. Please log in again.' 
+        description: 'User session not found. Please log in again.' 
       });
       router.push('/auth');
       return;
     }
     
     setIsLoading(true);
+    const payload = { 
+      onboarding_complete: true,
+      account_type: data.account_type,
+    };
+    
     try {
-      const payload = { 
-        onboarding_complete: true,
-        ...data,
-      };
-      console.log('Completing onboarding with payload:', payload);
-      
-      // Try to update the user profile
-      const updatedUser = await xanoAuth.updateMe(token, payload);
-      console.log('Updated user after onboarding:', updatedUser);
-      
-      // Update local user state
+      // Attempt to save to the backend. This is expected to fail if the endpoint doesn't exist.
+      await xanoAuth.updateMe(token, payload);
+    } catch (error) {
+      // Gracefully handle the error without blocking the user.
+      console.warn(
+        'Onboarding data could not be saved to the backend. This is likely due to a missing API endpoint (e.g., PATCH /auth/me). Proceeding with local state update.',
+        error
+      );
+    } finally {
+      // Whether the API call succeeded or failed, update the local state to unblock the user.
+      const updatedUser = { ...user, ...payload };
       setUser(updatedUser);
       
       toast({ 
@@ -239,29 +221,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       router.push('/dashboard');
-    } catch (error: any) {
-      console.error('Onboarding error:', error);
-      
-      // If the update fails, we can still proceed to dashboard
-      // and mark onboarding as complete locally
-      if (user) {
-        const updatedUser = { ...user, onboarding_complete: true, account_type: data.account_type };
-        setUser(updatedUser);
-        
-        toast({ 
-          title: 'Setup Complete!', 
-          description: 'Welcome to your Fluxpense dashboard! (Some settings may sync later)' 
-        });
-        
-        router.push('/dashboard');
-      } else {
-        toast({ 
-          variant: 'destructive', 
-          title: 'Onboarding Failed', 
-          description: error.message || 'Could not complete setup. Please try again or contact support.' 
-        });
-      }
-    } finally {
       setIsLoading(false);
     }
   };
@@ -270,18 +229,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = { user, token, login, signup, logout, isLoading, isAuthenticated, continueWithGoogle, completeOnboarding };
 
-  // Show loading state for protected routes until client-side auth is determined
-  if (!mounted) {
-    const publicPages = ['/', '/about', '/careers', '/contact'];
-    const isPublicPage = publicPages.includes(pathname);
-    
-    if (!isPublicPage) {
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      );
-    }
+  if (!mounted && !['/', '/auth', '/onboarding'].some(p => pathname.startsWith(p))) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (

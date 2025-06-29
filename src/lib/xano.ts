@@ -4,8 +4,6 @@ const fluxpenseApiUrl = process.env.NEXT_PUBLIC_XANO_API_URL;
 const googleOauthApiUrl = process.env.NEXT_PUBLIC_XANO_GOOGLE_OAUTH_API_URL;
 
 async function xanoFetch(url: string, options: RequestInit = {}) {
-  console.log('Making request to:', url, 'with options:', options);
-  
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -14,94 +12,46 @@ async function xanoFetch(url: string, options: RequestInit = {}) {
     },
   });
 
-  console.log('Response status:', response.status);
-  console.log('Response headers:', response.headers);
-
   if (!response.ok) {
     let errorData;
     try {
       errorData = await response.json();
-      console.log('Error response data:', errorData);
     } catch (e) {
-      console.log('Could not parse error response as JSON');
       errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
     }
     throw new Error(errorData.message || `API request failed with status ${response.status}`);
   }
 
-  // For DELETE requests which might not have a body
   const contentType = response.headers.get("content-type");
   if (response.status === 204 || !contentType || !contentType.includes("application/json")) {
     return null;
   }
 
-  const data = await response.json();
-  console.log('Success response data:', data);
-  return data;
+  return response.json();
 }
 
 export const xanoAuth = {
-  login: (body: any) => {
-    console.log('Login attempt with:', { email: body.email, password: '[REDACTED]' });
-    return xanoFetch(`${authApiUrl}/auth/login`, { 
-      method: 'POST', 
-      body: JSON.stringify(body) 
-    });
-  },
+  login: (body: any) => xanoFetch(`${authApiUrl}/auth/login`, { 
+    method: 'POST', 
+    body: JSON.stringify(body) 
+  }),
   
-  signup: (body: any) => {
-    console.log('Signup attempt with:', { ...body, password: '[REDACTED]' });
-    return xanoFetch(`${authApiUrl}/auth/signup`, { 
-      method: 'POST', 
-      body: JSON.stringify(body) 
-    });
-  },
+  signup: (body: any) => xanoFetch(`${authApiUrl}/auth/signup`, { 
+    method: 'POST', 
+    body: JSON.stringify(body) 
+  }),
   
-  getMe: (token: string) => {
-    return xanoFetch(`${authApiUrl}/auth/me`, { 
-      headers: { 'Authorization': `Bearer ${token}` } 
-    });
-  },
+  getMe: (token: string) => xanoFetch(`${authApiUrl}/auth/me`, { 
+    headers: { 'Authorization': `Bearer ${token}` } 
+  }),
   
   updateMe: (token: string, body: any) => {
-    console.log('Updating user profile with:', body);
-    // Try different possible endpoints for updating user profile
+    // We assume a PATCH request is the correct method for updates, as it's a common REST convention.
+    // If your Xano backend uses a different method (like POST), you would change it here.
     return xanoFetch(`${authApiUrl}/auth/me`, { 
-      method: 'PATCH', // Changed from POST to PATCH
+      method: 'PATCH',
       body: JSON.stringify(body), 
       headers: { 'Authorization': `Bearer ${token}` } 
-    }).catch(async (error) => {
-      console.log('PATCH /auth/me failed, trying PUT method:', error.message);
-      // Fallback to PUT method
-      return xanoFetch(`${authApiUrl}/auth/me`, { 
-        method: 'PUT',
-        body: JSON.stringify(body), 
-        headers: { 'Authorization': `Bearer ${token}` } 
-      }).catch(async (putError) => {
-        console.log('PUT /auth/me failed, trying POST method:', putError.message);
-        // Fallback to POST method (original)
-        return xanoFetch(`${authApiUrl}/auth/me`, { 
-          method: 'POST',
-          body: JSON.stringify(body), 
-          headers: { 'Authorization': `Bearer ${token}` } 
-        }).catch(async (postError) => {
-          console.log('POST /auth/me failed, trying /auth/update endpoint:', postError.message);
-          // Try alternative endpoint
-          return xanoFetch(`${authApiUrl}/auth/update`, { 
-            method: 'POST',
-            body: JSON.stringify(body), 
-            headers: { 'Authorization': `Bearer ${token}` } 
-          }).catch(async (updateError) => {
-            console.log('All update methods failed, trying /user/update endpoint:', updateError.message);
-            // Try another alternative endpoint
-            return xanoFetch(`${authApiUrl}/user/update`, { 
-              method: 'POST',
-              body: JSON.stringify(body), 
-              headers: { 'Authorization': `Bearer ${token}` } 
-            });
-          });
-        });
-      });
     });
   },
   
