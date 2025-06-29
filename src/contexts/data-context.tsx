@@ -39,10 +39,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     try {
       const api = xanoApi(token);
       const [expensesData, categoriesData, budgetsData, notificationsData] = await Promise.all([
-        api.getExpenses(),
-        api.getCategories(),
-        api.getBudgets(),
-        api.getNotifications(),
+        api.getExpenses().catch(() => []),
+        api.getCategories().catch(() => []),
+        api.getBudgets().catch(() => []),
+        api.getNotifications().catch(() => []),
       ]);
 
       const categoryMap = new Map(categoriesData.map((cat: Category) => [cat.id, cat]));
@@ -67,11 +67,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     } catch (error) {
       console.error("Failed to fetch data", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not load your data.' });
+      // Don't show error toast on initial load failure - user might not have data yet
+      if (expenses.length > 0 || categories.length > 0) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not load your data.' });
+      }
     } finally {
       setLoading(false);
     }
-  }, [token, toast]);
+  }, [token, toast, expenses.length, categories.length]);
 
   useEffect(() => {
     if (isAuthenticated) {

@@ -53,7 +53,8 @@ import {
   Sparkles,
   Zap,
   Shield,
-  Database
+  Database,
+  Crown
 } from "lucide-react";
 import { AddExpenseDialog } from "@/components/dashboard/add-expense-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -114,6 +115,12 @@ const accountMenuItems = [
     label: "Team",
     icon: Users,
     description: "Team management"
+  },
+  {
+    href: "/subscription",
+    label: "Subscription",
+    icon: Crown,
+    description: "Manage subscription"
   },
   {
     href: "/dashboard/settings",
@@ -373,9 +380,11 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
                     Settings
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Billing
+                <DropdownMenuItem asChild>
+                  <Link href="/subscription" className="flex items-center">
+                    <Crown className="w-4 h-4 mr-2" />
+                    Subscription
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <HelpCircle className="w-4 h-4 mr-2" />

@@ -1,11 +1,18 @@
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import Link from "next/link";
 
 export function Hero() {
   return (
-    <section className="relative w-full py-20 md:py-28 overflow-hidden">
-      {/* Animated background */}
+    <section className="relative w-full min-h-screen overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+        style={{
+          backgroundImage: "url('/pexels-n-voitkevich-7172774.jpg')"
+        }}
+      ></div>
+      
+      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-accent/10"></div>
       <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[10px_10px] dark:bg-grid-slate-400/[0.05]"></div>
       
@@ -14,8 +21,8 @@ export function Hero() {
       <div className="absolute top-40 right-20 w-32 h-32 bg-accent/20 rounded-full blur-xl animate-float" style={{animationDelay: '2s'}}></div>
       <div className="absolute bottom-20 left-1/4 w-16 h-16 bg-primary/30 rounded-full blur-xl animate-float" style={{animationDelay: '4s'}}></div>
       
-      <div className="container max-w-screen-xl mx-auto relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="container max-w-screen-xl mx-auto relative z-10 min-h-screen flex items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-center w-full">
           {/* Left side - Content */}
           <div className="text-center lg:text-left">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6 animate-pulse">
@@ -73,33 +80,36 @@ export function Hero() {
             </div>
           </div>
           
-          {/* Right side - Hero Image */}
+          {/* Right side - Floating cards and visual elements */}
           <div className="relative">
-            <div className="relative z-10">
-              <Image 
-                src="/pexels-n-voitkevich-7172774.jpg"
-                alt="Financial data analysis and expense tracking"
-                width={600}
-                height={600}
-                className="object-contain mx-auto animate-float rounded-2xl shadow-2xl"
-                priority
-              />
-            </div>
-            
-            {/* Floating cards around the image */}
-            <div className="absolute top-10 -left-10 bg-white dark:bg-card p-4 rounded-xl shadow-lg animate-float border" style={{animationDelay: '1s'}}>
+            {/* Floating cards around the space */}
+            <div className="absolute top-10 left-10 bg-white dark:bg-card p-4 rounded-xl shadow-lg animate-float border glassmorphism" style={{animationDelay: '1s'}}>
               <div className="text-sm font-medium text-green-600">+$2,450</div>
               <div className="text-xs text-muted-foreground">Saved this month</div>
             </div>
             
-            <div className="absolute bottom-20 -right-10 bg-white dark:bg-card p-4 rounded-xl shadow-lg animate-float border" style={{animationDelay: '3s'}}>
+            <div className="absolute bottom-20 right-10 bg-white dark:bg-card p-4 rounded-xl shadow-lg animate-float border glassmorphism" style={{animationDelay: '3s'}}>
               <div className="text-sm font-medium text-primary">Receipt Scanned</div>
               <div className="text-xs text-muted-foreground">AI Processing...</div>
             </div>
             
-            <div className="absolute top-1/2 -right-20 bg-white dark:bg-card p-4 rounded-xl shadow-lg animate-float border" style={{animationDelay: '2s'}}>
+            <div className="absolute top-1/2 right-20 bg-white dark:bg-card p-4 rounded-xl shadow-lg animate-float border glassmorphism" style={{animationDelay: '2s'}}>
               <div className="text-sm font-medium">Budget Alert</div>
               <div className="text-xs text-muted-foreground">80% of dining budget used</div>
+            </div>
+
+            {/* Central visual element */}
+            <div className="flex items-center justify-center h-96">
+              <div className="relative">
+                <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-32 h-32 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center shadow-2xl animate-float">
+                    <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
