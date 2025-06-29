@@ -1,3 +1,5 @@
+"use client";
+
 import { Reports } from "@/components/dashboard/reports";
 import { MobileReports } from "@/components/dashboard/mobile-reports";
 import { useIsMobile } from "@/hooks/use-mobile";

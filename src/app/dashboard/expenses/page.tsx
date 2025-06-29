@@ -1,3 +1,5 @@
+"use client";
+
 import { Expenses } from "@/components/dashboard/expenses";
 import { MobileExpenses } from "@/components/dashboard/mobile-expenses";
 import { useIsMobile } from "@/hooks/use-mobile";

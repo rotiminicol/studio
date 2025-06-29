@@ -169,25 +169,28 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
         id: 1,
         title: "Receipt Processed",
         message: "Your Starbucks receipt has been processed successfully",
-        type: "success",
+        type: "system",
         is_read: false,
-        created_at: new Date().toISOString()
+        created_at: Date.now(),
+        user_id: 1,
       },
       {
         id: 2,
         title: "Budget Alert",
         message: "You've used 80% of your dining budget this month",
-        type: "warning",
+        type: "system",
         is_read: false,
-        created_at: new Date().toISOString()
+        created_at: Date.now(),
+        user_id: 1,
       },
       {
         id: 3,
         title: "AI Insights",
         message: "New spending insights are available for review",
-        type: "info",
+        type: "system",
         is_read: true,
-        created_at: new Date().toISOString()
+        created_at: Date.now(),
+        user_id: 1,
       }
     ];
     
@@ -350,7 +353,10 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
               <div className="bg-card/90 backdrop-blur-lg border border-primary/20 rounded-lg p-4 shadow-lg max-w-sm">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                    <floatingNotifications[floatingNotificationIndex].icon className="w-5 h-5 text-primary" />
+                    {(() => {
+                      const Icon = floatingNotifications[floatingNotificationIndex].icon;
+                      return <Icon className="w-5 h-5 text-primary" />;
+                    })()}
                   </div>
                   <div>
                     <p className="text-sm font-medium">{floatingNotifications[floatingNotificationIndex].message}</p>
