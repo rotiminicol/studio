@@ -5,40 +5,104 @@ import Link from "next/link";
 export function Hero() {
   return (
     <section className="relative w-full py-20 md:py-28 overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-accent/10"></div>
       <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[10px_10px] dark:bg-grid-slate-400/[0.05]"></div>
-      <div className="container max-w-screen-xl mx-auto text-center relative z-10">
-        
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter mb-6 font-headline">
-          Effortless Expense Mastery.
-          <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
-            Powered by AI.
-          </span>
-        </h1>
-        <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
-          Fluxpense is the smartest way to manage your expenses. Scan receipts,
-          import emails, and let our AI do the heavy lifting.
-        </p>
-        <div className="flex justify-center gap-4">
-          <Button size="lg" asChild className="button-glow">
-            <Link href="/auth">Get Started for Free</Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild>
-            <Link href="/onboarding">Try Demo</Link>
-          </Button>
+      
+      {/* Floating elements */}
+      <div className="absolute top-20 left-10 w-20 h-20 bg-primary/20 rounded-full blur-xl animate-float"></div>
+      <div className="absolute top-40 right-20 w-32 h-32 bg-accent/20 rounded-full blur-xl animate-float" style={{animationDelay: '2s'}}></div>
+      <div className="absolute bottom-20 left-1/4 w-16 h-16 bg-primary/30 rounded-full blur-xl animate-float" style={{animationDelay: '4s'}}></div>
+      
+      <div className="container max-w-screen-xl mx-auto relative z-10">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left side - Content */}
+          <div className="text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6 animate-pulse">
+              <span className="w-2 h-2 bg-primary rounded-full animate-ping"></span>
+              AI-Powered Expense Tracking
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter mb-6 font-headline">
+              Effortless Expense
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-pulse">
+                Mastery.
+              </span>
+            </h1>
+            
+            <p className="max-w-2xl mx-auto lg:mx-0 text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
+              Transform your financial management with AI-powered receipt scanning, 
+              intelligent categorization, and real-time insights. Say goodbye to manual 
+              expense tracking forever.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-8">
+              <Button size="lg" asChild className="button-glow group">
+                <Link href="/auth" className="flex items-center gap-2">
+                  Get Started for Free
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild className="group">
+                <Link href="/onboarding" className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Try Demo
+                </Link>
+              </Button>
+            </div>
+            
+            {/* Stats */}
+            <div className="flex flex-wrap justify-center lg:justify-start gap-8 text-sm text-muted-foreground">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-foreground">10K+</div>
+                <div>Active Users</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-foreground">99.9%</div>
+                <div>Accuracy Rate</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-foreground">5min</div>
+                <div>Setup Time</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Right side - Hero Image */}
+          <div className="relative">
+            <div className="relative z-10">
+              <Image 
+                src="/mobile-phone-app-money-budget-260nw-2032739561.webp"
+                alt="Fluxpense mobile app showing expense tracking interface"
+                width={600}
+                height={600}
+                className="object-contain mx-auto animate-float"
+                priority
+              />
+            </div>
+            
+            {/* Floating cards around the phone */}
+            <div className="absolute top-10 -left-10 bg-white dark:bg-card p-4 rounded-xl shadow-lg animate-float border" style={{animationDelay: '1s'}}>
+              <div className="text-sm font-medium text-green-600">+$2,450</div>
+              <div className="text-xs text-muted-foreground">Saved this month</div>
+            </div>
+            
+            <div className="absolute bottom-20 -right-10 bg-white dark:bg-card p-4 rounded-xl shadow-lg animate-float border" style={{animationDelay: '3s'}}>
+              <div className="text-sm font-medium text-primary">Receipt Scanned</div>
+              <div className="text-xs text-muted-foreground">AI Processing...</div>
+            </div>
+            
+            <div className="absolute top-1/2 -right-20 bg-white dark:bg-card p-4 rounded-xl shadow-lg animate-float border" style={{animationDelay: '2s'}}>
+              <div className="text-sm font-medium">Budget Alert</div>
+              <div className="text-xs text-muted-foreground">80% of dining budget used</div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="relative mt-16 md:mt-24 h-64 md:h-96 w-full flex justify-center items-center">
-         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10"></div>
-          <Image 
-            src="https://placehold.co/1200x600.png"
-            data-ai-hint="futuristic finance 3d"
-            alt="3D representation of financial data and AI"
-            width={1200}
-            height={600}
-            className="object-contain"
-            priority
-          />
       </div>
     </section>
   );

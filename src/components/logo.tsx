@@ -2,34 +2,59 @@ import { cn } from "@/lib/utils";
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <svg
-        width="32"
-        height="32"
-        viewBox="0 0 32 32"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="rounded-lg"
-      >
-        <defs>
-          <linearGradient id="logoGradient" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="hsl(var(--primary))" />
-            <stop offset="100%" stopColor="hsl(var(--accent))" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M16 0C24.8366 0 32 7.16344 32 16C32 24.8366 24.8366 32 16 32C7.16344 32 0 24.8366 0 16C0 7.16344 7.16344 0 16 0Z"
-          fill="url(#logoGradient)"
-        />
-        <path
-          d="M13 9H19.5C21.9853 9 24 11.0147 24 13.5V13.5C24 15.9853 21.9853 18 19.5 18H13M13 18V9M13 18H18"
-          stroke="hsl(var(--primary-foreground))"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span className="font-bold text-xl font-headline">Fluxpense</span>
+    <div className={cn("flex items-center gap-3", className)}>
+      <div className="relative">
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 40 40"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="rounded-xl shadow-lg"
+        >
+          <defs>
+            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#7DF9FF" />
+              <stop offset="50%" stopColor="#BE95FF" />
+              <stop offset="100%" stopColor="#4F46E5" />
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge> 
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          
+          {/* Background with gradient */}
+          <rect width="40" height="40" rx="12" fill="url(#logoGradient)" />
+          
+          {/* Floating coins animation */}
+          <g filter="url(#glow)">
+            {/* Main coin */}
+            <circle cx="20" cy="20" r="8" fill="white" fillOpacity="0.9" className="animate-pulse" />
+            <text x="20" y="24" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#4F46E5">$</text>
+            
+            {/* Floating smaller coins */}
+            <circle cx="12" cy="12" r="3" fill="white" fillOpacity="0.7" className="animate-float" />
+            <circle cx="28" cy="28" r="3" fill="white" fillOpacity="0.7" className="animate-float" style={{animationDelay: '1s'}} />
+            <circle cx="28" cy="12" r="2" fill="white" fillOpacity="0.5" className="animate-float" style={{animationDelay: '2s'}} />
+          </g>
+          
+          {/* Flux lines */}
+          <path d="M8 20 L32 20" stroke="white" strokeWidth="1" strokeOpacity="0.3" className="animate-pulse" />
+          <path d="M20 8 L20 32" stroke="white" strokeWidth="1" strokeOpacity="0.3" className="animate-pulse" style={{animationDelay: '0.5s'}} />
+        </svg>
+      </div>
+      <div className="flex flex-col">
+        <span className="font-bold text-2xl font-headline bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+          Fluxpense
+        </span>
+        <span className="text-xs text-muted-foreground font-medium tracking-wide">
+          AI-Powered Expense Mastery
+        </span>
+      </div>
     </div>
   );
 }
