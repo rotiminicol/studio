@@ -9,6 +9,7 @@ import { useData } from "@/contexts/data-context";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Pie, PieChart, Cell, Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
@@ -63,7 +64,7 @@ export function Overview() {
     const pieChartData = Object.entries(categorySpending).map(([name, value]) => ({ name, value })).filter(d => d.value > 0);
 
     const lineChartData = expenses.reduce((acc, expense) => {
-        const date = new Date(expense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const date = format(new Date(expense.date), 'MMM dd');
         const existing = acc.find(item => item.date === date);
         if (existing) {
             existing.total += expense.amount;
@@ -233,7 +234,7 @@ export function Overview() {
                         {expense.category?.name || 'N/A'}
                       </Badge>
                     </TableCell>
-                    <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
+                    <TableCell>{format(new Date(expense.date), 'MMM dd, yyyy')}</TableCell>
                     <TableCell>
                       <Badge 
                         variant={expense.source === 'Receipt' ? 'default' : expense.source === 'Email' ? 'secondary' : 'outline'}

@@ -47,8 +47,8 @@ export function Expenses() {
 
       img.onload = () => {
         // Set maximum dimensions
-        const maxWidth = 2000;
-        const maxHeight = 2000;
+        const maxWidth = 1500;
+        const maxHeight = 1500;
         
         let { width, height } = img;
         
@@ -72,8 +72,8 @@ export function Expenses() {
         // Draw and resize image
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Convert to data URL with compression
-        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        // Convert to data URL with lower compression for better compatibility
+        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
         resolve(resizedDataUrl);
       };
 
