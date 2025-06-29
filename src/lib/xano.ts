@@ -4,6 +4,8 @@ const fluxpenseApiUrl = process.env.NEXT_PUBLIC_XANO_API_URL;
 const googleOauthApiUrl = process.env.NEXT_PUBLIC_XANO_GOOGLE_OAUTH_API_URL;
 
 async function xanoFetch(url: string, options: RequestInit = {}) {
+  console.log('Making request to:', url, 'with options:', options);
+  
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -12,9 +14,19 @@ async function xanoFetch(url: string, options: RequestInit = {}) {
     },
   });
 
+  console.log('Response status:', response.status);
+  console.log('Response headers:', response.headers);
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred.' }));
-    throw new Error(errorData.message || 'API request failed');
+    let errorData;
+    try {
+      errorData = await response.json();
+      console.log('Error response data:', errorData);
+    } catch (e) {
+      console.log('Could not parse error response as JSON');
+      errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
+    }
+    throw new Error(errorData.message || `API request failed with status ${response.status}`);
   }
 
   // For DELETE requests which might not have a body
@@ -23,14 +35,42 @@ async function xanoFetch(url: string, options: RequestInit = {}) {
     return null;
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log('Success response data:', data);
+  return data;
 }
 
 export const xanoAuth = {
-  login: (body: any) => xanoFetch(`${authApiUrl}/auth/login`, { method: 'POST', body: JSON.stringify(body) }),
-  signup: (body: any) => xanoFetch(`${authApiUrl}/auth/signup`, { method: 'POST', body: JSON.stringify(body) }),
-  getMe: (token: string) => xanoFetch(`${authApiUrl}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
-  updateMe: (token: string, body: any) => xanoFetch(`${authApiUrl}/auth/me`, { method: 'POST', body: JSON.stringify(body), headers: { 'Authorization': `Bearer ${token}` } }),
+  login: (body: any) => {
+    console.log('Login attempt with:', { email: body.email, password: '[REDACTED]' });
+    return xanoFetch(`${authApiUrl}/auth/login`, { 
+      method: 'POST', 
+      body: JSON.stringify(body) 
+    });
+  },
+  
+  signup: (body: any) => {
+    console.log('Signup attempt with:', { ...body, password: '[REDACTED]' });
+    return xanoFetch(`${authApiUrl}/auth/signup`, { 
+      method: 'POST', 
+      body: JSON.stringify(body) 
+    });
+  },
+  
+  getMe: (token: string) => {
+    return xanoFetch(`${authApiUrl}/auth/me`, { 
+      headers: { 'Authorization': `Bearer ${token}` } 
+    });
+  },
+  
+  updateMe: (token: string, body: any) => {
+    return xanoFetch(`${authApiUrl}/auth/me`, { 
+      method: 'POST', 
+      body: JSON.stringify(body), 
+      headers: { 'Authorization': `Bearer ${token}` } 
+    });
+  },
+  
   continueGoogleLogin: (code: string, redirectUri: string) => {
     const url = `${googleOauthApiUrl}/oauth/google/continue?code=${code}&redirect_uri=${redirectUri}`;
     return xanoFetch(url);
@@ -66,6 +106,6 @@ export const xanoApi = (token: string) => {
         // Notifications
         getNotifications: () => xanoFetch(`${fluxpenseApiUrl}/notification`, { headers }),
         markNotificationRead: (id: number) => xanoFetch(`${fluxpenseApiUrl}/notification/${id}`, { method: 'PATCH', body: JSON.stringify({ is_read: true }), headers }),
-        markAllNotificationsRead: () => xanoFetch(`${fluxpenseApiUrl}/notifications/mark_all_read`, { method: 'POST', headers }), // Assuming this endpoint exists
+        markAllNotificationsRead: () => xanoFetch(`${fluxpenseApiUrl}/notifications/mark_all_read`, { method: 'POST', headers }),
     };
 };

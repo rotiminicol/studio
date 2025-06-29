@@ -49,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Token exists, validate it
     xanoAuth.getMe(storedToken)
       .then(userData => {
+        console.log('User data from getMe:', userData);
         setUser(userData);
         setToken(storedToken);
         const isOnboarded = userData.onboarding_complete;
@@ -64,8 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           router.push('/onboarding');
         }
       })
-      .catch(() => {
+      .catch((error) => {
         // Token is invalid
+        console.error('Token validation failed:', error);
         localStorage.removeItem('authToken');
         setUser(null);
         setToken(null);
@@ -79,12 +81,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-
   const handleAuthSuccess = async (authToken: string) => {
     localStorage.setItem('authToken', authToken);
     setToken(authToken);
     try {
         const userData = await xanoAuth.getMe(authToken);
+        console.log('User data after auth success:', userData);
         setUser(userData);
         if (userData.onboarding_complete) {
             router.push('/dashboard');
@@ -92,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             router.push('/onboarding');
         }
     } catch (error) {
+        console.error('Failed to get user data after auth:', error);
         toast({ variant: 'destructive', title: 'Authentication Failed', description: 'Could not retrieve user details.' });
         localStorage.removeItem('authToken');
         setToken(null);
@@ -102,10 +105,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: any) => {
     setIsLoading(true);
     try {
-      const { authToken } = await xanoAuth.login(credentials);
+      console.log('Attempting login...');
+      const response = await xanoAuth.login(credentials);
+      console.log('Login response:', response);
+      
+      // Handle different possible response structures
+      const authToken = response.authToken || response.token || response.access_token;
+      
+      if (!authToken) {
+        throw new Error('No authentication token received from server');
+      }
+      
       await handleAuthSuccess(authToken);
+      toast({ title: 'Welcome back!', description: 'You have been successfully logged in.' });
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
+      console.error('Login error:', error);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Login Failed', 
+        description: error.message || 'An unexpected error occurred during login.' 
+      });
       setUser(null);
       setToken(null);
     } finally {
@@ -116,10 +135,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = async (details: any) => {
     setIsLoading(true);
     try {
-      const { authToken } = await xanoAuth.signup(details);
+      console.log('Attempting signup...');
+      const response = await xanoAuth.signup(details);
+      console.log('Signup response:', response);
+      
+      // Handle different possible response structures
+      const authToken = response.authToken || response.token || response.access_token;
+      
+      if (!authToken) {
+        throw new Error('No authentication token received from server');
+      }
+      
       await handleAuthSuccess(authToken);
+      toast({ title: 'Account Created!', description: 'Welcome to Fluxpense! Let\'s get you set up.' });
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Signup Failed', description: error.message });
+      console.error('Signup error:', error);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Signup Failed', 
+        description: error.message || 'An unexpected error occurred during signup.' 
+      });
       setUser(null);
       setToken(null);
     } finally {
@@ -131,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setToken(null);
     localStorage.removeItem('authToken');
+    toast({ title: 'Logged out', description: 'You have been successfully logged out.' });
     router.push('/');
   };
   
@@ -138,10 +174,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const redirectUri = `${window.location.origin}/auth/google/callback`;
-      const { authToken } = await xanoAuth.continueGoogleLogin(code, redirectUri);
+      const response = await xanoAuth.continueGoogleLogin(code, redirectUri);
+      console.log('Google login response:', response);
+      
+      const authToken = response.authToken || response.token || response.access_token;
+      
+      if (!authToken) {
+        throw new Error('No authentication token received from Google login');
+      }
+      
       await handleAuthSuccess(authToken);
+      toast({ title: 'Welcome!', description: 'You have been successfully logged in with Google.' });
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Google Login Failed', description: error.message });
+      console.error('Google login error:', error);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Google Login Failed', 
+        description: error.message || 'An unexpected error occurred during Google login.' 
+      });
       setUser(null);
       setToken(null);
       router.push('/auth');
@@ -158,11 +208,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         onboarding_complete: true,
         ...data,
       };
+      console.log('Completing onboarding with payload:', payload);
       const updatedUser = await xanoAuth.updateMe(token, payload);
+      console.log('Updated user after onboarding:', updatedUser);
       setUser(updatedUser);
+      toast({ title: 'Setup Complete!', description: 'Welcome to your Fluxpense dashboard!' });
       router.push('/dashboard');
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Onboarding Failed', description: 'Could not save your settings.' });
+      console.error('Onboarding error:', error);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Onboarding Failed', 
+        description: error.message || 'Could not save your settings.' 
+      });
     } finally {
       setIsLoading(false);
     }
