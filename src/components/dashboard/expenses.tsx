@@ -90,8 +90,8 @@ export function Expenses() {
     } catch (error) {
       console.error(error);
       toast({ 
-        title: "Scan Failed", 
-        description: "The image could not be processed. Please ensure the image is clear, not corrupted, and contains readable receipt text. Try taking a new photo with better lighting or uploading a different format.", 
+        title: "Invalid Image File", 
+        description: "The uploaded file is not a valid image or may be corrupted. Please try uploading a different image file that is not damaged or corrupted.", 
         variant: "destructive" 
       });
     } finally {
