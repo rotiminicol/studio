@@ -215,15 +215,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     
     try {
+      // We are trying to update the user record. In Xano, this is often done with a PATCH or POST to the /auth/me endpoint.
+      // If this specific endpoint doesn't exist, it will fail, but we'll handle that gracefully.
       await xanoAuth.updateMe(token, payload);
     } catch (error) {
+      // This warning is for you, the developer. It means the backend endpoint is missing,
+      // but we will proceed with the local state update to not block the user.
       console.warn(
-        'Onboarding data could not be saved to the backend. This is likely due to a missing API endpoint. Proceeding with local state update.',
+        "Onboarding error:",
         error
       );
     } finally {
+      // We optimistically update the user state on the client.
       const updatedUser = { ...user, ...payload };
-      setUser(updatedUser); // This will trigger the useEffect to handle navigation
+      setUser(updatedUser); 
       
       toast({ 
         title: 'Setup Complete!', 
@@ -231,6 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       setIsLoading(false);
+      // The useEffect hook will now see that onboarding is complete and navigate to the dashboard.
     }
   };
 
@@ -238,7 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = { user, token, login, signup, logout, isLoading, isAuthenticated, continueWithGoogle, completeOnboarding };
 
-  if (isLoading) {
+  if (isLoading || !mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
