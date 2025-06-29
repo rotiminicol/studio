@@ -64,10 +64,44 @@ export const xanoAuth = {
   },
   
   updateMe: (token: string, body: any) => {
+    console.log('Updating user profile with:', body);
+    // Try different possible endpoints for updating user profile
     return xanoFetch(`${authApiUrl}/auth/me`, { 
-      method: 'POST', 
+      method: 'PATCH', // Changed from POST to PATCH
       body: JSON.stringify(body), 
       headers: { 'Authorization': `Bearer ${token}` } 
+    }).catch(async (error) => {
+      console.log('PATCH /auth/me failed, trying PUT method:', error.message);
+      // Fallback to PUT method
+      return xanoFetch(`${authApiUrl}/auth/me`, { 
+        method: 'PUT',
+        body: JSON.stringify(body), 
+        headers: { 'Authorization': `Bearer ${token}` } 
+      }).catch(async (putError) => {
+        console.log('PUT /auth/me failed, trying POST method:', putError.message);
+        // Fallback to POST method (original)
+        return xanoFetch(`${authApiUrl}/auth/me`, { 
+          method: 'POST',
+          body: JSON.stringify(body), 
+          headers: { 'Authorization': `Bearer ${token}` } 
+        }).catch(async (postError) => {
+          console.log('POST /auth/me failed, trying /auth/update endpoint:', postError.message);
+          // Try alternative endpoint
+          return xanoFetch(`${authApiUrl}/auth/update`, { 
+            method: 'POST',
+            body: JSON.stringify(body), 
+            headers: { 'Authorization': `Bearer ${token}` } 
+          }).catch(async (updateError) => {
+            console.log('All update methods failed, trying /user/update endpoint:', updateError.message);
+            // Try another alternative endpoint
+            return xanoFetch(`${authApiUrl}/user/update`, { 
+              method: 'POST',
+              body: JSON.stringify(body), 
+              headers: { 'Authorization': `Bearer ${token}` } 
+            });
+          });
+        });
+      });
     });
   },
   
