@@ -15,30 +15,40 @@ import { format, isWithinInterval } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, Pie, PieChart as RechartsPieChart, ResponsiveContainer, Legend } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { staticExpenses, staticCategories, staticBudgets } from "@/lib/mock-data";
 import Link from "next/link";
+import { useData } from "@/contexts/data-context";
 
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
 function ReportsSkeleton() {
-    return <div className="flex justify-center items-center h-96"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+    return (
+        <div className="space-y-6">
+            <Skeleton className="h-28 w-full" />
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+                <Skeleton className="lg:col-span-2 h-80" />
+                <Skeleton className="lg:col-span-3 h-80" />
+            </div>
+            <Skeleton className="h-96 w-full" />
+        </div>
+    )
 }
 
 const DesktopReports = React.memo(function DesktopReports() {
+    const { expenses, categories } = useData();
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedVendor, setSelectedVendor] = useState<string>('all');
   
     const filteredExpenses = useMemo(() => {
-      return staticExpenses.filter(expense => {
+      return expenses.filter(expense => {
         const expenseDate = new Date(expense.date);
         const inDateRange = dateRange?.from && dateRange?.to ? isWithinInterval(expenseDate, { start: dateRange.from, end: dateRange.to }) : true;
         const inCategory = selectedCategory === 'all' || expense.category_id === parseInt(selectedCategory);
         const inVendor = selectedVendor === 'all' || expense.vendor === selectedVendor;
         return inDateRange && inCategory && inVendor;
       });
-    }, [dateRange, selectedCategory, selectedVendor]);
+    }, [expenses, dateRange, selectedCategory, selectedVendor]);
   
     const { categoryBreakdown, vendorSpend } = useMemo(() => {
       const categoryBreakdown = filteredExpenses.reduce((acc, expense) => {
@@ -58,7 +68,7 @@ const DesktopReports = React.memo(function DesktopReports() {
       };
     }, [filteredExpenses]);
   
-    const vendors = useMemo(() => [...new Set(staticExpenses.map(e => e.vendor))], []);
+    const vendors = useMemo(() => [...new Set(expenses.map(e => e.vendor))], [expenses]);
   
     return (
       <div className="space-y-6">
@@ -123,7 +133,7 @@ const DesktopReports = React.memo(function DesktopReports() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {staticCategories.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
+                {categories.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
   
@@ -217,9 +227,9 @@ const DesktopReports = React.memo(function DesktopReports() {
 });
 
 const MobileReports = React.memo(function MobileReports() {
+  const { expenses, budgets } = useData();
+
   const { totalSpent, totalBudget, categoryBreakdown, spendingByMonth } = useMemo(() => {
-    const expenses = staticExpenses;
-    const budgets = staticBudgets;
     const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
     const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
     
@@ -249,7 +259,7 @@ const MobileReports = React.memo(function MobileReports() {
     }));
     
     return { totalSpent, totalBudget, categoryBreakdown, spendingByMonth: spendingData };
-  }, []);
+  }, [expenses, budgets]);
 
   return (
     <div className="space-y-6">
@@ -338,13 +348,9 @@ const MobileReports = React.memo(function MobileReports() {
 
 export function Reports() {
     const isMobile = useIsMobile();
-    const [clientReady, setClientReady] = useState(false);
+    const { loading } = useData();
 
-    useEffect(() => {
-        setClientReady(true);
-    }, []);
-
-    if (!clientReady) {
+    if (loading) {
         return <ReportsSkeleton />
     }
 
