@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -57,7 +57,7 @@ function OverviewSkeleton() {
     )
 }
 
-function DesktopOverview() {
+const DesktopOverview = React.memo(function DesktopOverview() {
     const { totalSpent, totalBudget, topCategory, lineChartData } = useMemo(() => {
         const expenses = staticExpenses;
         const budgets = staticBudgets;
@@ -172,9 +172,9 @@ function DesktopOverview() {
           </div>
         </div>
       );
-}
+});
 
-function MobileOverview() {
+const MobileOverview = React.memo(function MobileOverview() {
     const { totalSpent, totalBudget, budgetPercentage, topCategory, categorySpending, recentExpenses } = useMemo(() => {
     const expenses = staticExpenses;
     const budgets = staticBudgets;
@@ -190,7 +190,7 @@ function MobileOverview() {
 
     const topCategory = Object.keys(categorySpending).reduce((a, b) => categorySpending[a] > categorySpending[b] ? a : b, 'None');
     
-    const recentExpenses = [...expenses].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const recentExpenses = [...staticExpenses].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return { totalSpent, totalBudget, budgetPercentage, topCategory, categorySpending: Object.entries(categorySpending).sort(([, a], [, b]) => b - a), recentExpenses };
   }, []);
@@ -326,7 +326,7 @@ function MobileOverview() {
       </div>
     </div>
   );
-} 
+});
 
 export function Overview() {
   const isMobile = useIsMobile();

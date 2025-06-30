@@ -126,13 +126,12 @@ export default function ExpenseTrackingPage() {
                   </div>
                   <div className="md:w-1/2 order-1 md:order-2">
                     <div className="bg-muted/30 rounded-xl p-4 border border-border/50">
-                      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
                         <Image
                           src={item.image}
                           alt={item.title}
-                          width={500}
-                          height={300}
-                          className="rounded-lg object-cover w-full h-auto"
+                          fill
+                          className="rounded-lg object-cover"
                         />
                       </div>
                     </div>

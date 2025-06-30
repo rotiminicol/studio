@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star } from "lucide-react";
+import Image from "next/image";
 
 const testimonials = [
   {
@@ -45,8 +46,8 @@ export function Testimonials() {
                 </div>
                 <p className="text-muted-foreground mb-6">"{testimonial.text}"</p>
                 <div className="flex items-center">
-                  <Avatar className="border-2 border-primary/20">
-                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                  <Avatar className="border-2 border-primary/20 relative w-12 h-12">
+                    <Image src={testimonial.avatar} alt={testimonial.name} fill className="object-cover" />
                     <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white">
                       {testimonial.name.charAt(0)}
                     </AvatarFallback>

@@ -32,15 +32,9 @@ const integrations = [
   }
 ];
 
-const bgImage = "/11.jpg";
-
 export default function IntegrationsPage() {
   return (
     <div className="relative min-h-screen">
-      <div
-        className="absolute inset-0 z-0 bg-cover bg-center md:hidden"
-        style={{ backgroundImage: `url(${bgImage})`, opacity: 0.18 }}
-      />
       <div className="relative z-10 space-y-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>

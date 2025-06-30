@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Check, User, Building, Mail, PiggyBank, Users, PartyPopper, ArrowRight, ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/logo";
 import Link from "next/link";
+import Image from "next/image";
 
 const steps = [
   { id: 1, title: "Welcome!", icon: User, image: "/3.jpg" },
@@ -83,22 +84,24 @@ export function OnboardingForm() {
     <div className="relative min-h-screen w-full flex flex-col md:flex-row">
       {/* Image Section (Right on desktop, background on mobile) */}
       <div
-        className="hidden md:block md:w-1/2 h-screen"
-        style={{ minHeight: '100vh' }}
+        className="hidden md:block md:w-1/2 h-screen relative"
       >
-        <img
+        <Image
           src={steps[currentStep].image}
           alt={steps[currentStep].title}
-          className="object-cover w-full h-full"
-          style={{ minHeight: 0 }}
+          fill
+          className="object-cover"
+          priority
         />
       </div>
       {/* Mobile background image */}
       <div className="absolute inset-0 z-0 md:hidden">
-        <img
+        <Image
           src={steps[currentStep].image}
           alt={steps[currentStep].title + ' Mobile Background'}
+          fill
           className="w-full h-full object-cover absolute top-0 left-0 opacity-80 blur-sm"
+          priority
         />
         <div className="absolute inset-0 bg-black/40" />
       </div>

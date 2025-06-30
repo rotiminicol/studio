@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
+import Image from 'next/image';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24" height="24" {...props}>
@@ -83,19 +84,22 @@ export default function AuthPage() {
         className="hidden md:block md:w-1/2 h-screen"
         style={{ minHeight: '100vh' }}
       >
-        <img
+        <Image
           src="/2.jpg"
           alt="Auth Visual"
-          className="object-cover w-full h-full"
-          style={{ minHeight: 0 }}
+          fill
+          className="object-cover"
+          priority
         />
       </div>
       {/* Mobile background image */}
       <div className="absolute inset-0 z-0 md:hidden">
-        <img
+        <Image
           src="/2.jpg"
           alt="Auth Mobile Background"
+          fill
           className="w-full h-full object-cover absolute top-0 left-0 opacity-80 blur-sm"
+          priority
         />
         <div className="absolute inset-0 bg-black/40" />
       </div>

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -25,7 +25,7 @@ function ReportsSkeleton() {
     return <div className="flex justify-center items-center h-96"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
 }
 
-function DesktopReports() {
+const DesktopReports = React.memo(function DesktopReports() {
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedVendor, setSelectedVendor] = useState<string>('all');
@@ -214,9 +214,9 @@ function DesktopReports() {
         </Card>
       </div>
     );
-}
+});
 
-function MobileReports() {
+const MobileReports = React.memo(function MobileReports() {
   const { totalSpent, totalBudget, categoryBreakdown, spendingByMonth } = useMemo(() => {
     const expenses = staticExpenses;
     const budgets = staticBudgets;
@@ -334,7 +334,7 @@ function MobileReports() {
       </div>
     </div>
   );
-} 
+});
 
 export function Reports() {
     const isMobile = useIsMobile();
@@ -350,5 +350,3 @@ export function Reports() {
 
     return isMobile ? <MobileReports /> : <DesktopReports />;
 }
-
-    

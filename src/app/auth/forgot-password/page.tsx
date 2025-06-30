@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { motion } from "framer-motion";
+import Image from 'next/image';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -30,19 +31,22 @@ export default function ForgotPasswordPage() {
         className="hidden md:block md:w-1/2 h-screen"
         style={{ minHeight: '100vh' }}
       >
-        <img
+        <Image
           src="/1.jpg"
           alt="Forgot Password Visual"
-          className="object-cover w-full h-full"
-          style={{ minHeight: 0 }}
+          fill
+          className="object-cover"
+          priority
         />
       </div>
       {/* Mobile background image */}
       <div className="absolute inset-0 z-0 md:hidden">
-        <img
+        <Image
           src="/1.jpg"
           alt="Forgot Password Mobile Background"
+          fill
           className="w-full h-full object-cover absolute top-0 left-0 opacity-80 blur-sm"
+          priority
         />
         <div className="absolute inset-0 bg-black/40" />
       </div>
