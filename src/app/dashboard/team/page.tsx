@@ -30,7 +30,7 @@ const teamMembers = [
 
 export default function TeamPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-4 sm:p-6 md:p-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Team Management</h1>

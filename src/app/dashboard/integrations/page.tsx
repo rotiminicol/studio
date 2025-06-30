@@ -32,7 +32,7 @@ const integrations = [
 
 export default function IntegrationsPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-4 sm:p-6 md:p-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Integrations</h1>

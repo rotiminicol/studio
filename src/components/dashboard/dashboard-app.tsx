@@ -339,8 +339,8 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <div className="flex-1 relative z-10 pb-24 md:pb-0">
-            <div className="w-full max-w-7xl p-4 sm:p-6 md:p-8">
+        <div className="flex-1 relative z-10 pb-24 md:pb-0 p-4 sm:p-6 md:p-8">
+            <div className="w-full h-full">
                 {children}
             </div>
         </div>
