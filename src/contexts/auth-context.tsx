@@ -186,10 +186,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const completeOnboarding = async (data: { account_type: string }) => {
+  const completeOnboarding = useCallback(async (data: { account_type: string }) => {
     if (!token) {
         toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to complete onboarding.' });
-        throw new Error('Not authenticated');
+        return;
     }
 
     try {
@@ -201,10 +201,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(updatedUser);
     } catch (error: any) {
         console.error('Onboarding API call failed:', error);
-        toast({ variant: 'destructive', title: 'Onboarding Failed', description: 'Could not save onboarding status. Please try again later.' });
-        throw error; // Re-throw error to be caught in the component
+        toast({ 
+            variant: 'destructive', 
+            title: 'Onboarding Not Saved', 
+            description: 'Could not save status to the server. You may see this screen again on next login.' 
+        });
+        // Locally update the user to unblock them for this session
+        setUser(prev => prev ? { ...prev, onboarding_complete: true, account_type: data.account_type } : null);
     }
-  };
+  }, [token, isMockAuth, toast]);
 
   const value = { user, token, login, signup, logout, isLoading, isAuthenticated: !!user && !!token, continueWithGoogle, completeOnboarding };
 
