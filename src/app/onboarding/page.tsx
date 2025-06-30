@@ -75,10 +75,17 @@ export default function OnboardingPage() {
   
   const finishOnboarding = async () => {
     setIsFinishing(true);
-    await completeOnboarding();
-    setTimeout(() => {
+    try {
+      await completeOnboarding();
+      // Only redirect on success
+      setTimeout(() => {
         router.push('/dashboard/overview');
-    }, 1500);
+      }, 1500); // Give time for toast to show
+    } catch (error) {
+      // Error is already toasted in the context.
+      // We just need to reset the button state.
+      setIsFinishing(false);
+    }
   }
 
   const progress = ((currentStep + 1) / steps.length) * 100;
