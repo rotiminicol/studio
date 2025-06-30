@@ -17,12 +17,12 @@ import Link from "next/link";
 import Image from "next/image";
 
 const steps = [
-  { id: 1, title: "Welcome!", icon: PartyPopper, image: "https://placehold.co/1000x1200.png", hint: "celebration confetti" },
-  { id: 2, title: "Account Type", icon: Building, image: "https://placehold.co/1000x1200.png", hint: "modern office" },
-  { id: 3, title: "Connect Email", icon: Mail, image: "https://placehold.co/1000x1200.png", hint: "digital connection" },
-  { id: 4, title: "Financial Goals", icon: PiggyBank, image: "https://placehold.co/1000x1200.png", hint: "financial growth" },
-  { id: 5, title: "Invite Team", icon: Users, image: "https://placehold.co/1000x1200.png", hint: "team collaboration" },
-  { id: 6, title: "You're all set!", icon: Check, image: "https://placehold.co/1000x1200.png", hint: "success complete" },
+  { id: 1, title: "Welcome!", icon: PartyPopper, image: "/3.jpg" },
+  { id: 2, title: "Account Type", icon: Building, image: "/4.jpg" },
+  { id: 3, title: "Connect Email", icon: Mail, image: "/5.jpg" },
+  { id: 4, title: "Financial Goals", icon: PiggyBank, image: "/6.jpg" },
+  { id: 5, title: "Invite Team", icon: Users, image: "/7.jpg" },
+  { id: 6, title: "You're all set!", icon: Check, image: "/8.jpg" },
 ];
 
 const slideVariants = {
@@ -90,7 +90,6 @@ export default function OnboardingPage() {
         <Image
           src={steps[currentStep].image}
           alt={steps[currentStep].title}
-          data-ai-hint={steps[currentStep].hint}
           fill
           className="object-cover"
           priority
@@ -101,7 +100,6 @@ export default function OnboardingPage() {
         <Image
           src={steps[currentStep].image}
           alt={steps[currentStep].title + ' Mobile Background'}
-          data-ai-hint={steps[currentStep].hint}
           fill
           className="w-full h-full object-cover absolute top-0 left-0 opacity-80 blur-sm"
           priority
@@ -242,5 +240,3 @@ function StepContent({ step }: { step: number }) {
       return null;
   }
 }
-
-    
