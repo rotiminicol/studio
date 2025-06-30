@@ -85,23 +85,21 @@ export default function AuthPage() {
         style={{ minHeight: '100vh' }}
       >
         <Image
-          src="https://placehold.co/1000x1200.png"
+          src="/2.jpg"
           alt="Auth Visual"
           fill
           className="object-cover"
           priority
-          data-ai-hint="abstract gradient"
         />
       </div>
       {/* Mobile background image */}
       <div className="absolute inset-0 z-0 md:hidden">
         <Image
-          src="https://placehold.co/600x800.png"
+          src="/2.jpg"
           alt="Auth Mobile Background"
           fill
           className="w-full h-full object-cover absolute top-0 left-0 opacity-80 blur-sm"
           priority
-          data-ai-hint="abstract gradient"
         />
         <div className="absolute inset-0 bg-black/40" />
       </div>
