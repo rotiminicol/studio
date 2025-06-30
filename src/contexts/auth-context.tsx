@@ -45,13 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isPublicPage = publicPages.includes(pathname);
   const isAuthPage = authPages.includes(pathname);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const handleRedirects = useCallback(() => {
-      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-      const isAuthenticated = !!storedToken && !!user;
+      const isAuthenticated = !!user;
 
       if (!isAuthenticated) {
           if (!isPublicPage && !isAuthPage) {
@@ -61,6 +56,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       const isOnboarded = user?.onboarding_complete;
+
+      if (isOnboarded && pathname === '/onboarding') {
+        router.push('/dashboard');
+        return;
+      }
 
       if (isAuthPage) {
           router.push(isOnboarded ? '/dashboard' : '/onboarding');
@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
     }
 
-  }, [pathname, mounted, user, token, handleRedirects, isMockAuth]);
+  }, [pathname, mounted, user, token, handleRedirects, isMockAuth, router]);
 
 
   const handleAuthSuccess = async (authToken: string) => {
@@ -217,7 +217,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setIsLoading(true);
-    // Optimistically create the updated user object.
     const updatedUser = {
       ...user,
       ...data,
@@ -226,19 +225,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const authMethod = isMockAuth ? mockAuth : xanoAuth;
-      // Attempt to update the backend. We don't need the return value.
       await authMethod.updateMe(token, {
         account_type: data.account_type,
         onboarding_complete: true
       });
+       setUser(updatedUser);
     } catch (error: any) {
-      // If the API call fails, log it for the developer but don't block the user.
-      console.warn('Onboarding API call failed. This is expected if the backend endpoint is not configured. Proceeding with local update.', error.message);
+      // If the API call fails, log it for the developer but still try to unblock the user.
+      console.error('Onboarding API call failed:', error);
+      toast({ variant: 'destructive', title: 'Onboarding Failed', description: 'Could not save onboarding status. Please try again later.' });
+      setUser(updatedUser); // Still update locally to unblock the user for the current session.
     } finally {
-      // Regardless of API success or failure, update the local state to unblock the user.
-      setUser(updatedUser);
       setIsLoading(false);
-      // Do not redirect here; let the onboarding form handle it after animations.
     }
   };
 

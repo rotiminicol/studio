@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +26,7 @@ const stepImages = [
 
 export function OnboardingForm() {
   const [step, setStep] = useState(1);
-  const { completeOnboarding, isLoading } = useAuth();
+  const { user, completeOnboarding, isLoading } = useAuth();
   const router = useRouter();
 
   const [accountType, setAccountType] = useState("personal");
@@ -36,14 +36,22 @@ export function OnboardingForm() {
   const [isCompleting, setIsCompleting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
+  useEffect(() => {
+    // If user becomes onboarded while on this page, show the success message.
+    if(user?.onboarding_complete && isCompleting) {
+        setTimeout(() => {
+            setIsCompleting(false);
+            setIsComplete(true);
+            // The redirect will now be handled by the AuthProvider
+        }, 1500);
+    }
+  }, [user, isCompleting, router]);
+
   const handleFinish = async () => {
     if (isLoading || isCompleting) return;
     setIsCompleting(true);
+    // This will update the user state in AuthContext, which triggers the redirect useEffect
     await completeOnboarding({ account_type: accountType });
-    setTimeout(() => {
-      setIsCompleting(false);
-      setIsComplete(true);
-    }, 2000); // Simulate processing for a better user experience
   };
 
   const handleNext = () => {
@@ -151,9 +159,9 @@ export function OnboardingForm() {
                         <Button 
                             size="lg" 
                             className="w-full button-glow mt-4" 
-                            onClick={() => router.push('/dashboard')}
+                            disabled
                         >
-                            Proceed to Dashboard
+                            Proceeding to Dashboard...
                         </Button>
                     </div>
                   ) : (
