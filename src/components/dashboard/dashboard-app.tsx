@@ -339,9 +339,11 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex-1 p-4 sm:p-6 md:p-8 min-h-screen pb-24 md:pb-8 relative z-10">
-            {children}
-        </main>
+        <div className="flex-1 p-4 sm:p-6 md:p-8 relative z-10 pb-24 md:pb-8">
+            <div className="mx-auto w-full max-w-7xl">
+                {children}
+            </div>
+        </div>
 
         <MobileBottomNav onAddExpenseClick={() => setIsAddExpenseOpen(true)} />
       </main>
