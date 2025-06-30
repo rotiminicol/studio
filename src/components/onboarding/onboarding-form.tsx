@@ -16,12 +16,12 @@ import Link from "next/link";
 import Image from "next/image";
 
 const steps = [
-  { id: 1, title: "Welcome!", icon: User, image: "/3.jpg" },
-  { id: 2, title: "Account Type", icon: Building, image: "/4.jpg" },
-  { id: 3, title: "Connect Email", icon: Mail, image: "/5.jpg" },
-  { id: 4, title: "Financial Goals", icon: PiggyBank, image: "/6.jpg" },
-  { id: 5, title: "Invite Team", icon: Users, image: "/7.jpg" },
-  { id: 6, title: "You're all set!", icon: PartyPopper, image: "/8.jpg" },
+  { id: 1, title: "Welcome!", icon: PartyPopper, image: "https://placehold.co/1000x1200.png", hint: "celebration confetti" },
+  { id: 2, title: "Account Type", icon: Building, image: "https://placehold.co/1000x1200.png", hint: "modern office" },
+  { id: 3, title: "Connect Email", icon: Mail, image: "https://placehold.co/1000x1200.png", hint: "digital connection" },
+  { id: 4, title: "Financial Goals", icon: PiggyBank, image: "https://placehold.co/1000x1200.png", hint: "financial growth" },
+  { id: 5, title: "Invite Team", icon: Users, image: "https://placehold.co/1000x1200.png", hint: "team collaboration" },
+  { id: 6, title: "You're all set!", icon: Check, image: "https://placehold.co/1000x1200.png", hint: "success complete" },
 ];
 
 const slideVariants = {
@@ -89,6 +89,7 @@ export function OnboardingForm() {
         <Image
           src={steps[currentStep].image}
           alt={steps[currentStep].title}
+          data-ai-hint={steps[currentStep].hint}
           fill
           className="object-cover"
           priority
@@ -99,6 +100,7 @@ export function OnboardingForm() {
         <Image
           src={steps[currentStep].image}
           alt={steps[currentStep].title + ' Mobile Background'}
+          data-ai-hint={steps[currentStep].hint}
           fill
           className="w-full h-full object-cover absolute top-0 left-0 opacity-80 blur-sm"
           priority
@@ -106,15 +108,15 @@ export function OnboardingForm() {
         <div className="absolute inset-0 bg-black/40" />
       </div>
       {/* Form Section (Left on desktop, centered on mobile) */}
-      <div className="relative z-10 flex w-full md:w-1/2 min-h-screen items-center justify-center md:items-stretch md:justify-stretch p-0 bg-transparent">
+      <div className="relative z-10 flex w-full md:w-1/2 min-h-screen items-center justify-center p-4 sm:p-6 md:p-8">
         <motion.div
           key={steps[currentStep].id}
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full md:max-w-2xl flex flex-col justify-center h-full px-0 md:px-8"
+          className="w-full md:max-w-xl flex flex-col justify-center h-full"
         >
-          <Card className="w-full relative glassmorphism animate-in fade-in-0 slide-in-from-bottom-8 duration-500 shadow-none border-none bg-card/70 md:bg-transparent px-0 md:px-6 py-6 md:py-10 rounded-2xl md:rounded-3xl backdrop-blur-xl">
+          <Card className="w-full relative glassmorphism animate-in fade-in-0 slide-in-from-bottom-8 duration-500">
             <div className="flex flex-col items-center mb-4">
               <Link href="/">
                 <Logo variant="default" size="lg" className="cursor-pointer" />
@@ -125,12 +127,12 @@ export function OnboardingForm() {
                 <span className="text-sm font-medium text-muted-foreground">Step {currentStep + 1} of {steps.length}</span>
                 <div className="flex items-center gap-2">
                   <ActiveIcon className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-2xl font-bold tracking-tight leading-tight md:leading-tight md:text-3xl">{steps[currentStep].title}</CardTitle>
+                  <CardTitle className="text-2xl font-bold tracking-tight">{steps[currentStep].title}</CardTitle>
                 </div>
               </div>
               <Progress value={progress} className="w-full" />
             </CardHeader>
-            <div className="overflow-hidden relative h-80">
+            <div className="overflow-hidden relative h-80 flex items-center">
               <AnimatePresence initial={false} custom={direction}>
                 <motion.div
                   key={currentStep}
@@ -139,7 +141,7 @@ export function OnboardingForm() {
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  className="absolute w-full px-2 md:px-6"
+                  className="absolute w-full px-6"
                 >
                   <StepContent step={currentStep} />
                 </motion.div>

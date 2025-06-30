@@ -85,33 +85,35 @@ export default function AuthPage() {
         style={{ minHeight: '100vh' }}
       >
         <Image
-          src="/2.jpg"
+          src="https://placehold.co/1000x1200.png"
           alt="Auth Visual"
           fill
           className="object-cover"
           priority
+          data-ai-hint="abstract gradient"
         />
       </div>
       {/* Mobile background image */}
       <div className="absolute inset-0 z-0 md:hidden">
         <Image
-          src="/2.jpg"
+          src="https://placehold.co/600x800.png"
           alt="Auth Mobile Background"
           fill
           className="w-full h-full object-cover absolute top-0 left-0 opacity-80 blur-sm"
           priority
+          data-ai-hint="abstract gradient"
         />
         <div className="absolute inset-0 bg-black/40" />
       </div>
       {/* Form Section (Left on desktop, centered on mobile) */}
-      <div className="relative z-10 flex w-full md:w-1/2 min-h-screen items-center justify-center md:items-stretch md:justify-stretch p-0 bg-transparent">
+      <div className="relative z-10 flex w-full md:w-1/2 min-h-screen items-center justify-center p-4 sm:p-6 md:p-8">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
           className="flex flex-col justify-center items-center w-full h-full"
         >
-          <Tabs defaultValue="login" className="w-full max-w-2xl h-full flex flex-col justify-center">
+          <Tabs defaultValue="login" className="w-full max-w-md">
             <Link href="/" className="flex justify-center mb-8 mt-2">
               <Logo variant="default" size="lg" />
             </Link>
@@ -120,120 +122,120 @@ export default function AuthPage() {
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
             {/* Login Tab */}
-            <TabsContent value="login" className="flex-1 flex flex-col justify-center">
-              <Card className="glassmorphism w-full max-w-md mx-auto flex flex-col justify-center shadow-none border-none bg-card/70 md:bg-transparent p-0">
+            <TabsContent value="login">
+              <Card className="glassmorphism w-full">
                 <CardHeader className="text-center pb-2">
                   <CardTitle className="text-2xl font-bold mb-1">Welcome Back!</CardTitle>
                   <CardDescription className="mb-2">Enter your credentials to access your dashboard.</CardDescription>
                 </CardHeader>
-                <div className="px-6 flex flex-col gap-4">
+                <CardContent>
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full flex items-center justify-center gap-2 py-2 text-base font-medium border border-gray-300 hover:bg-gray-100 mb-2"
+                    className="w-full mb-2"
                     onClick={handleGoogleAuth}
                   >
                     <GoogleIcon /> Continue with Google
                   </Button>
-                  <div className="flex items-center my-2">
-                    <span className="flex-1 h-px bg-gray-300" />
-                    <span className="mx-3 text-xs text-gray-400">or</span>
-                    <span className="flex-1 h-px bg-gray-300" />
+                  <div className="flex items-center my-4">
+                    <span className="flex-1 h-px bg-border" />
+                    <span className="mx-3 text-xs text-muted-foreground">OR</span>
+                    <span className="flex-1 h-px bg-border" />
                   </div>
-                </div>
-                <form onSubmit={handleLogin} className="flex flex-col flex-1 justify-center px-6 pb-6 pt-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input id="login-email" type="email" placeholder="you@example.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required />
-                  </div>
-                  <div className="space-y-2 relative">
-                    <Label htmlFor="login-password">Password</Label>
-                    <div className="relative">
-                      <Input id="login-password" type={loginPasswordVisible ? 'text' : 'password'} placeholder="Password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
-                      <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" tabIndex={-1} onClick={() => setLoginPasswordVisible(v => !v)}>
-                        {loginPasswordVisible ? <EyeOff /> : <Eye />}
-                      </button>
+                  <form onSubmit={handleLogin} className="flex flex-col gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">Email</Label>
+                      <Input id="login-email" type="email" placeholder="you@example.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required />
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <input
-                      id="login-agree"
-                      type="checkbox"
-                      checked={loginAgree}
-                      onChange={e => setLoginAgree(e.target.checked)}
-                      className="accent-primary h-4 w-4 rounded border-gray-300"
-                      required
-                    />
-                    <label htmlFor="login-agree" className="text-xs text-gray-600 select-none">
-                      I agree to the{' '}
-                      <a href="#" className="underline hover:text-primary" tabIndex={0}>Terms of Service</a> and{' '}
-                      <a href="#" className="underline hover:text-primary" tabIndex={0}>Privacy Policy</a>.
-                    </label>
-                  </div>
-                  {loginError && <div className="text-red-500 text-sm font-medium mt-1">{loginError}</div>}
-                  <Button type="submit" className="w-full button-glow mt-2">Login</Button>
-                  <Link href="/auth/forgot-password" className="text-xs text-primary underline text-center mt-2">Forgot password?</Link>
-                </form>
+                    <div className="space-y-2 relative">
+                      <Label htmlFor="login-password">Password</Label>
+                      <div className="relative">
+                        <Input id="login-password" type={loginPasswordVisible ? 'text' : 'password'} placeholder="Password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
+                        <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" tabIndex={-1} onClick={() => setLoginPasswordVisible(v => !v)}>
+                          {loginPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <input
+                        id="login-agree"
+                        type="checkbox"
+                        checked={loginAgree}
+                        onChange={e => setLoginAgree(e.target.checked)}
+                        className="accent-primary h-4 w-4 rounded border-border"
+                        required
+                      />
+                      <label htmlFor="login-agree" className="text-xs text-muted-foreground select-none">
+                        I agree to the{' '}
+                        <a href="#" className="underline hover:text-primary" tabIndex={0}>Terms of Service</a> and{' '}
+                        <a href="#" className="underline hover:text-primary" tabIndex={0}>Privacy Policy</a>.
+                      </label>
+                    </div>
+                    {loginError && <div className="text-destructive text-sm font-medium mt-1">{loginError}</div>}
+                    <Button type="submit" className="w-full button-glow mt-2">Login</Button>
+                    <Link href="/auth/forgot-password" className="text-xs text-primary underline text-center mt-2">Forgot password?</Link>
+                  </form>
+                </CardContent>
               </Card>
             </TabsContent>
             {/* Signup Tab */}
-            <TabsContent value="signup" className="flex-1 flex flex-col justify-center">
-              <Card className="glassmorphism w-full max-w-md mx-auto flex flex-col justify-center shadow-none border-none bg-card/70 md:bg-transparent p-0">
+            <TabsContent value="signup">
+              <Card className="glassmorphism w-full">
                 <CardHeader className="text-center pb-2">
                   <CardTitle className="text-2xl font-bold mb-1">Create an Account</CardTitle>
                   <CardDescription className="mb-2">Start your journey to financial clarity in seconds.</CardDescription>
                 </CardHeader>
-                <div className="px-6 flex flex-col gap-4">
+                <CardContent>
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full flex items-center justify-center gap-2 py-2 text-base font-medium border border-gray-300 hover:bg-gray-100 mb-2"
+                    className="w-full mb-2"
                     onClick={handleGoogleAuth}
                   >
                     <GoogleIcon /> Continue with Google
                   </Button>
-                  <div className="flex items-center my-2">
-                    <span className="flex-1 h-px bg-gray-300" />
-                    <span className="mx-3 text-xs text-gray-400">or</span>
-                    <span className="flex-1 h-px bg-gray-300" />
+                  <div className="flex items-center my-4">
+                    <span className="flex-1 h-px bg-border" />
+                    <span className="mx-3 text-xs text-muted-foreground">OR</span>
+                    <span className="flex-1 h-px bg-border" />
                   </div>
-                </div>
-                <form onSubmit={handleSignup} className="flex flex-col flex-1 justify-center px-6 pb-6 pt-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
-                    <Input id="signup-name" type="text" placeholder="John Doe" value={signupName} onChange={e => setSignupName(e.target.value)} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input id="signup-email" type="email" placeholder="you@example.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required />
-                  </div>
-                  <div className="space-y-2 relative">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <div className="relative">
-                      <Input id="signup-password" type={signupPasswordVisible ? 'text' : 'password'} placeholder="Password" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} required />
-                      <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" tabIndex={-1} onClick={() => setSignupPasswordVisible(v => !v)}>
-                        {signupPasswordVisible ? <EyeOff /> : <Eye />}
-                      </button>
+                  <form onSubmit={handleSignup} className="flex flex-col gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Full Name</Label>
+                      <Input id="signup-name" type="text" placeholder="John Doe" value={signupName} onChange={e => setSignupName(e.target.value)} required />
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <input
-                      id="signup-agree"
-                      type="checkbox"
-                      checked={signupAgree}
-                      onChange={e => setSignupAgree(e.target.checked)}
-                      className="accent-primary h-4 w-4 rounded border-gray-300"
-                      required
-                    />
-                    <label htmlFor="signup-agree" className="text-xs text-gray-600 select-none">
-                      I agree to the{' '}
-                      <a href="#" className="underline hover:text-primary" tabIndex={0}>Terms of Service</a> and{' '}
-                      <a href="#" className="underline hover:text-primary" tabIndex={0}>Privacy Policy</a>.
-                    </label>
-                  </div>
-                  {signupError && <div className="text-red-500 text-sm font-medium mt-1">{signupError}</div>}
-                  <Button type="submit" className="w-full button-glow mt-2">Sign Up</Button>
-                </form>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input id="signup-email" type="email" placeholder="you@example.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2 relative">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <div className="relative">
+                        <Input id="signup-password" type={signupPasswordVisible ? 'text' : 'password'} placeholder="Password" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} required />
+                        <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" tabIndex={-1} onClick={() => setSignupPasswordVisible(v => !v)}>
+                          {signupPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <input
+                        id="signup-agree"
+                        type="checkbox"
+                        checked={signupAgree}
+                        onChange={e => setSignupAgree(e.target.checked)}
+                        className="accent-primary h-4 w-4 rounded border-border"
+                        required
+                      />
+                      <label htmlFor="signup-agree" className="text-xs text-muted-foreground select-none">
+                        I agree to the{' '}
+                        <a href="#" className="underline hover:text-primary" tabIndex={0}>Terms of Service</a> and{' '}
+                        <a href="#" className="underline hover:text-primary" tabIndex={0}>Privacy Policy</a>.
+                      </label>
+                    </div>
+                    {signupError && <div className="text-destructive text-sm font-medium mt-1">{signupError}</div>}
+                    <Button type="submit" className="w-full button-glow mt-2">Sign Up</Button>
+                  </form>
+                </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
