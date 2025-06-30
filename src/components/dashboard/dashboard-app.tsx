@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useData } from "@/contexts/data-context";
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
   SidebarProvider,
   Sidebar,
@@ -15,14 +14,12 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarInset,
   SidebarFooter,
   SidebarMenuBadge,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent
 } from "@/components/ui/sidebar";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,32 +37,24 @@ import {
   Home,
   Receipt,
   Settings,
-  CircleUser,
   LogOut,
   Bell,
   Loader2,
-  PlusCircle,
   FileWarning,
   Check,
-  CreditCard,
   Target,
-  TrendingUp,
   Users,
   HelpCircle,
   Sparkles,
   Zap,
-  Shield,
   Database,
   Crown,
-  Menu,
-  Plus,
-  DollarSign,
+  Plus
 } from "lucide-react";
 import { AddExpenseDialog } from "@/components/dashboard/add-expense-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/lib/types";
-import Image from "next/image";
 
 const mainMenuItems = [
   { href: "/dashboard", label: "Overview", icon: Home, description: "Dashboard overview" },
@@ -86,20 +75,6 @@ const accountMenuItems = [
   { href: "/dashboard/settings", label: "Settings", icon: Settings, description: "Account settings" },
 ];
 
-// Background images for different sections
-const backgroundImages = [
-  "/1.jpg", "/2.jpg", "/3.jpg", "/4.jpg", "/5.jpg", "/6.jpg", 
-  "/7.jpg", "/8.jpg", "/9.jpg", "/10.jpg", "/11.jpg", "/12.jpg", "/13.jpg"
-];
-
-// Floating notification data
-const floatingNotifications = [
-  { id: 1, message: "Receipt scanned successfully!", type: "success", icon: Receipt },
-  { id: 2, message: "Budget alert: 80% of monthly limit used", type: "warning", icon: Target },
-  { id: 3, message: "New AI insights available", type: "info", icon: Sparkles },
-  { id: 4, message: "You saved $45 this week!", type: "success", icon: TrendingUp },
-];
-
 function NotificationItem({ notification, onRead }: { notification: Notification; onRead: (id: number) => void; }) {
   const Icon = notification.type === 'budget' ? FileWarning : Check;
   return (
@@ -117,8 +92,7 @@ function NotificationItem({ notification, onRead }: { notification: Notification
   );
 }
 
-function MobileBottomNav({ onAddExpenseClick, accountItems, toolItems }: { onAddExpenseClick: () => void; accountItems: typeof accountMenuItems; toolItems: typeof toolsMenuItems; }) {
-  const pathname = usePathname();
+function MobileBottomNav({ onAddExpenseClick }: { onAddExpenseClick: () => void; }) {
   const mainNavItems = [
     { href: "/dashboard", label: "Home", icon: Home },
     { href: "/dashboard/expenses", label: "Expenses", icon: Receipt },
@@ -129,7 +103,7 @@ function MobileBottomNav({ onAddExpenseClick, accountItems, toolItems }: { onAdd
     <div className="fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-lg border-t border-border md:hidden z-50">
       <div className="flex justify-around items-center p-2">
         {mainNavItems.map((item) => (
-          <Button variant="ghost" size="sm" asChild className="flex flex-col items-center gap-1 h-auto py-2">
+          <Button variant="ghost" size="sm" asChild key={item.href} className="flex flex-col items-center gap-1 h-auto py-2">
             <Link href={item.href}>
               <item.icon className="w-4 h-4" />
               <span className="text-xs">{item.label}</span>
@@ -139,10 +113,9 @@ function MobileBottomNav({ onAddExpenseClick, accountItems, toolItems }: { onAdd
         <Button 
           onClick={onAddExpenseClick}
           size="sm" 
-          className="flex flex-col items-center gap-1 h-auto py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+          className="flex flex-col items-center justify-center gap-1 h-12 w-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
         >
-          <Plus className="w-4 h-4" />
-          <span className="text-xs">Add</span>
+          <Plus className="w-5 h-5" />
         </Button>
         <Button variant="ghost" size="sm" asChild className="flex flex-col items-center gap-1 h-auto py-2">
           <Link href="/dashboard/settings">
@@ -160,20 +133,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const { notifications, unreadNotificationCount, markNotificationRead, loading } = useData();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
-  const [floatingNotificationIndex, setFloatingNotificationIndex] = useState(0);
-  const [showFloatingNotification, setShowFloatingNotification] = useState(false);
-
-  // Floating notification carousel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setShowFloatingNotification(true);
-      setTimeout(() => setShowFloatingNotification(false), 3000);
-      setFloatingNotificationIndex((prev) => (prev + 1) % floatingNotifications.length);
-    }, 8000);
-
-    return () => clearInterval(interval);
-  }, []);
-
+  
   if (loading) {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-accent/10">
@@ -191,12 +151,6 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
   if (!user) {
     return null;
   }
-
-  // Get current background image based on pathname
-  const getBackgroundImage = () => {
-    const pathIndex = pathname.length % backgroundImages.length;
-    return backgroundImages[pathIndex];
-  };
 
   return (
       <SidebarProvider>
@@ -301,63 +255,17 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
         <SidebarInset>
           <AddExpenseDialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen} />
 
-          {/* Background Image */}
-          <div className="fixed inset-0 z-0">
-            <Image
-              src={getBackgroundImage()}
-              alt="Dashboard background"
-              fill
-              className="object-cover opacity-10"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/60 to-background/80"></div>
-          </div>
-
-          {/* Floating Notification */}
-          {showFloatingNotification && (
-            <div className="fixed top-20 right-4 z-50 animate-in slide-in-from-right duration-300">
-              <div className="bg-card/90 backdrop-blur-lg border border-primary/20 rounded-lg p-4 shadow-lg max-w-sm">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                    {(() => {
-                      const Icon = floatingNotifications[floatingNotificationIndex].icon;
-                      return <Icon className="w-5 h-5 text-primary" />;
-                    })()}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{floatingNotifications[floatingNotificationIndex].message}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Floating Stats Cards */}
-          <div className="fixed top-32 left-4 z-40 space-y-4">
-            <div className="bg-card/80 backdrop-blur-lg border border-primary/20 rounded-lg p-3 shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer">
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-medium">$2,450</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Saved this month</p>
-            </div>
-            
-            <div className="bg-card/80 backdrop-blur-lg border border-accent/20 rounded-lg p-3 shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-accent" />
-                <span className="text-sm font-medium">+15%</span>
-              </div>
-              <p className="text-xs text-muted-foreground">vs last month</p>
-            </div>
+          {/* Background */}
+          <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-muted/20 to-background">
+            <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[10px_10px] dark:bg-grid-slate-400/[0.05]"></div>
           </div>
 
           <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-lg px-4 md:px-6 border-primary/20">
-             {/* This empty div is for potential breadcrumbs or page titles */}
-            <div className="flex-1"></div>
+             <div className="flex-1"></div>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full relative hover:bg-primary/10 animate-float" style={{animationDelay: '0.5s'}}>
+                <Button variant="ghost" size="icon" className="rounded-full relative hover:bg-primary/10">
                   <Bell className="h-5 w-5" />
                   {unreadNotificationCount > 0 && (
                       <span className="absolute -top-1 -right-1 block h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold animate-pulse">
@@ -395,7 +303,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="rounded-full flex items-center gap-2 px-2 hover:bg-primary/10 animate-float" style={{animationDelay: '0.7s'}}>
+                <Button variant="ghost" className="rounded-full flex items-center gap-2 px-2 hover:bg-primary/10">
                    <div className="hidden md:block text-right">
                      <p className="text-sm font-medium">{user?.name}</p>
                      <p className="text-xs text-muted-foreground">{user?.email}</p>
@@ -446,11 +354,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
             </div>
           </main>
           
-          <MobileBottomNav 
-            onAddExpenseClick={() => setIsAddExpenseOpen(true)} 
-            accountItems={accountMenuItems} 
-            toolItems={toolsMenuItems} 
-          />
+          <MobileBottomNav onAddExpenseClick={() => setIsAddExpenseOpen(true)} />
         </SidebarInset>
       </SidebarProvider>
   );

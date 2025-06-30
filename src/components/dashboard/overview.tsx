@@ -1,52 +1,73 @@
+
 "use client";
 
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Receipt, ArrowUp, ArrowDown, Loader2, TrendingUp, Target, Zap } from "lucide-react";
+import { DollarSign, Receipt, TrendingUp, Target, Zap, ArrowUp } from "lucide-react";
 import { useData } from "@/contexts/data-context";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Pie, PieChart, Cell, Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from "recharts";
+import { Pie, PieChart, Cell, Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { useAuth } from "@/contexts/auth-context";
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
-
-function FloatingCard({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
-  return (
-    <div 
-      className={`animate-float ${className}`} 
-      style={{ animationDelay: `${delay}s` }}
-    >
-      {children}
-    </div>
-  );
-}
 
 function OverviewSkeleton() {
     return (
         <div className="grid gap-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {[...Array(4)].map((_, i) => (
-                  <FloatingCard key={i} delay={i * 0.2}>
-                    <Card className="glassmorphism border-primary/20">
-                      <CardHeader>
-                        <Skeleton className="h-5 w-3/4" />
-                      </CardHeader>
-                      <CardContent>
-                        <Skeleton className="h-8 w-1/2" />
-                        <Skeleton className="h-4 w-1/3 mt-2" />
-                      </CardContent>
-                    </Card>
-                  </FloatingCard>
+                  <Card key={i} className="glassmorphism border-primary/20">
+                    <CardHeader>
+                      <Skeleton className="h-5 w-3/4" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-8 w-1/2" />
+                      <Skeleton className="h-4 w-1/3 mt-2" />
+                    </CardContent>
+                  </Card>
                 ))}
+            </div>
+            <Card className="glassmorphism border-accent/20">
+              <CardHeader>
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-4 w-3/4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-[250px] w-full" />
+              </CardContent>
+            </Card>
+            <div className="grid gap-6 md:grid-cols-5">
+              <Card className="md:col-span-2 glassmorphism border-primary/20">
+                <CardHeader>
+                  <Skeleton className="h-6 w-1/2" />
+                  <Skeleton className="h-4 w-3/4" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="aspect-square h-[250px] w-full" />
+                </CardContent>
+              </Card>
+              <Card className="md:col-span-3 glassmorphism border-primary/20">
+                <CardHeader>
+                  <Skeleton className="h-6 w-1/2" />
+                  <Skeleton className="h-4 w-3/4" />
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
         </div>
     )
 }
 
 export function Overview() {
+  const { user } = useAuth();
   const { expenses, budgets, loading } = useData();
 
   const { totalSpent, totalBudget, topCategory, pieChartData, lineChartData } = useMemo(() => {
@@ -82,137 +103,80 @@ export function Overview() {
   }
 
   return (
-    <div className="grid gap-8">
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.name?.split(' ')[0]}!</h1>
+        <p className="text-muted-foreground">Here's your financial snapshot for this month.</p>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <FloatingCard delay={0}>
-          <Card className="glassmorphism border-primary/20 hover:border-primary/40 transition-all duration-300 group">
+        {[
+          { title: "Total Spent", value: `$${totalSpent.toFixed(2)}`, change: "+20.1% vs last month", Icon: DollarSign, color: "primary" },
+          { title: "Budget Remaining", value: `$${(totalBudget - totalSpent).toFixed(2)}`, change: `of $${totalBudget.toFixed(2)}`, Icon: Target, color: "accent" },
+          { title: "Expenses Logged", value: `+${expenses.length}`, change: "+5 since last week", Icon: Receipt, color: "blue" },
+          { title: "Top Category", value: topCategory, change: "Biggest spend area", Icon: Zap, color: "orange" },
+        ].map((stat, index) => (
+          <Card key={index} className="glassmorphism border-primary/20 hover:border-primary/40 transition-all duration-300 group animate-in fade-in-0 slide-in-from-bottom-4" style={{animationDelay: `${index * 100}ms`}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
-              <div className="p-2 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors">
-                <DollarSign className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <div className={`p-2 bg-${stat.color}-500/10 rounded-full group-hover:bg-${stat.color}-500/20 transition-colors`}>
+                <stat.Icon className={`h-4 w-4 text-${stat.color}-500`} />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">${totalSpent.toFixed(2)}</div>
-              <div className="flex items-center text-xs text-green-600 mt-1">
-                <TrendingUp className="w-3 h-3 mr-1" />
-                +20.1% from last month
-              </div>
+              <div className={`text-2xl font-bold text-${stat.color}-500`}>{stat.value}</div>
+              <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
             </CardContent>
           </Card>
-        </FloatingCard>
-
-        <FloatingCard delay={0.2}>
-          <Card className="glassmorphism border-accent/20 hover:border-accent/40 transition-all duration-300 group">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Budget Remaining</CardTitle>
-              <div className="p-2 bg-accent/10 rounded-full group-hover:bg-accent/20 transition-colors">
-                <Target className="h-4 w-4 text-accent" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-accent">${(totalBudget - totalSpent).toFixed(2)}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                out of ${totalBudget.toFixed(2)} budgeted
-              </div>
-            </CardContent>
-          </Card>
-        </FloatingCard>
-
-        <FloatingCard delay={0.4}>
-          <Card className="glassmorphism border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 group">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Expenses Logged</CardTitle>
-              <div className="p-2 bg-blue-500/10 rounded-full group-hover:bg-blue-500/20 transition-colors">
-                <Receipt className="h-4 w-4 text-blue-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-500">+{expenses.length}</div>
-              <div className="flex items-center text-xs text-green-600 mt-1">
-                <ArrowUp className="w-3 h-3 mr-1" />
-                +5 since last week
-              </div>
-            </CardContent>
-          </Card>
-        </FloatingCard>
-
-        <FloatingCard delay={0.6}>
-          <Card className="glassmorphism border-orange-500/20 hover:border-orange-500/40 transition-all duration-300 group">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Top Category</CardTitle>
-              <div className="p-2 bg-orange-500/10 rounded-full group-hover:bg-orange-500/20 transition-colors">
-                <Zap className="h-4 w-4 text-orange-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-500">{topCategory}</div>
-              <div className="text-xs text-muted-foreground mt-1">This month's biggest spend</div>
-            </CardContent>
-          </Card>
-        </FloatingCard>
+        ))}
       </div>
 
-      {/* Charts Section */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
-        <FloatingCard delay={0.8} className="lg:col-span-2">
-          <Card className="glassmorphism border-primary/20 h-full">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                Expenses by Category
-              </CardTitle>
-              <CardDescription>A breakdown of your spending by category.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={{}} className="mx-auto aspect-square h-[250px]">
-                <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                  <Pie data={pieChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                    {pieChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </FloatingCard>
+      {/* Main Chart Section */}
+      <Card className="glassmorphism border-accent/20 animate-in fade-in-0 slide-in-from-bottom-4" style={{animationDelay: `400ms`}}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            Daily Spend Trend
+          </CardTitle>
+          <CardDescription>Your spending activity over the last days.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={lineChartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis tickFormatter={(value) => `$${value}`} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
+                <RechartsTooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
+                <Line type="monotone" dataKey="total" stroke="hsl(var(--primary))" strokeWidth={3} dot={{r: 6, fill: 'hsl(var(--primary))'}} />
+              </LineChart>
+            </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
-        <FloatingCard delay={1.0} className="lg:col-span-3">
-          <Card className="glassmorphism border-accent/20 h-full">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
-                Daily Spend Trend
-              </CardTitle>
-              <CardDescription>Your spending activity over the last days.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={{}} className="h-[250px] w-full">
-                <LineChart data={lineChartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis tickFormatter={(value) => `$${value}`} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
-                  <RechartsTooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
-                  <Line type="monotone" dataKey="total" stroke="hsl(var(--primary))" strokeWidth={3} dot={{r: 6, fill: 'hsl(var(--primary))'}} />
-                </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </FloatingCard>
-      </div>
-
-      {/* Recent Expenses */}
-      <FloatingCard delay={1.2}>
-        <Card className="glassmorphism border-primary/20">
+      {/* Secondary Info Section */}
+      <div className="grid gap-6 md:grid-cols-5">
+        <Card className="md:col-span-2 glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4" style={{animationDelay: `500ms`}}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-              Recent Expenses
-            </CardTitle>
-            <CardDescription>Your 5 most recent transactions.</CardDescription>
+            <CardTitle>Category Breakdown</CardTitle>
+            <CardDescription>How your spending is distributed.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                <Pie data={pieChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                  {pieChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        <Card className="md:col-span-3 glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4" style={{animationDelay: `600ms`}}>
+          <CardHeader>
+            <CardTitle>Recent Expenses</CardTitle>
+            <CardDescription>Your last 5 transactions.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -221,12 +185,11 @@ export function Overview() {
                   <TableHead>Vendor</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead>Source</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {expenses.slice(0, 5).map((expense, index) => (
+                {expenses.slice(0, 5).map((expense) => (
                   <TableRow key={expense.id} className="hover:bg-primary/5 transition-colors">
                     <TableCell className="font-medium">{expense.vendor}</TableCell>
                     <TableCell>
@@ -235,14 +198,6 @@ export function Overview() {
                       </Badge>
                     </TableCell>
                     <TableCell>{format(new Date(expense.date), 'MMM dd, yyyy')}</TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={expense.source === 'Receipt' ? 'default' : expense.source === 'Email' ? 'secondary' : 'outline'}
-                        className="text-xs"
-                      >
-                        {expense.source}
-                      </Badge>
-                    </TableCell>
                     <TableCell className="text-right font-semibold text-primary">
                       ${expense.amount.toFixed(2)}
                     </TableCell>
@@ -252,7 +207,7 @@ export function Overview() {
             </Table>
           </CardContent>
         </Card>
-      </FloatingCard>
+      </div>
     </div>
   );
 }
