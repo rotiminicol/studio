@@ -61,11 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (isLoading) return;
+    
+    const sessionOnboarded = typeof window !== 'undefined' && sessionStorage.getItem('onboarding_session_complete') === 'true';
 
     const isPublicPage = publicPages.includes(pathname) || pathname.startsWith('/features');
     const isAuthPage = authPages.includes(pathname);
     const isAuthenticated = !!user;
-    const isOnboarded = !!user?.onboarding_complete;
+    const isOnboarded = !!user?.onboarding_complete || sessionOnboarded;
 
     if (!isAuthenticated && !isPublicPage && !isAuthPage) {
       router.push('/auth');
@@ -180,11 +182,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setToken(null);
     localStorage.removeItem('authToken');
+    if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('onboarding_session_complete');
+    }
     toast({ title: 'Logged out', description: 'You have been successfully logged out.' });
     router.push('/');
   }, [router, toast]);
 
   const completeOnboarding = useCallback(async (data: { account_type: string }) => {
+    if (typeof window !== 'undefined') {
+        sessionStorage.setItem('onboarding_session_complete', 'true');
+    }
     // We will no longer save to the backend, just update the local state to proceed.
     // This means onboarding will appear again on next login as requested.
     setUser(prev => prev ? { 
