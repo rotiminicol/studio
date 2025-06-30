@@ -73,7 +73,7 @@ export function OnboardingForm() {
       {/* Background Image - Full screen with transition */}
       <div 
         key={step}
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 animate-in fade-in-50"
         style={{
           backgroundImage: `url(${stepImages[step - 1]})`
         }}
@@ -93,18 +93,12 @@ export function OnboardingForm() {
           
           {/* Form container - takes full height and centers content */}
           <div className="flex-1 flex flex-col justify-center p-6 lg:p-12">
-            <div className="absolute top-8 left-8 z-20">
-              <Link href="/">
-                <Logo variant="bird" size="md" />
-              </Link>
-            </div>
-
             <Card className="w-full max-w-md mx-auto bg-transparent border-none shadow-none lg:glassmorphism lg:border-primary/20 lg:shadow-2xl lg:rounded-2xl flex-1 flex flex-col">
               <CardHeader className="text-center">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-8 h-8 text-white animate-pulse" />
-                  </div>
+                <div className="flex justify-center mb-6">
+                  <Link href="/">
+                    <Logo variant="bird" size="lg" />
+                  </Link>
                 </div>
                 
                 <div className="mb-6">
@@ -118,7 +112,7 @@ export function OnboardingForm() {
                 <CardTitle className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   {stepTitles[step - 1]}
                 </CardTitle>
-                <CardDescription className="text-base">
+                <CardDescription className="text-base font-bold text-foreground/80">
                   {stepDescriptions[step - 1]}
                 </CardDescription>
               </CardHeader>
