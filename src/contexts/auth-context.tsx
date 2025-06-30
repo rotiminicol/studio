@@ -40,71 +40,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const isMockAuth = useMockAuth();
 
-  const handleRedirects = useCallback((currentUser: User | null) => {
-    const isPublicPage = publicPages.includes(pathname);
-    const isAuthPage = authPages.includes(pathname);
-    const isAuthenticated = !!currentUser;
-    const isOnboarded = !!currentUser?.onboarding_complete;
-
-    if (!isAuthenticated) {
-      if (!isPublicPage && !isAuthPage) {
-        router.push('/auth');
+  useEffect(() => {
+    const validateToken = async () => {
+      const storedToken = localStorage.getItem('authToken');
+      if (storedToken) {
+        try {
+          const authMethod = isMockAuth ? mockAuth : xanoAuth;
+          const userData = await authMethod.getMe(storedToken);
+          setUser(userData);
+          setToken(storedToken);
+        } catch (error) {
+          console.error('Token validation failed:', error);
+          localStorage.removeItem('authToken');
+        }
       }
+      setIsLoading(false);
+    };
+    validateToken();
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const isPublicPage = publicPages.includes(pathname) || pathname.startsWith('/features');
+    const isAuthPage = authPages.includes(pathname);
+    const isAuthenticated = !!user;
+    const isOnboarded = !!user?.onboarding_complete;
+
+    if (!isAuthenticated && !isPublicPage && !isAuthPage) {
+      router.push('/auth');
       return;
     }
     
-    if (isAuthPage) {
-        router.push(isOnboarded ? '/dashboard' : '/onboarding');
-    } else if (!isOnboarded && pathname !== '/onboarding') {
+    if (isAuthenticated) {
+      if (!isOnboarded && pathname !== '/onboarding') {
         router.push('/onboarding');
-    }
-  }, [pathname, router]);
-
-  const validateToken = useCallback(async () => {
-    const storedToken = localStorage.getItem('authToken');
-    if (storedToken) {
-      try {
-        const authMethod = isMockAuth ? mockAuth : xanoAuth;
-        const userData = await authMethod.getMe(storedToken);
-        setUser(userData);
-        setToken(storedToken);
-        handleRedirects(userData);
-      } catch (error) {
-        console.error('Token validation failed:', error);
-        localStorage.removeItem('authToken');
-        setUser(null);
-        setToken(null);
-        handleRedirects(null);
+      } else if (isOnboarded && (isAuthPage || pathname === '/onboarding')) {
+        router.push('/dashboard');
       }
-    } else {
-      handleRedirects(null);
     }
-    setIsLoading(false);
-  }, [handleRedirects, isMockAuth]);
+  }, [user, pathname, isLoading, router]);
 
-  useEffect(() => {
-    validateToken();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
-
-  const handleAuthSuccess = async (authToken: string) => {
+  const handleAuthSuccess = useCallback(async (authToken: string) => {
     localStorage.setItem('authToken', authToken);
     try {
-        const authMethod = isMockAuth ? mockAuth : xanoAuth;
-        const userData = await authMethod.getMe(authToken);
-        setUser(userData);
-        setToken(authToken);
-        toast({ title: 'Welcome!', description: 'You have been successfully logged in.' });
-    } catch (error) {
-        console.error('Failed to get user data after auth:', error);
-        toast({ variant: 'destructive', title: 'Authentication Failed', description: 'Could not retrieve user details.' });
-        localStorage.removeItem('authToken');
-        setUser(null);
-        setToken(null);
+      const authMethod = isMockAuth ? mockAuth : xanoAuth;
+      const userData = await authMethod.getMe(authToken);
+      setUser(userData);
+      setToken(authToken);
+      toast({ title: 'Welcome!', description: 'You have been successfully logged in.' });
+    } catch (error: any) {
+      console.error('Failed to get user data after auth:', error);
+      toast({ variant: 'destructive', title: 'Authentication Failed', description: 'Could not retrieve user details.' });
+      localStorage.removeItem('authToken');
+      setUser(null);
+      setToken(null);
+      throw error;
     }
-  }
+  }, [isMockAuth, toast]);
 
-  const login = async (credentials: any) => {
+  const login = useCallback(async (credentials: any) => {
     setIsLoading(true);
     try {
       const authMethod = isMockAuth ? mockAuth : xanoAuth;
@@ -116,19 +111,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await handleAuthSuccess(authToken);
     } catch (error: any) {
       console.error('Login error:', error);
-      toast({ 
-        variant: 'destructive', 
-        title: 'Login Failed', 
-        description: error.message || 'An unexpected error occurred during login.' 
-      });
-      setUser(null);
-      setToken(null);
+       if (!error.message.includes('Could not retrieve user details')) {
+          toast({ 
+            variant: 'destructive', 
+            title: 'Login Failed', 
+            description: error.message || 'An unexpected error occurred during login.' 
+          });
+       }
+       throw error;
     } finally {
         setIsLoading(false);
     }
-  };
+  }, [isMockAuth, toast, handleAuthSuccess]);
 
-  const signup = async (details: any) => {
+  const signup = useCallback(async (details: any) => {
     setIsLoading(true);
     try {
       const authMethod = isMockAuth ? mockAuth : xanoAuth;
@@ -140,27 +136,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await handleAuthSuccess(authToken);
     } catch (error: any) {
       console.error('Signup error:', error);
-      toast({ 
-        variant: 'destructive', 
-        title: 'Signup Failed', 
-        description: error.message || 'An unexpected error occurred during signup.' 
-      });
-      setUser(null);
-      setToken(null);
+      if (!error.message.includes('Could not retrieve user details')) {
+        toast({ 
+          variant: 'destructive', 
+          title: 'Signup Failed', 
+          description: error.message || 'An unexpected error occurred during signup.' 
+        });
+      }
+      throw error;
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('authToken');
-    toast({ title: 'Logged out', description: 'You have been successfully logged out.' });
-    router.push('/');
-  };
+  }, [isMockAuth, toast, handleAuthSuccess]);
   
-  const continueWithGoogle = async (code: string) => {
+  const continueWithGoogle = useCallback(async (code: string) => {
     setIsLoading(true);
     try {
       const redirectUri = `${window.location.origin}/auth/google/callback`;
@@ -173,18 +162,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await handleAuthSuccess(authToken);
     } catch (error: any) {
       console.error('Google login error:', error);
-      toast({ 
-        variant: 'destructive', 
-        title: 'Google Login Failed', 
-        description: error.message || 'An unexpected error occurred during Google login.' 
-      });
-      setUser(null);
-      setToken(null);
+      if (!error.message.includes('Could not retrieve user details')) {
+        toast({ 
+          variant: 'destructive', 
+          title: 'Google Login Failed', 
+          description: error.message || 'An unexpected error occurred during Google login.' 
+        });
+      }
       router.push('/auth');
+      throw error;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isMockAuth, toast, router, handleAuthSuccess]);
+
+  const logout = useCallback(() => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('authToken');
+    toast({ title: 'Logged out', description: 'You have been successfully logged out.' });
+    router.push('/');
+  }, [router, toast]);
 
   const completeOnboarding = useCallback(async (data: { account_type: string }) => {
     if (!token) {
@@ -206,14 +204,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             title: 'Onboarding Not Saved', 
             description: 'Could not save status to the server. You may see this screen again on next login.' 
         });
-        // Locally update the user to unblock them for this session
         setUser(prev => prev ? { ...prev, onboarding_complete: true, account_type: data.account_type } : null);
     }
   }, [token, isMockAuth, toast]);
 
   const value = { user, token, login, signup, logout, isLoading, isAuthenticated: !!user && !!token, continueWithGoogle, completeOnboarding };
 
-  if (isLoading) {
+  if (isLoading && (!user || !authPages.includes(pathname))) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
