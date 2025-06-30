@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -8,11 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Download, Loader2, Share2, PieChart, BarChart3, ArrowLeft } from "lucide-react";
+import { CalendarIcon, Download, Loader2, Share2, PieChart, BarChart3, ArrowLeft, Filter, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, isWithinInterval } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, Pie, PieChart as RechartsPieChart, ResponsiveContainer } from "recharts";
+import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, Pie, PieChart as RechartsPieChart, ResponsiveContainer, Legend } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { staticExpenses, staticCategories, staticBudgets } from "@/lib/mock-data";
 import Link from "next/link";
@@ -21,7 +22,7 @@ import Link from "next/link";
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
 function ReportsSkeleton() {
-    return <div className="flex justify-center items-center h-96"><Loader2 className="w-8 h-8 animate-spin" /></div>
+    return <div className="flex justify-center items-center h-96"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
 }
 
 function DesktopReports() {
@@ -62,7 +63,10 @@ function DesktopReports() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
+              <p className="text-muted-foreground">Gain insights into your spending patterns.</p>
+            </div>
             <Link href="/dashboard/overview">
               <Button variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -71,9 +75,9 @@ function DesktopReports() {
             </Link>
         </div>
 
-        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+        <Card className="glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
           <CardHeader>
-            <CardTitle>Filter Report</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Filter className="text-primary"/> Filter Report</CardTitle>
             <CardDescription>Select filters to generate a new report.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col md:flex-row gap-4">
@@ -133,24 +137,24 @@ function DesktopReports() {
               </SelectContent>
             </Select>
   
-            <Button className="md:ml-auto">
+            <Button className="md:ml-auto button-glow">
               <Download className="mr-2 h-4 w-4" /> Export
             </Button>
           </CardContent>
         </Card>
   
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
-          <Card className="lg:col-span-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '150ms'}}>
+          <Card className="lg:col-span-2 glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '150ms'}}>
               <CardHeader>
-                  <CardTitle>Category Breakdown</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><PieChart className="text-primary"/>Category Breakdown</CardTitle>
               </CardHeader>
               <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
-                      <RechartsBarChart data={categoryBreakdown} layout="horizontal" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                          <CartesianGrid strokeDasharray="3 3" />
+                      <RechartsBarChart data={categoryBreakdown.slice(0, 5)} layout="horizontal" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                           <XAxis dataKey="name" type="category" tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
                           <YAxis dataKey="amount" type="number" tickFormatter={(value) => `$${value}`} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
-                          <RechartsTooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))'}}/>
+                          <RechartsTooltip cursor={{fill: 'hsl(var(--primary) / 0.1)'}} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)'}}/>
                           <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
                               {categoryBreakdown.map((entry, index) => (
                                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -160,27 +164,27 @@ function DesktopReports() {
                   </ResponsiveContainer>
               </CardContent>
           </Card>
-          <Card className="lg:col-span-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '300ms'}}>
+          <Card className="lg:col-span-3 glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '300ms'}}>
               <CardHeader>
-                  <CardTitle>Spend by Vendor</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><BarChart3 className="text-accent"/>Spend by Vendor</CardTitle>
               </CardHeader>
               <CardContent>
                    <ResponsiveContainer width="100%" height={300}>
                       <RechartsBarChart data={vendorSpend.slice(0, 10)} layout="vertical" margin={{ left: 30, right: 20 }}>
-                          <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
                           <XAxis type="number" hide />
                           <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={100} interval={0} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} />
-                          <RechartsTooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))'}}/>
-                          <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                          <RechartsTooltip cursor={{fill: 'hsl(var(--accent) / 0.1)'}} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)'}}/>
+                          <Bar dataKey="amount" fill="hsl(var(--accent))" radius={[0, 4, 4, 0]} />
                       </RechartsBarChart>
                   </ResponsiveContainer>
               </CardContent>
           </Card>
         </div>
         
-        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '450ms'}}>
+        <Card className="glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '450ms'}}>
           <CardHeader>
-            <CardTitle>Filtered Expenses ({filteredExpenses.length})</CardTitle>
+            <CardTitle className="flex items-center gap-2"><FileText className="text-blue-500"/>Filtered Expenses ({filteredExpenses.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
@@ -195,7 +199,7 @@ function DesktopReports() {
               </TableHeader>
               <TableBody>
                 {filteredExpenses.map((expense) => (
-                  <TableRow key={expense.id}>
+                  <TableRow key={expense.id} className="hover:bg-primary/5">
                     <TableCell className="font-medium">{expense.vendor}</TableCell>
                     <TableCell>{expense.category?.name || 'N/A'}</TableCell>
                     <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
@@ -255,23 +259,23 @@ function MobileReports() {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Card className="text-center">
+        <Card className="text-center glassmorphism border-primary/20">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Total Spent</p>
-            <p className="text-xl font-bold">${totalSpent.toFixed(2)}</p>
+            <p className="text-xl font-bold text-primary">${totalSpent.toFixed(2)}</p>
           </CardContent>
         </Card>
-        <Card className="text-center">
+        <Card className="text-center glassmorphism border-accent/20">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Budget Used</p>
-            <p className="text-xl font-bold">{totalBudget > 0 ? `${Math.round((totalSpent / totalBudget) * 100)}%` : 'N/A'}</p>
+            <p className="text-xl font-bold text-accent">{totalBudget > 0 ? `${Math.round((totalSpent / totalBudget) * 100)}%` : 'N/A'}</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
+      <Card className="glassmorphism border-primary/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
             <PieChart className="w-5 h-5 text-primary" />
             Spending by Category
           </CardTitle>
@@ -279,11 +283,12 @@ function MobileReports() {
         <CardContent>
           <ResponsiveContainer width="100%" height={200}>
             <RechartsPieChart>
-              <Pie data={categoryBreakdown} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} fill="hsl(var(--primary))" label>
+              <Pie data={categoryBreakdown} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} fill="hsl(var(--primary))">
                 {categoryBreakdown.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
+              <RechartsTooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)'}}/>
             </RechartsPieChart>
           </ResponsiveContainer>
           <div className="space-y-2 mt-4">
@@ -298,9 +303,9 @@ function MobileReports() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="glassmorphism border-accent/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
             <BarChart3 className="w-5 h-5 text-accent" />
             Monthly Trends
           </CardTitle>
@@ -310,6 +315,7 @@ function MobileReports() {
             <RechartsBarChart data={spendingByMonth}>
               <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
+              <RechartsTooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)'}}/>
               <Bar dataKey="total" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
             </RechartsBarChart>
           </ResponsiveContainer>
@@ -317,7 +323,7 @@ function MobileReports() {
       </Card>
 
       <div className="flex gap-3">
-        <Button className="flex-1">
+        <Button className="flex-1 button-glow">
           <Download className="w-4 h-4 mr-2" />
           Export Report
         </Button>
@@ -329,7 +335,6 @@ function MobileReports() {
     </div>
   );
 } 
-
 
 export function Reports() {
     const isMobile = useIsMobile();
@@ -345,3 +350,5 @@ export function Reports() {
 
     return isMobile ? <MobileReports /> : <DesktopReports />;
 }
+
+    

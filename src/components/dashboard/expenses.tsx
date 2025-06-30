@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -7,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UploadCloud, Bot, CheckCircle, ArrowLeft } from "lucide-react";
+import { Loader2, UploadCloud, Bot, CheckCircle, ArrowLeft, Mail, ScanLine } from "lucide-react";
 import Image from "next/image";
 import { Skeleton } from "../ui/skeleton";
-import type { Category, Expense, Budget } from "@/lib/types";
+import type { Category, Expense } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { staticCategories, staticScannedData, staticImportedData } from "@/lib/mock-data";
@@ -53,7 +54,6 @@ export function Expenses() {
     }
     setIsScanning(true);
     setScannedData(null);
-    // Simulate AI scanning
     await new Promise(resolve => setTimeout(resolve, 2000));
     setScannedData(staticScannedData);
     toast({ title: "Scan Complete!", description: "Expense data extracted successfully." });
@@ -67,7 +67,6 @@ export function Expenses() {
     }
     setIsImporting(true);
     setImportedData(null);
-    // Simulate AI import
     await new Promise(resolve => setTimeout(resolve, 2000));
     setImportedData(staticImportedData);
     toast({ title: "Import Complete!", description: "Expense data extracted successfully." });
@@ -90,7 +89,6 @@ export function Expenses() {
     setIsSaving(false);
   }
 
-
   const DataForm = ({ data, source }: { data: ScanReceiptOutput | ImportExpenseDataFromEmailOutput, source: 'Receipt' | 'Email' }) => {
     const [formData, setFormData] = useState({
       ...data,
@@ -107,7 +105,7 @@ export function Expenses() {
     }
 
     return (
-      <div className="space-y-4 pt-4 border-t mt-4">
+      <div className="space-y-4 pt-4 border-t border-primary/10 mt-6">
         <h3 className="font-semibold text-lg flex items-center gap-2"><CheckCircle className="text-green-500" /> Extracted Data</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
@@ -144,7 +142,7 @@ export function Expenses() {
           <Label>Items</Label>
           <Textarea value={Array.isArray(formData.items) ? formData.items.join("\n") : ''} onChange={(e) => setFormData({ ...formData, items: e.target.value.split('\n') })} rows={3} />
         </div>
-        <Button className="w-full" onClick={handleSave} disabled={isSaving}>
+        <Button className="w-full button-glow" onClick={handleSave} disabled={isSaving}>
           {isSaving && <Loader2 className="animate-spin mr-2" />}
           Save Expense
         </Button>
@@ -153,8 +151,8 @@ export function Expenses() {
   }
 
   const LoadingSkeleton = () => (
-    <div className="space-y-4 pt-4 border-t mt-4">
-      <h3 className="font-semibold text-lg flex items-center gap-2"><Loader2 className="animate-spin" /> Analyzing...</h3>
+    <div className="space-y-4 pt-4 border-t border-primary/10 mt-6">
+      <h3 className="font-semibold text-lg flex items-center gap-2 text-primary"><Loader2 className="animate-spin" /> Analyzing with AI...</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-10 w-full" /></div>
         <div className="space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-10 w-full" /></div>
@@ -169,7 +167,10 @@ export function Expenses() {
   return (
     <div className="space-y-6">
        <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold tracking-tight">AI Expense Entry</h1>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">AI Expense Entry</h1>
+              <p className="text-muted-foreground">Automatically add expenses from receipts or emails.</p>
+            </div>
             <Link href="/dashboard/overview">
               <Button variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -178,27 +179,32 @@ export function Expenses() {
             </Link>
         </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+        <Card className="glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 hover:border-primary/40 transition-all">
           <CardHeader>
-            <CardTitle>Scan Receipt</CardTitle>
-            <CardDescription>Upload an image of your receipt to automatically extract expense details.</CardDescription>
+            <div className="flex items-center gap-3">
+              <ScanLine className="w-6 h-6 text-primary" />
+              <div>
+                <CardTitle>Scan Receipt</CardTitle>
+                <CardDescription>Upload an image to extract expense details.</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="receipt-upload" className="border-2 border-dashed border-muted-foreground/50 rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors">
+              <Label htmlFor="receipt-upload" className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-primary/10 transition-colors">
                 {previewUrl ? (
                   <Image src={previewUrl} alt="Receipt preview" width={200} height={200} className="max-h-48 w-auto object-contain rounded-md" />
                 ) : (
                   <>
-                    <UploadCloud className="w-12 h-12 text-muted-foreground" />
-                    <span className="mt-2 text-sm font-medium">Click or drag to upload</span>
+                    <UploadCloud className="w-12 h-12 text-primary" />
+                    <span className="mt-2 text-sm font-medium text-primary">Click or drag to upload</span>
                     <span className="mt-1 text-xs text-muted-foreground">PNG, JPG, or WEBP (max 5MB)</span>
                   </>
                 )}
               </Label>
               <Input id="receipt-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleFileChange} />
             </div>
-            <Button onClick={handleScanReceipt} disabled={!file || isScanning} className="w-full mt-4">
+            <Button onClick={handleScanReceipt} disabled={!file || isScanning} className="w-full mt-4 button-glow">
               {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Bot className="mr-2" />}
               {isScanning ? "Scanning with AI..." : "Scan with AI"}
             </Button>
@@ -208,10 +214,15 @@ export function Expenses() {
           </CardContent>
         </Card>
 
-        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '150ms'}}>
+        <Card className="glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 hover:border-primary/40 transition-all" style={{animationDelay: '150ms'}}>
           <CardHeader>
-            <CardTitle>Import from Email</CardTitle>
-            <CardDescription>Paste the content of an expense email (e.g., from Uber, Amazon) to import it.</CardDescription>
+            <div className="flex items-center gap-3">
+              <Mail className="w-6 h-6 text-accent" />
+              <div>
+                <CardTitle>Import from Email</CardTitle>
+                <CardDescription>Paste an expense email to import it.</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <Textarea
@@ -219,8 +230,9 @@ export function Expenses() {
               rows={10}
               value={emailContent}
               onChange={(e) => setEmailContent(e.target.value)}
+              className="bg-primary/5 border-primary/20 focus:bg-background"
             />
-            <Button onClick={handleEmailImport} disabled={!emailContent || isImporting} className="w-full mt-4">
+            <Button onClick={handleEmailImport} disabled={!emailContent || isImporting} className="w-full mt-4 button-glow">
               {isImporting ? <Loader2 className="animate-spin mr-2" /> : <Bot className="mr-2" />}
               {isImporting ? "Importing with AI..." : "Import with AI"}
             </Button>
@@ -232,3 +244,5 @@ export function Expenses() {
     </div>
   );
 }
+
+    
