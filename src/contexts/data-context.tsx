@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -74,7 +75,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [token, toast, expenses.length, categories.length]);
+  }, [token, toast]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -84,7 +85,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, fetchData]);
 
-  const addExpense = async (expense: NewExpense) => {
+  const addExpense = useCallback(async (expense: NewExpense) => {
     if (!token) return;
     const api = xanoApi(token);
     try {
@@ -95,9 +96,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error("Failed to add expense", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not save your expense.' });
     }
-  };
+  }, [token, toast, fetchData]);
 
-  const updateBudget = async (id: number, budgetUpdate: Partial<Budget>) => {
+  const updateBudget = useCallback(async (id: number, budgetUpdate: Partial<Budget>) => {
     if (!token) return;
     const api = xanoApi(token);
     try {
@@ -108,9 +109,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error("Failed to update budget", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update your budget.' });
     }
-  };
+  }, [token, toast, fetchData]);
 
-  const markNotificationRead = async (id: number) => {
+  const markNotificationRead = useCallback(async (id: number) => {
     if (!token) return;
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
     setUnreadNotificationCount(prev => Math.max(0, prev - 1));
@@ -122,9 +123,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         toast({ variant: 'destructive', title: 'Error', description: 'Could not update notification status.' });
         fetchData(); // Re-sync with backend on failure
     }
-  };
+  }, [token, toast, fetchData]);
 
-  const markAllNotificationsRead = async () => {
+  const markAllNotificationsRead = useCallback(async () => {
     if (!token) return;
     setNotifications(prev => prev.map(n => ({...n, is_read: true})));
     setUnreadNotificationCount(0);
@@ -137,7 +138,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         toast({ variant: 'destructive', title: 'Error', description: 'Could not update notifications.' });
         fetchData(); // Re-sync
     }
-  };
+  }, [token, toast, fetchData]);
 
   const value = {
     expenses,

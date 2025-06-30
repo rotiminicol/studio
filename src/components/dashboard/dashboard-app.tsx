@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -161,41 +162,6 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [floatingNotificationIndex, setFloatingNotificationIndex] = useState(0);
   const [showFloatingNotification, setShowFloatingNotification] = useState(false);
-
-  // Simulate notifications
-  useEffect(() => {
-    const mockNotifications: Notification[] = [
-      {
-        id: 1,
-        title: "Receipt Processed",
-        message: "Your Starbucks receipt has been processed successfully",
-        type: "system",
-        is_read: false,
-        created_at: Date.now(),
-        user_id: 1,
-      },
-      {
-        id: 2,
-        title: "Budget Alert",
-        message: "You've used 80% of your dining budget this month",
-        type: "system",
-        is_read: false,
-        created_at: Date.now(),
-        user_id: 1,
-      },
-      {
-        id: 3,
-        title: "AI Insights",
-        message: "New spending insights are available for review",
-        type: "system",
-        is_read: true,
-        created_at: Date.now(),
-        user_id: 1,
-      }
-    ];
-    
-    markNotificationRead(mockNotifications[0].id);
-  }, [markNotificationRead]);
 
   // Floating notification carousel
   useEffect(() => {
