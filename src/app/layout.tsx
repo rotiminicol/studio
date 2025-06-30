@@ -6,6 +6,9 @@ import { AuthProvider } from '@/contexts/auth-context';
 export const metadata: Metadata = {
   title: 'Fluxpense - Effortless Expense Mastery',
   description: 'A Next-Gen Mobile Expense Manager App. Track expenses, scan receipts, and gain AI insights effortlessly.',
+  icons: {
+    icon: '/big bird.jpg',
+  },
 };
 
 export default function RootLayout({
