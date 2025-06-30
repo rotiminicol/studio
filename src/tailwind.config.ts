@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -86,36 +87,27 @@ export default {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
-        'float': {
+        'subtle-float': {
           '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
+          '50%': { transform: 'translateY(-8px)' },
         },
-        'float-slow': {
-          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
-          '50%': { transform: 'translateY(-20px) rotate(2deg)' },
+        'blob': {
+          '0%': { transform: 'translate(0px, 0px) scale(1)' },
+          '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+          '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+          '100%': { transform: 'translate(0px, 0px) scale(1)' },
         },
-        'spin-y': {
-          '0%': { transform: 'rotateY(0deg)' },
-          '100%': { transform: 'rotateY(360deg)' },
+        'rotate-slow': {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' },
         },
-        'pulse-glow': {
-          '0%, 100%': { 
-            boxShadow: '0 0 8px hsl(var(--primary)), 0 0 12px hsl(var(--accent))',
-            transform: 'scale(1)',
-          },
-          '50%': { 
-            boxShadow: '0 0 16px hsl(var(--primary)), 0 0 24px hsl(var(--accent))',
-            transform: 'scale(1.05)',
-           },
-        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'float': 'float 6s ease-in-out infinite',
-        'float-slow': 'float-slow 8s ease-in-out infinite',
-        'spin-y': 'spin-y 10s linear infinite',
-        'pulse-glow': 'pulse-glow 4s ease-in-out infinite',
+        'subtle-float': 'subtle-float 8s ease-in-out infinite',
+        'blob': 'blob 10s ease-in-out infinite',
+        'rotate-slow': 'rotate-slow 20s linear infinite',
       },
     },
   },

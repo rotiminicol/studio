@@ -23,7 +23,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Check if we should use mock auth (when API URLs are not configured)
 const useMockAuth = () => {
   return !process.env.NEXT_PUBLIC_XANO_AUTH_API_URL || 
          process.env.NEXT_PUBLIC_XANO_AUTH_API_URL === 'undefined';
@@ -36,78 +35,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
   const isMockAuth = useMockAuth();
 
-  const isPublicPage = publicPages.includes(pathname);
-  const isAuthPage = authPages.includes(pathname);
+  const handleRedirects = useCallback((currentUser: User | null) => {
+    const isPublicPage = publicPages.includes(pathname);
+    const isAuthPage = authPages.includes(pathname);
+    const isAuthenticated = !!currentUser;
+    const isOnboarded = !!currentUser?.onboarding_complete;
 
-  const handleRedirects = useCallback(() => {
-      const isAuthenticated = !!user;
-
-      if (!isAuthenticated) {
-          if (!isPublicPage && !isAuthPage) {
-              router.push('/auth');
-          }
-          return;
+    if (!isAuthenticated) {
+      if (!isPublicPage && !isAuthPage) {
+        router.push('/auth');
       }
-      
-      const isOnboarded = user?.onboarding_complete;
-
-      if (isOnboarded && pathname === '/onboarding') {
-        router.push('/dashboard');
-        return;
-      }
-
-      if (isAuthPage) {
-          router.push(isOnboarded ? '/dashboard' : '/onboarding');
-      } else if (!isPublicPage && !isOnboarded && pathname !== '/onboarding') {
-          router.push('/onboarding');
-      }
-
-  }, [user, router, pathname, isPublicPage, isAuthPage]);
-
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    const storedToken = localStorage.getItem('authToken');
-
-    if (!storedToken) {
-      setIsLoading(false);
-      handleRedirects();
       return;
     }
     
-    if (token && user) {
-        setIsLoading(false);
-        handleRedirects();
-        return;
+    if (isAuthPage) {
+        router.push(isOnboarded ? '/dashboard' : '/onboarding');
+    } else if (!isOnboarded && pathname !== '/onboarding') {
+        router.push('/onboarding');
     }
-    
-    if (storedToken && !token) {
+  }, [pathname, router]);
+
+  const validateToken = useCallback(async () => {
+    const storedToken = localStorage.getItem('authToken');
+    if (storedToken) {
+      try {
         const authMethod = isMockAuth ? mockAuth : xanoAuth;
-        authMethod.getMe(storedToken)
-          .then(userData => {
-            setUser(userData);
-            setToken(storedToken);
-          })
-          .catch((error) => {
-            console.error('Token validation failed:', error);
-            localStorage.removeItem('authToken');
-            setUser(null);
-            setToken(null);
-          })
-          .finally(() => {
-            setIsLoading(false);
-          });
+        const userData = await authMethod.getMe(storedToken);
+        setUser(userData);
+        setToken(storedToken);
+        handleRedirects(userData);
+      } catch (error) {
+        console.error('Token validation failed:', error);
+        localStorage.removeItem('authToken');
+        setUser(null);
+        setToken(null);
+        handleRedirects(null);
+      }
+    } else {
+      handleRedirects(null);
     }
+    setIsLoading(false);
+  }, [handleRedirects, isMockAuth]);
 
-  }, [pathname, mounted, user, token, handleRedirects, isMockAuth, router]);
-
+  useEffect(() => {
+    validateToken();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const handleAuthSuccess = async (authToken: string) => {
     localStorage.setItem('authToken', authToken);
@@ -116,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userData = await authMethod.getMe(authToken);
         setUser(userData);
         setToken(authToken);
+        toast({ title: 'Welcome!', description: 'You have been successfully logged in.' });
     } catch (error) {
         console.error('Failed to get user data after auth:', error);
         toast({ variant: 'destructive', title: 'Authentication Failed', description: 'Could not retrieve user details.' });
@@ -135,7 +114,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!authToken) throw new Error('No authentication token received from server');
       
       await handleAuthSuccess(authToken);
-      toast({ title: 'Welcome back!', description: 'You have been successfully logged in.' });
     } catch (error: any) {
       console.error('Login error:', error);
       toast({ 
@@ -160,7 +138,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!authToken) throw new Error('No authentication token received from server');
       
       await handleAuthSuccess(authToken);
-      toast({ title: 'Account Created!', description: 'Welcome to Fluxpense! Let\'s get you set up.' });
     } catch (error: any) {
       console.error('Signup error:', error);
       toast({ 
@@ -194,7 +171,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!authToken) throw new Error('No authentication token received from Google login');
       
       await handleAuthSuccess(authToken);
-      toast({ title: 'Welcome!', description: 'You have been successfully logged in with Google.' });
     } catch (error: any) {
       console.error('Google login error:', error);
       toast({ 
@@ -211,38 +187,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const completeOnboarding = async (data: { account_type: string }) => {
-    if (!token || !user) {
-      toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to complete onboarding.' });
-      return;
+    if (!token) {
+        toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to complete onboarding.' });
+        throw new Error('Not authenticated');
     }
 
-    setIsLoading(true);
-    const updatedUser = {
-      ...user,
-      ...data,
-      onboarding_complete: true,
-    };
-
     try {
-      const authMethod = isMockAuth ? mockAuth : xanoAuth;
-      await authMethod.updateMe(token, {
-        account_type: data.account_type,
-        onboarding_complete: true
-      });
-       setUser(updatedUser);
+        const authMethod = isMockAuth ? mockAuth : xanoAuth;
+        const updatedUser = await authMethod.updateMe(token, {
+            account_type: data.account_type,
+            onboarding_complete: true
+        });
+        setUser(updatedUser);
     } catch (error: any) {
-      // If the API call fails, log it for the developer but still try to unblock the user.
-      console.error('Onboarding API call failed:', error);
-      toast({ variant: 'destructive', title: 'Onboarding Failed', description: 'Could not save onboarding status. Please try again later.' });
-      setUser(updatedUser); // Still update locally to unblock the user for the current session.
-    } finally {
-      setIsLoading(false);
+        console.error('Onboarding API call failed:', error);
+        toast({ variant: 'destructive', title: 'Onboarding Failed', description: 'Could not save onboarding status. Please try again later.' });
+        throw error; // Re-throw error to be caught in the component
     }
   };
 
   const value = { user, token, login, signup, logout, isLoading, isAuthenticated: !!user && !!token, continueWithGoogle, completeOnboarding };
 
-  if (isLoading || !mounted) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />

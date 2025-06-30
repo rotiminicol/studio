@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import Link from "next/link";
@@ -107,9 +108,9 @@ export function Hero() {
           </div>
           
           {/* Right Column - Visual */}
-          <div className="relative h-[500px] flex items-center justify-center">
+          <div className="relative h-[500px] flex items-center justify-center animate-in fade-in-0 slide-in-from-right-12 duration-1000">
             {/* Floating Cards */}
-            <div className="absolute -top-8 -left-8 w-64 h-36 bg-gradient-to-br from-white to-gray-50 dark:from-card dark:to-card/80 rounded-2xl p-5 shadow-2xl border border-border/20 animate-float-slow z-20">
+            <div className="absolute -top-8 -left-8 w-64 h-36 bg-gradient-to-br from-white to-gray-50 dark:from-card dark:to-card/80 rounded-2xl p-5 shadow-2xl border border-border/20 animate-subtle-float z-20">
               <div className="flex items-center justify-between mb-3">
                 <div className="font-bold text-sm">Monthly Savings</div>
                 <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
@@ -124,7 +125,7 @@ export function Hero() {
               </div>
             </div>
             
-            <div className="absolute -bottom-8 -right-8 w-72 h-40 bg-gradient-to-br from-white to-gray-50 dark:from-card dark:to-card/80 rounded-2xl p-5 shadow-2xl border border-border/20 animate-float-slow z-20" style={{animationDelay: '2s'}}>
+            <div className="absolute -bottom-8 -right-8 w-72 h-40 bg-gradient-to-br from-white to-gray-50 dark:from-card dark:to-card/80 rounded-2xl p-5 shadow-2xl border border-border/20 animate-subtle-float z-20" style={{animationDelay: '2s'}}>
               <div className="flex items-center justify-between mb-3">
                 <div className="font-bold text-sm">AI Processing</div>
                 <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
@@ -138,7 +139,7 @@ export function Hero() {
               </div>
             </div>
             
-            <div className="absolute top-1/2 -right-12 w-56 h-32 bg-gradient-to-br from-white to-gray-50 dark:from-card dark:to-card/80 rounded-2xl p-5 shadow-2xl border border-border/20 animate-float-slow z-10" style={{animationDelay: '1s'}}>
+            <div className="absolute top-1/2 -right-12 w-56 h-32 bg-gradient-to-br from-white to-gray-50 dark:from-card dark:to-card/80 rounded-2xl p-5 shadow-2xl border border-border/20 animate-subtle-float z-10" style={{animationDelay: '1s'}}>
               <div className="flex items-center justify-between mb-2">
                 <div className="font-bold text-sm">Budget Alert</div>
                 <div className="text-xs font-medium text-amber-500">80% Used</div>
