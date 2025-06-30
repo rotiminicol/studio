@@ -1,9 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserPlus, Shield, Activity } from "lucide-react";
+import { Users, UserPlus, Shield, Activity, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DashboardContainer } from "@/components/dashboard/dashboard-app";
+import Link from 'next/link';
 
 const teamMembers = [
   {
@@ -40,16 +41,24 @@ export default function TeamPage() {
       />
       <div className="relative z-10">
         <DashboardContainer>
-          <div className="space-y-8 p-4 sm:p-6 md:p-8">
-            <div className="flex items-center justify-between">
+          <div className="space-y-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-bold tracking-tight">Team Management</h1>
-                <p className="text-muted-foreground">Manage your team members and their permissions</p>
+                <p className="text-muted-foreground">Manage your team members and their permissions.</p>
               </div>
-              <Button className="button-glow">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Invite Member
-              </Button>
+              <div className="flex gap-2">
+                <Link href="/dashboard/overview">
+                  <Button variant="outline">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Overview
+                  </Button>
+                </Link>
+                <Button className="button-glow">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Invite Member
+                </Button>
+              </div>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -101,12 +110,12 @@ export default function TeamPage() {
             <Card className="glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '400ms'}}>
               <CardHeader>
                 <CardTitle>Team Members</CardTitle>
-                <CardDescription>Manage your team members and their access levels</CardDescription>
+                <CardDescription>Manage your team members and their access levels.</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {teamMembers.map((member, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border border-primary/10 rounded-lg hover:bg-primary/5 transition-colors animate-in fade-in-0" style={{animationDelay: `${index * 100}ms`}}>
+                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors animate-in fade-in-0" style={{animationDelay: `${500 + index * 100}ms`}}>
                       <div className="flex items-center gap-4">
                         <Avatar>
                           <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white">
@@ -123,7 +132,7 @@ export default function TeamPage() {
                           <div className="text-sm font-medium">{member.expenses} expenses</div>
                           <Badge 
                             variant={member.status === 'Active' ? 'default' : 'outline'}
-                            className={member.status === 'Active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : ''}
+                            className={member.status === 'Active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}
                           >
                             {member.status}
                           </Badge>

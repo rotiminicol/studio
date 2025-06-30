@@ -42,14 +42,14 @@ export function Notifications() {
   }
 
   return (
-    <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+    <Card className="glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <div>
             <CardTitle>Notifications</CardTitle>
-            <CardDescription>All your recent account activity.</CardDescription>
+            <CardDescription>All your recent account activity and alerts.</CardDescription>
           </div>
-          <Button onClick={markAllNotificationsRead} disabled={notifications.every(n => n.is_read)}>
+          <Button onClick={markAllNotificationsRead} disabled={notifications.every(n => n.is_read)} className="w-full md:w-auto">
             <Check className="mr-2 h-4 w-4" />
             Mark all as read
           </Button>
@@ -58,23 +58,23 @@ export function Notifications() {
       <CardContent>
         {Object.keys(groupedNotifications).length > 0 ? (
           <div className="space-y-8">
-            {Object.entries(groupedNotifications).map(([groupTitle, notifs]) => (
-              <div key={groupTitle}>
-                <h3 className="text-lg font-semibold mb-4 animate-in fade-in-0" style={{animationDelay: '100ms'}}>{groupTitle}</h3>
+            {Object.entries(groupedNotifications).map(([groupTitle, notifs], groupIndex) => (
+              <div key={groupTitle} className="animate-in fade-in-0" style={{animationDelay: `${groupIndex * 150}ms`}}>
+                <h3 className="text-lg font-semibold mb-4">{groupTitle}</h3>
                 <div className="space-y-4">
                   {notifs.map((notification, index) => (
                     <div key={notification.id} className={cn(
-                        "flex items-start gap-4 p-4 rounded-lg border transition-colors hover:bg-muted/50 animate-in fade-in-0 slide-in-from-bottom-4", 
-                        !notification.is_read && "bg-muted/50"
+                        "flex items-start gap-4 p-4 rounded-lg border transition-colors hover:bg-muted/50 animate-in fade-in-0 slide-in-from-bottom-2", 
+                        !notification.is_read && "bg-muted/50 border-primary/30"
                       )}
                       style={{animationDelay: `${150 + index * 50}ms`}}
                     >
-                        <div className="p-2 bg-background rounded-full">{getIcon(notification.type)}</div>
+                        <div className="p-2 bg-background rounded-full mt-1">{getIcon(notification.type)}</div>
                         <div className="flex-1">
                             <p className="font-semibold">{notification.title}</p>
                             <p className="text-sm text-muted-foreground">{notification.message}</p>
                         </div>
-                        <p className="text-xs text-muted-foreground whitespace-nowrap">
+                        <p className="text-xs text-muted-foreground whitespace-nowrap mt-1">
                             {formatRelative(new Date(notification.created_at), new Date())}
                         </p>
                     </div>

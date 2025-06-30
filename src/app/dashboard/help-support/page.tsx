@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import React from "react";
+import { Mail, Phone, LifeBuoy, ArrowLeft } from "lucide-react";
+import Link from 'next/link';
+import { DashboardContainer } from "@/components/dashboard/dashboard-app";
 
 const bgImage = "/12.jpg";
 
@@ -17,36 +19,86 @@ export default function HelpSupportPage() {
         style={{ backgroundImage: `url(${bgImage})`, opacity: 0.18 }}
       />
       <div className="relative z-10">
-        <div className="max-w-2xl mx-auto w-full p-4 sm:p-6 md:p-8">
-          <Card className="shadow-lg border-0">
-            <CardHeader className="pb-4">
-              <CardTitle>Help & Support</CardTitle>
-              <CardDescription>
-                Need assistance? Reach out to us using the form below or email <a href="mailto:support@example.com" className="underline text-primary">support@example.com</a>.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form className="space-y-6">
-                <div>
-                  <Label htmlFor="name">Name</Label>
-                  <Input id="name" type="text" placeholder="Your Name" className="mt-1" />
+        <DashboardContainer>
+            <div className="space-y-8">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Help & Support</h1>
+                    <p className="text-muted-foreground">We're here to help you with any questions.</p>
+                  </div>
+                  <Link href="/dashboard/overview">
+                    <Button variant="outline">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back to Overview
+                    </Button>
+                  </Link>
                 </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="you@email.com" className="mt-1" />
+                
+                <div className="grid lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-1 space-y-6">
+                        <Card className="glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+                           <CardHeader className="flex flex-row items-center gap-4">
+                                <Mail className="w-8 h-8 text-primary" />
+                                <div>
+                                    <CardTitle>Email Us</CardTitle>
+                                    <CardDescription>support@fluxpense.com</CardDescription>
+                                </div>
+                            </CardHeader>
+                        </Card>
+                        <Card className="glassmorphism border-accent/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '100ms'}}>
+                           <CardHeader className="flex flex-row items-center gap-4">
+                                <Phone className="w-8 h-8 text-accent" />
+                                 <div>
+                                    <CardTitle>Call Us</CardTitle>
+                                    <CardDescription>+1 (555) 123-4567</CardDescription>
+                                </div>
+                            </CardHeader>
+                        </Card>
+                        <Card className="glassmorphism border-blue-500/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '200ms'}}>
+                           <CardHeader className="flex flex-row items-center gap-4">
+                                <LifeBuoy className="w-8 h-8 text-blue-500" />
+                                 <div>
+                                    <CardTitle>FAQ</CardTitle>
+                                    <CardDescription>Visit our help center</CardDescription>
+                                </div>
+                            </CardHeader>
+                        </Card>
+                    </div>
+                    <div className="lg:col-span-2">
+                        <Card className="glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '300ms'}}>
+                            <CardHeader>
+                                <CardTitle>Send us a message</CardTitle>
+                                <CardDescription>Our team will get back to you within 24 hours.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <form className="space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <Label htmlFor="name">Name</Label>
+                                            <Input id="name" placeholder="Your Name" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label htmlFor="email">Email</Label>
+                                            <Input id="email" type="email" placeholder="you@example.com" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="subject">Subject</Label>
+                                        <Input id="subject" placeholder="How can we help?" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="message">Message</Label>
+                                        <Textarea id="message" placeholder="Describe your issue or question..." rows={5} />
+                                    </div>
+                                    <Button type="submit" className="w-full button-glow">Send Message</Button>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
-                <div>
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea id="message" placeholder="How can we help you?" rows={5} className="mt-1" />
-                </div>
-                <Button className="w-full mt-2" type="button" disabled>
-                  Send Message (Demo Only)
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+        </DashboardContainer>
       </div>
     </div>
   );
-} 
+}
