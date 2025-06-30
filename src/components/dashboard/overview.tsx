@@ -87,36 +87,45 @@ function DesktopOverview() {
     }, []);
 
     return (
-        <div className="space-y-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Welcome back, {demoUser.name?.split(' ')[0]}!</h1>
-            <p className="text-muted-foreground">Here's your financial snapshot for this month.</p>
+        <div className="space-y-10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-extrabold tracking-tight mb-1">Welcome back, {demoUser.name?.split(' ')[0]}!</h1>
+              <p className="text-muted-foreground text-lg">Here's your financial snapshot for this month.</p>
+            </div>
+            <Button className="button-glow flex items-center gap-2 mt-2 md:mt-0">
+              <ArrowRight className="w-4 h-4 animate-bounce-right" />
+              Download Report
+            </Button>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {[
-              { title: "Total Spent", value: `$${totalSpent.toFixed(2)}`, change: "+20.1% vs last month", Icon: DollarSign, color: "text-primary" },
-              { title: "Budget Remaining", value: `$${(totalBudget - totalSpent).toFixed(2)}`, change: `of $${totalBudget.toFixed(2)}`, Icon: Target, color: "text-accent" },
-              { title: "Expenses Logged", value: `+${staticExpenses.length}`, change: "+5 since last week", Icon: Receipt, color: "text-blue-500" },
-              { title: "Top Category", value: topCategory, change: "Biggest spend area", Icon: Zap, color: "text-orange-500" },
+              { title: "Total Spent", value: `$${totalSpent.toFixed(2)}`, change: "+20.1% vs last month", Icon: DollarSign, color: "text-primary", bg: "bg-gradient-to-br from-primary/10 to-primary/5" },
+              { title: "Budget Remaining", value: `$${(totalBudget - totalSpent).toFixed(2)}`, change: `of $${totalBudget.toFixed(2)}`, Icon: Target, color: "text-accent", bg: "bg-gradient-to-br from-accent/10 to-accent/5" },
+              { title: "Expenses Logged", value: `+${staticExpenses.length}`, change: "+5 since last week", Icon: Receipt, color: "text-blue-500", bg: "bg-gradient-to-br from-blue-100/40 to-blue-50/40" },
+              { title: "Top Category", value: topCategory, change: "Biggest spend area", Icon: Zap, color: "text-orange-500", bg: "bg-gradient-to-br from-orange-100/40 to-orange-50/40" },
             ].map((stat, index) => (
-              <Card key={index} className="animate-in fade-in-0 slide-in-from-bottom-4" style={{animationDelay: `${index * 100}ms`}}>
+              <Card key={index} className={`shadow-xl glassmorphism border-0 hover:scale-[1.03] transition-transform duration-200 ${stat.bg} group animate-in fade-in-0 slide-in-from-bottom-4`} style={{animationDelay: `${index * 100}ms`}}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                  <stat.Icon className={`h-4 w-4 ${stat.color}`} />
+                  <CardTitle className="text-sm font-semibold group-hover:text-primary transition-colors duration-200">{stat.title}</CardTitle>
+                  <span className="rounded-full p-2 bg-white/60 shadow group-hover:scale-110 transition-transform duration-200">
+                    <stat.Icon className={`h-5 w-5 ${stat.color} group-hover:animate-wiggle`} />
+                  </span>
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-                  <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
+                  <div className={`text-3xl font-extrabold ${stat.color}`}>{stat.value}</div>
+                  <p className="text-xs text-muted-foreground mt-2 font-medium">{stat.change}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          <div className="grid gap-6 md:grid-cols-5">
-            <Card className="md:col-span-3 animate-in fade-in-0 slide-in-from-bottom-4" style={{animationDelay: '400ms'}}>
-              <CardHeader>
-                <CardTitle>Daily Spend Trend</CardTitle>
+          <div className="grid gap-8 md:grid-cols-5">
+            <Card className="md:col-span-3 shadow-2xl glassmorphism border-0 animate-in fade-in-0 slide-in-from-bottom-4" style={{animationDelay: '400ms'}}>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-lg font-bold">Daily Spend Trend</CardTitle>
+                <Badge className="bg-primary/10 text-primary border-primary/20">Bar Chart</Badge>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -130,19 +139,26 @@ function DesktopOverview() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-            <Card className="md:col-span-2 animate-in fade-in-0 slide-in-from-bottom-4" style={{animationDelay: '500ms'}}>
-              <CardHeader>
-                <CardTitle>Recent Expenses</CardTitle>
-                <CardDescription>Your last 5 transactions.</CardDescription>
+            <Card className="md:col-span-2 shadow-2xl glassmorphism border-0 animate-in fade-in-0 slide-in-from-bottom-4" style={{animationDelay: '500ms'}}>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-lg font-bold">Recent Expenses</CardTitle>
+                <Badge className="bg-blue-100 text-blue-700 border-blue-200">Last 5</Badge>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableBody>
                     {staticExpenses.slice(0, 5).map((expense) => (
-                      <TableRow key={expense.id} className="hover:bg-primary/5 transition-colors">
+                      <TableRow key={expense.id} className="hover:bg-primary/10 transition-colors group">
                         <TableCell>
-                          <div className="font-medium">{expense.vendor}</div>
-                          <div className="text-xs text-muted-foreground">{expense.category?.name || 'N/A'}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-lg">
+                              {expense.vendor[0]}
+                            </span>
+                            <div>
+                              <div className="font-semibold group-hover:text-primary transition-colors">{expense.vendor}</div>
+                              <div className="text-xs text-muted-foreground">{expense.category?.name || 'N/A'}</div>
+                            </div>
+                          </div>
                         </TableCell>
                         <TableCell className="text-right font-semibold text-primary">
                           ${expense.amount.toFixed(2)}

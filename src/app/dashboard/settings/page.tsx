@@ -1,9 +1,10 @@
 import { SettingsTab } from "@/components/dashboard/settings";
+import { DashboardContainer } from "@/components/dashboard/dashboard-app";
 
 export default function SettingsPage() {
     return (
-        <div className="p-4 sm:p-6 md:p-8">
+        <DashboardContainer>
             <SettingsTab />
-        </div>
+        </DashboardContainer>
     );
 }

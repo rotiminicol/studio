@@ -198,15 +198,25 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }
-            side={side}
+            side="left"
+            className="!p-0 bg-white/70 backdrop-blur-xl border-r border-primary/10 shadow-2xl rounded-tr-2xl rounded-br-2xl overflow-hidden animate-slide-in-from-left duration-500"
           >
-            <div className="flex h-full w-full flex-col">{children}</div>
+            <div className="relative z-10 h-full flex flex-col">
+              {/* Gradient overlay for extra polish */}
+              <div className="absolute inset-0 pointer-events-none z-0 bg-gradient-to-br from-primary/10 via-white/30 to-accent/10" />
+              {/* Make close button always on top and more prominent */}
+              <button
+                type="button"
+                onClick={() => setOpenMobile(false)}
+                className="absolute right-4 top-4 z-20 bg-white/80 hover:bg-primary/10 text-primary rounded-full p-3 shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                aria-label="Close sidebar"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              {children}
+            </div>
           </SheetContent>
         </Sheet>
       )
