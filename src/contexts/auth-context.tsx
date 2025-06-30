@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -103,26 +102,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
   
   const completeOnboarding = async () => {
-    if (!token) {
-        toast({ variant: 'destructive', title: 'Authentication Error', description: 'No authentication token found.' });
-        throw new Error("No token found");
+    // Local-only onboarding completion (no Xano call)
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Onboarding Error', description: 'No user found.' });
+      throw new Error('No user found');
     }
     setLoading(true);
     try {
-        // Use POST to /auth/me to update the user record. This is a standard Xano pattern.
-        const { data: updatedUser } = await authApi.post(
-            '/auth/me', 
-            { onboarding_complete: true },
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        setUser(updatedUser);
-        toast({ title: "Setup Complete!", description: "Welcome to your new dashboard." });
-    } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Onboarding Error', description: error.response?.data?.message || 'Could not complete onboarding.' });
+      // Update user state locally
+      const updatedUser = { ...user, onboarding_complete: true };
+      setUser(updatedUser);
+      // Optionally persist in localStorage
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      toast({ title: 'Setup Complete!', description: 'Welcome to your new dashboard.' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Onboarding Error', description: 'Could not complete onboarding.' });
       throw error;
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
