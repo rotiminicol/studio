@@ -82,10 +82,10 @@ export default function OnboardingPage() {
   const ActiveIcon = steps[currentStep].icon;
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col md:flex-row">
+    <div className="relative h-screen w-full flex flex-col md:flex-row overflow-hidden">
       {/* Image Section (Right on desktop, background on mobile) */}
       <div
-        className="hidden md:block md:w-1/2 h-screen relative"
+        className="hidden md:block md:w-1/2 h-full relative"
       >
         <Image
           src={steps[currentStep].image}
@@ -107,13 +107,13 @@ export default function OnboardingPage() {
         <div className="absolute inset-0 bg-black/40" />
       </div>
       {/* Form Section (Left on desktop, centered on mobile) */}
-      <div className="relative z-10 flex w-full md:w-1/2 min-h-screen items-center justify-center p-4 sm:p-6 md:p-8">
+      <div className="relative z-10 flex w-full md:w-1/2 h-full items-center justify-center p-4 sm:p-6 md:p-8 overflow-y-auto no-scrollbar">
         <motion.div
           key={steps[currentStep].id}
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full md:max-w-xl flex flex-col justify-center h-full"
+          className="w-full md:max-w-xl flex flex-col justify-center"
         >
           <Card className="w-full relative glassmorphism animate-in fade-in-0 slide-in-from-bottom-8 duration-500">
             <div className="flex flex-col items-center mb-4">
