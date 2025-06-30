@@ -1,32 +1,75 @@
 'use client';
 
-import Link from "next/link";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "/#features", label: "Features" },
+  { 
+    href: "/#features", 
+    label: "Features",
+    submenu: [
+      { href: "/features/expense-tracking", label: "Expense Tracking" },
+      { href: "/features/budgeting", label: "Budgeting" },
+      { href: "/features/reports-analytics", label: "Reports & Analytics" },
+    ]
+  },
   { href: "/#testimonials", label: "Testimonials" },
-  { href: "/#pricing", label: "Pricing" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ];
 
 export function Header() {
   const isMobile = useIsMobile();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleScrollTo = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setOpenDropdown(null);
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 md:px-6">
-        <Link href="/" className="group">
+    <header 
+      className={cn(
+        'sticky top-0 z-50 w-full transition-all duration-300 border-b',
+        isScrolled 
+          ? 'bg-background/90 backdrop-blur-md border-border/20 shadow-sm' 
+          : 'bg-background/80 backdrop-blur-sm border-transparent',
+        'supports-[backdrop-filter]:bg-background/80'
+      )}
+    >
+      <div className="container flex h-20 max-w-screen-2xl items-center justify-between px-4 md:px-8">
+        {/* Logo */}
+        <Link 
+          href="/" 
+          className="group relative z-10"
+          onClick={() => setOpenDropdown(null)}
+        >
           <div className="flex items-center gap-3">
-            {/* Enhanced Logo with Big Bird Image */}
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl shadow-lg group-hover:shadow-xl group-hover:shadow-primary/25 transition-all duration-300 group-hover:scale-110 group-hover:rotate-2 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl animate-pulse"></div>
-                <div className="relative w-full h-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl shadow-lg group-hover:shadow-xl group-hover:shadow-primary/25 transition-all duration-300 group-hover:scale-105 group-hover:rotate-1 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl animate-pulse"></div>
+                <div className="relative w-full h-full flex items-center justify-center p-1.5">
                   <Image
                     src="/big bird.jpg"
                     alt="Fluxpense Logo"
@@ -37,17 +80,15 @@ export function Header() {
                   />
                 </div>
               </div>
-              {/* Floating particles */}
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-all duration-500"></div>
-              <div className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-accent rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-all duration-500 delay-100"></div>
+              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-all duration-500"></div>
+              <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-accent rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-all duration-500 delay-100"></div>
             </div>
             
-            {/* Enhanced Typography */}
             <div className="flex flex-col">
-              <span className="text-xl font-black bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent leading-none group-hover:scale-105 transition-transform duration-300">
+              <span className="text-2xl font-black bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent leading-none group-hover:scale-105 transition-transform duration-300">
                 Fluxpense
               </span>
-              <span className="text-xs text-muted-foreground font-medium tracking-wider group-hover:text-primary transition-colors duration-300">
+              <span className="text-xs font-semibold tracking-wider text-muted-foreground group-hover:text-primary transition-colors duration-300">
                 AI FINANCE
               </span>
             </div>
@@ -55,52 +96,153 @@ export function Header() {
         </Link>
 
         {isMobile ? (
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:scale-110 transition-all duration-200">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-background/95 backdrop-blur-lg">
-              <nav className="flex flex-col gap-4 mt-8">
-                {navLinks.map((link) => (
+          <>
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="relative z-10 h-10 w-10 rounded-xl hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                >
+                  {isMenuOpen ? (
+                    <X className="h-5 w-5" />
+                  ) : (
+                    <Menu className="h-5 w-5" />
+                  )}
+                  <span className="sr-only">Toggle Menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent 
+                side="right" 
+                className="w-[280px] sm:w-[350px] p-0 bg-background/95 backdrop-blur-lg border-l border-border/20"
+                onInteractOutside={() => setIsMenuOpen(false)}
+              >
+                <div className="h-full overflow-y-auto">
+                  <nav className="flex flex-col py-6 px-5">
+                    {navLinks.map((link) => (
+                      <div key={link.href} className="border-b border-border/20 last:border-0">
+                        <Link
+                          href={link.href}
+                          onClick={(e) => {
+                            handleScrollTo(e, link.href);
+                            setIsMenuOpen(false);
+                          }}
+                          className="flex items-center justify-between py-4 text-base font-medium text-foreground/90 hover:text-primary transition-colors duration-200"
+                        >
+                          {link.label}
+                          {link.submenu && <ChevronDown className="h-4 w-4 ml-2 opacity-70" />}
+                        </Link>
+                        
+                        {link.submenu && (
+                          <div className="pl-4 pb-2 space-y-2">
+                            {link.submenu.map((subItem) => (
+                              <Link
+                                key={subItem.href}
+                                href={subItem.href}
+                                onClick={(e) => {
+                                  handleScrollTo(e, subItem.href);
+                                  setIsMenuOpen(false);
+                                }}
+                                className="block py-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                              >
+                                {subItem.label}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    
+                    <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-border/20">
+                      <Button 
+                        variant="outline" 
+                        asChild 
+                        className="h-11 rounded-xl font-medium hover:bg-primary/5 hover:border-primary/50 transition-all duration-200"
+                      >
+                        <Link href="/auth" onClick={() => setIsMenuOpen(false)}>Log In</Link>
+                      </Button>
+                      <Button 
+                        asChild 
+                        className="h-11 rounded-xl font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-200"
+                      >
+                        <Link href="/auth" onClick={() => setIsMenuOpen(false)}>Get Started Free</Link>
+                      </Button>
+                    </div>
+                  </nav>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </>
+        ) : (
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <div key={link.href} className="relative group">
+                <div className="flex items-center">
                   <Link
-                    key={link.href}
                     href={link.href}
-                    className="block px-2 py-3 text-lg font-medium hover:text-primary transition-colors duration-200 rounded-lg hover:bg-primary/5"
+                    onClick={(e) => handleScrollTo(e, link.href)}
+                    onMouseEnter={() => link.submenu && setOpenDropdown(link.href)}
+                    className={cn(
+                      'px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200',
+                      'text-foreground/80 hover:text-primary hover:bg-foreground/5',
+                      'flex items-center gap-1',
+                      openDropdown === link.href && 'text-primary bg-foreground/5'
+                    )}
                   >
                     {link.label}
+                    {link.submenu && (
+                      <ChevronDown className={cn(
+                        'h-4 w-4 ml-0.5 transition-transform duration-200',
+                        openDropdown === link.href ? 'rotate-180' : ''
+                      )} />
+                    )}
                   </Link>
-                ))}
-                <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-border/50">
-                  <Button variant="outline" asChild className="hover:bg-primary/5 hover:border-primary/50 transition-all duration-200">
-                    <Link href="/auth">Log In</Link>
-                  </Button>
-                  <Button asChild className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-200">
-                    <Link href="/auth">Sign Up</Link>
-                  </Button>
                 </div>
-              </nav>
-            </SheetContent>
-          </Sheet>
-        ) : (
-          <nav className="hidden md:flex items-center gap-8 text-sm">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="font-medium transition-all duration-200 hover:text-primary hover:scale-105 text-foreground/70 hover:text-foreground"
-              >
-                {link.label}
-              </Link>
+                
+                {link.submenu && (
+                  <div 
+                    className={cn(
+                      'absolute left-0 top-full mt-1 w-56 origin-top-left rounded-xl bg-background p-2 shadow-lg ring-1 ring-border/20 ring-opacity-5',
+                      'opacity-0 invisible transition-all duration-200 transform -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0',
+                      'backdrop-blur-lg bg-background/95 border border-border/20',
+                      openDropdown === link.href ? 'opacity-100 visible translate-y-0' : ''
+                    )}
+                    onMouseLeave={() => setOpenDropdown(null)}
+                  >
+                    <div className="py-1">
+                      {link.submenu.map((subItem) => (
+                        <Link
+                          key={subItem.href}
+                          href={subItem.href}
+                          onClick={(e) => {
+                            handleScrollTo(e, subItem.href);
+                            setOpenDropdown(null);
+                          }}
+                          className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-primary hover:bg-foreground/5 rounded-lg transition-colors duration-150"
+                        >
+                          {subItem.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" asChild className="hover:bg-primary/10 transition-all duration-200">
+            
+            <div className="flex items-center gap-2 ml-2">
+              <Button 
+                variant="ghost" 
+                asChild 
+                className="h-10 px-5 rounded-xl font-medium text-foreground/80 hover:text-primary hover:bg-foreground/5 transition-all duration-200"
+              >
                 <Link href="/auth">Log In</Link>
               </Button>
-              <Button asChild className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200">
-                <Link href="/auth">Sign Up</Link>
+              <Button 
+                asChild 
+                className="h-10 px-5 rounded-xl font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-200"
+              >
+                <Link href="/auth">Get Started Free</Link>
               </Button>
             </div>
           </nav>
