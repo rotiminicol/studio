@@ -11,14 +11,16 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, User, Building, Mail, PiggyBank, Users, PartyPopper, ArrowRight, ArrowLeft } from "lucide-react";
+import { Logo } from "@/components/logo";
+import Link from "next/link";
 
 const steps = [
-  { id: 1, title: "Welcome!", icon: User, image: "/1.jpg" },
-  { id: 2, title: "Account Type", icon: Building, image: "/2.jpg" },
-  { id: 3, title: "Connect Email", icon: Mail, image: "/3.jpg" },
-  { id: 4, title: "Financial Goals", icon: PiggyBank, image: "/4.jpg" },
-  { id: 5, title: "Invite Team", icon: Users, image: "/5.jpg" },
-  { id: 6, title: "You're all set!", icon: PartyPopper, image: "/6.jpg" },
+  { id: 1, title: "Welcome!", icon: User, image: "/3.jpg" },
+  { id: 2, title: "Account Type", icon: Building, image: "/4.jpg" },
+  { id: 3, title: "Connect Email", icon: Mail, image: "/5.jpg" },
+  { id: 4, title: "Financial Goals", icon: PiggyBank, image: "/6.jpg" },
+  { id: 5, title: "Invite Team", icon: Users, image: "/7.jpg" },
+  { id: 6, title: "You're all set!", icon: PartyPopper, image: "/8.jpg" },
 ];
 
 const slideVariants = {
@@ -78,69 +80,90 @@ export function OnboardingForm() {
   const ActiveIcon = steps[currentStep].icon;
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
-      <AnimatePresence mode="sync">
+    <div className="relative min-h-screen w-full flex flex-col md:flex-row">
+      {/* Image Section (Right on desktop, background on mobile) */}
+      <div
+        className="hidden md:block md:w-1/2 h-screen"
+        style={{ minHeight: '100vh' }}
+      >
+        <img
+          src={steps[currentStep].image}
+          alt={steps[currentStep].title}
+          className="object-cover w-full h-full"
+          style={{ minHeight: 0 }}
+        />
+      </div>
+      {/* Mobile background image */}
+      <div className="absolute inset-0 z-0 md:hidden">
+        <img
+          src={steps[currentStep].image}
+          alt={steps[currentStep].title + ' Mobile Background'}
+          className="w-full h-full object-cover absolute top-0 left-0 opacity-80 blur-sm"
+        />
+        <div className="absolute inset-0 bg-black/40" />
+      </div>
+      {/* Form Section (Left on desktop, centered on mobile) */}
+      <div className="relative z-10 flex w-full md:w-1/2 min-h-screen items-center justify-center md:items-stretch md:justify-stretch p-0 bg-transparent">
         <motion.div
-            key={steps[currentStep].id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.15 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="absolute inset-0 z-0"
+          key={steps[currentStep].id}
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="w-full md:max-w-2xl flex flex-col justify-center h-full px-0 md:px-8"
         >
-          <img src={steps[currentStep].image} alt={steps[currentStep].title} className="h-full w-full object-cover" />
-        </motion.div>
-      </AnimatePresence>
-      <div className="absolute inset-0 z-10 bg-gradient-to-br from-background via-background/80 to-background" />
-
-      <Card className="w-full max-w-2xl relative z-20 glassmorphism animate-in fade-in-0 slide-in-from-bottom-8 duration-500">
-        <CardHeader>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-muted-foreground">Step {currentStep + 1} of {steps.length}</span>
-            <div className="flex items-center gap-2">
-              <ActiveIcon className="h-5 w-5 text-primary" />
-              <CardTitle className="text-2xl">{steps[currentStep].title}</CardTitle>
+          <Card className="w-full relative glassmorphism animate-in fade-in-0 slide-in-from-bottom-8 duration-500 shadow-none border-none bg-card/70 md:bg-transparent px-0 md:px-6 py-6 md:py-10 rounded-2xl md:rounded-3xl backdrop-blur-xl">
+            <div className="flex flex-col items-center mb-4">
+              <Link href="/">
+                <Logo variant="default" size="lg" className="cursor-pointer" />
+              </Link>
             </div>
-          </div>
-          <Progress value={progress} className="w-full" />
-        </CardHeader>
-        
-        <div className="overflow-hidden relative h-80">
-          <AnimatePresence initial={false} custom={direction}>
-              <motion.div
-                key={currentStep}
-                custom={direction}
-                variants={slideVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                className="absolute w-full px-6"
-              >
+            <CardHeader>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-medium text-muted-foreground">Step {currentStep + 1} of {steps.length}</span>
+                <div className="flex items-center gap-2">
+                  <ActiveIcon className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-2xl font-bold tracking-tight leading-tight md:leading-tight md:text-3xl">{steps[currentStep].title}</CardTitle>
+                </div>
+              </div>
+              <Progress value={progress} className="w-full" />
+            </CardHeader>
+            <div className="overflow-hidden relative h-80">
+              <AnimatePresence initial={false} custom={direction}>
+                <motion.div
+                  key={currentStep}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="absolute w-full px-2 md:px-6"
+                >
                   <StepContent step={currentStep} />
-              </motion.div>
-          </AnimatePresence>
-        </div>
-
-        <CardFooter className="flex justify-between border-t pt-6">
-          <Button variant="outline" onClick={prevStep} disabled={currentStep === 0 || isFinishing}>
-            <ArrowLeft className="mr-2" /> Previous
-          </Button>
-          {currentStep < steps.length - 2 ? (
-            <Button onClick={nextStep}>
-              Next <ArrowRight className="ml-2" />
-            </Button>
-          ) : currentStep === steps.length - 2 ? (
-            <Button onClick={nextStep} className="button-glow">
-              Finish Setup <Check className="ml-2" />
-            </Button>
-          ) : (
-            <Button onClick={finishOnboarding} className="button-glow bg-green-500 hover:bg-green-600" disabled={isFinishing}>
-              {isFinishing ? "Redirecting..." : "Go to Dashboard"}
-              {!isFinishing && <ArrowRight className="ml-2" />}
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+            <CardFooter className="flex flex-col md:flex-row justify-between border-t pt-6 gap-4 md:gap-0">
+              <Button variant="outline" onClick={prevStep} disabled={currentStep === 0 || isFinishing} className="w-full md:w-auto">
+                <ArrowLeft className="mr-2" /> Previous
+              </Button>
+              {currentStep < steps.length - 2 ? (
+                <Button onClick={nextStep} className="w-full md:w-auto button-glow">
+                  Next <ArrowRight className="ml-2" />
+                </Button>
+              ) : currentStep === steps.length - 2 ? (
+                <Button onClick={nextStep} className="w-full md:w-auto button-glow">
+                  Finish Setup <Check className="ml-2" />
+                </Button>
+              ) : (
+                <Button onClick={finishOnboarding} className="w-full md:w-auto button-glow bg-green-500 hover:bg-green-600" disabled={isFinishing}>
+                  {isFinishing ? "Redirecting..." : "Go to Dashboard"}
+                  {!isFinishing && <ArrowRight className="ml-2" />}
+                </Button>
+              )}
+            </CardFooter>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   );
 }
