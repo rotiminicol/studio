@@ -41,7 +41,7 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function AuthPage() {
   const router = useRouter();
-  const { login, signup, loading: authLoading, isAuthenticated } = useAuth();
+  const { user, login, signup, loading: authLoading, isAuthenticated } = useAuth();
   const [loginPasswordVisible, setLoginPasswordVisible] = useState(false);
   const [signupPasswordVisible, setSignupPasswordVisible] = useState(false);
   
@@ -54,10 +54,15 @@ export default function AuthPage() {
   });
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/dashboard/overview');
+    // This effect handles redirection for already authenticated users.
+    if (isAuthenticated && user) {
+      if (user.onboarding_complete) {
+        router.push('/dashboard/overview');
+      } else {
+        router.push('/onboarding');
+      }
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
   
   const handleLogin = async (values: z.infer<typeof loginSchema>) => {
     try {
@@ -79,7 +84,11 @@ export default function AuthPage() {
     e.preventDefault();
     // This is where you would trigger Xano's Google OAuth flow.
     // For now, it will simulate a successful auth by redirecting.
-    router.push('/dashboard/overview');
+    if(user?.onboarding_complete){
+        router.push('/dashboard/overview');
+    } else {
+        router.push('/onboarding');
+    }
   };
 
   if (isAuthenticated === null || isAuthenticated) {
