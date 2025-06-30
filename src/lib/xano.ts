@@ -47,7 +47,7 @@ export const xanoAuth = {
   
   updateMe: (token: string, body: any) => {
     return xanoFetch(`${authApiUrl}/auth/me`, { 
-      method: 'PATCH',
+      method: 'POST', // Changed from PATCH to POST
       body: JSON.stringify(body), 
       headers: { 'Authorization': `Bearer ${token}` } 
     });
