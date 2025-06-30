@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UploadCloud, Bot, CheckCircle } from "lucide-react";
+import { Loader2, UploadCloud, Bot, CheckCircle, ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import { Skeleton } from "../ui/skeleton";
 import type { Category, Expense, Budget } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { staticCategories, staticScannedData, staticImportedData } from "@/lib/mock-data";
+import Link from "next/link";
 
 type ScanReceiptOutput = Omit<Expense, 'id' | 'created_at' | 'user_id' | 'notes' | 'source' | 'category'>;
 type ImportExpenseDataFromEmailOutput = Omit<Expense, 'id' | 'created_at' | 'user_id' | 'notes' | 'source'>;
@@ -166,57 +167,68 @@ export function Expenses() {
   )
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Scan Receipt</CardTitle>
-          <CardDescription>Upload an image of your receipt to automatically extract expense details.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div>
-            <Label htmlFor="receipt-upload" className="border-2 border-dashed border-muted-foreground/50 rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors">
-              {previewUrl ? (
-                <Image src={previewUrl} alt="Receipt preview" width={200} height={200} className="max-h-48 w-auto object-contain rounded-md" />
-              ) : (
-                <>
-                  <UploadCloud className="w-12 h-12 text-muted-foreground" />
-                  <span className="mt-2 text-sm font-medium">Click or drag to upload</span>
-                  <span className="mt-1 text-xs text-muted-foreground">PNG, JPG, or WEBP (max 5MB)</span>
-                </>
-              )}
-            </Label>
-            <Input id="receipt-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleFileChange} />
-          </div>
-          <Button onClick={handleScanReceipt} disabled={!file || isScanning} className="w-full mt-4">
-            {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Bot className="mr-2" />}
-            {isScanning ? "Scanning with AI..." : "Scan with AI"}
-          </Button>
+    <div className="space-y-6">
+       <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold tracking-tight">AI Expense Entry</h1>
+            <Link href="/dashboard/overview">
+              <Button variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Overview
+              </Button>
+            </Link>
+        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+          <CardHeader>
+            <CardTitle>Scan Receipt</CardTitle>
+            <CardDescription>Upload an image of your receipt to automatically extract expense details.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <Label htmlFor="receipt-upload" className="border-2 border-dashed border-muted-foreground/50 rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors">
+                {previewUrl ? (
+                  <Image src={previewUrl} alt="Receipt preview" width={200} height={200} className="max-h-48 w-auto object-contain rounded-md" />
+                ) : (
+                  <>
+                    <UploadCloud className="w-12 h-12 text-muted-foreground" />
+                    <span className="mt-2 text-sm font-medium">Click or drag to upload</span>
+                    <span className="mt-1 text-xs text-muted-foreground">PNG, JPG, or WEBP (max 5MB)</span>
+                  </>
+                )}
+              </Label>
+              <Input id="receipt-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleFileChange} />
+            </div>
+            <Button onClick={handleScanReceipt} disabled={!file || isScanning} className="w-full mt-4">
+              {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Bot className="mr-2" />}
+              {isScanning ? "Scanning with AI..." : "Scan with AI"}
+            </Button>
 
-          {isScanning && <LoadingSkeleton />}
-          {scannedData && <DataForm data={scannedData} source="Receipt" />}
-        </CardContent>
-      </Card>
+            {isScanning && <LoadingSkeleton />}
+            {scannedData && <DataForm data={scannedData} source="Receipt" />}
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Import from Email</CardTitle>
-          <CardDescription>Paste the content of an expense email (e.g., from Uber, Amazon) to import it.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            placeholder="Paste your email content here..."
-            rows={10}
-            value={emailContent}
-            onChange={(e) => setEmailContent(e.target.value)}
-          />
-          <Button onClick={handleEmailImport} disabled={!emailContent || isImporting} className="w-full mt-4">
-            {isImporting ? <Loader2 className="animate-spin mr-2" /> : <Bot className="mr-2" />}
-            {isImporting ? "Importing with AI..." : "Import with AI"}
-          </Button>
-          {isImporting && <LoadingSkeleton />}
-          {importedData && <DataForm data={importedData} source="Email" />}
-        </CardContent>
-      </Card>
+        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '150ms'}}>
+          <CardHeader>
+            <CardTitle>Import from Email</CardTitle>
+            <CardDescription>Paste the content of an expense email (e.g., from Uber, Amazon) to import it.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              placeholder="Paste your email content here..."
+              rows={10}
+              value={emailContent}
+              onChange={(e) => setEmailContent(e.target.value)}
+            />
+            <Button onClick={handleEmailImport} disabled={!emailContent || isImporting} className="w-full mt-4">
+              {isImporting ? <Loader2 className="animate-spin mr-2" /> : <Bot className="mr-2" />}
+              {isImporting ? "Importing with AI..." : "Import with AI"}
+            </Button>
+            {isImporting && <LoadingSkeleton />}
+            {importedData && <DataForm data={importedData} source="Email" />}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

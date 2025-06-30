@@ -116,90 +116,35 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-
-  /* Enhanced 3D Logo Effects */
-  .logo-3d-shadow {
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
-  }
-
-  .logo-3d-glow {
-    filter: drop-shadow(0 0 10px hsl(var(--primary))) drop-shadow(0 0 20px hsl(var(--accent)));
+  
+  .bg-grid-slate-100 {
+      background-image: linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(to right, hsl(var(--primary)) 1px, transparent 1px);
+      background-size: 40px 40px;
   }
 
-  .logo-text-3d {
-    text-shadow: 
-      2px 2px 0px rgba(0, 0, 0, 0.3),
-      4px 4px 0px rgba(0, 0, 0, 0.2),
-      0 0 10px hsl(var(--primary)),
-      0 0 20px hsl(var(--accent));
+  .dark .dark\:bg-grid-slate-800\/40 {
+      background-image: linear-gradient(hsla(var(--primary), 0.1) 1px, transparent 1px), linear-gradient(to right, hsla(var(--primary), 0.1) 1px, transparent 1px);
+      background-size: 40px 40px;
   }
   
-  /* Enhanced Text Effects */
-  .text-hero {
-    text-shadow: 
-      0 0 20px hsl(var(--primary)),
-      0 0 40px hsl(var(--accent)),
-      0 0 60px hsl(var(--primary));
+  .bg-size-300 {
+    background-size: 300% 300%;
   }
-  
-  .text-gradient {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)));
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: gradient-shift 3s ease-in-out infinite;
-  }
-  
-  /* Enhanced Button Effects */
-  .btn-hero {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-    background-size: 200% 200%;
-    animation: gradient-shift 3s ease-in-out infinite;
-    box-shadow: 
-      0 0 20px hsl(var(--primary)),
-      0 0 40px hsl(var(--accent)),
-      0 8px 32px rgba(0, 0, 0, 0.3);
-  }
-  
-  .btn-hero:hover {
-    background-size: 150% 150%;
-    transform: translateY(-2px);
-    box-shadow: 
-      0 0 30px hsl(var(--primary)),
-      0 0 60px hsl(var(--accent)),
-      0 12px 48px rgba(0, 0, 0, 0.4);
+
+  .animate-gradient {
+    animation: gradient-shift 6s ease-in-out infinite;
   }
 }
 
-@keyframes float {
+@keyframes subtle-float {
   0%, 100% {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-20px);
+    transform: translateY(-8px);
   }
 }
 
-@keyframes float-slow {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-30px) rotate(5deg);
-  }
-}
-
-@keyframes spin-y {
-  0% {
-    transform: rotateY(0deg);
-  }
-  100% {
-    transform: rotateY(360deg);
-  }
-}
-
-/* New Animations for Hero Section */
 @keyframes gradient-shift {
   0% {
     background-position: 0% 50%;
@@ -236,195 +181,29 @@
   }
 }
 
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
-/* Animation Delays */
-.animation-delay-1000 {
-  animation-delay: 1s;
-}
-
 .animation-delay-2000 {
   animation-delay: 2s;
-}
-
-.animation-delay-3000 {
-  animation-delay: 3s;
 }
 
 .animation-delay-4000 {
   animation-delay: 4s;
 }
 
-/* Animation Classes */
 .animate-rotate-slow {
   animation: rotate-slow 20s linear infinite;
+}
+
+.animate-subtle-float {
+    animation: subtle-float 8s ease-in-out infinite;
 }
 
 .animate-blob {
   animation: blob 10s ease-in-out infinite;
 }
 
-.animate-gradient {
-  animation: gradient-shift 6s ease infinite;
-  background-size: 200% 200%;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Hover Effects */
-.hover-scale-105 {
-  transition: transform 0.3s ease;
-}
-
-.hover-scale-105:hover {
-  transform: scale(1.05);
-}
-
-/* Glassmorphism Effect */
-.glassmorphism {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-}
-
-/* Dark mode glassmorphism */
 .dark .glassmorphism {
   background: rgba(15, 23, 42, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 5px hsl(var(--primary)), 0 0 10px hsl(var(--primary)), 0 0 15px hsl(var(--primary));
-  }
-  50% {
-    box-shadow: 0 0 10px hsl(var(--primary)), 0 0 20px hsl(var(--primary)), 0 0 30px hsl(var(--primary));
-  }
-}
-
-@keyframes logo-3d-float {
-  0%, 100% {
-    transform: translateY(0px) rotateX(0deg) rotateY(0deg);
-  }
-  25% {
-    transform: translateY(-8px) rotateX(2deg) rotateY(-2deg);
-  }
-  50% {
-    transform: translateY(-15px) rotateX(0deg) rotateY(0deg);
-  }
-  75% {
-    transform: translateY(-8px) rotateX(-2deg) rotateY(2deg);
-  }
-}
-
-@keyframes logo-3d-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 5px hsl(var(--primary))) drop-shadow(0 0 10px hsl(var(--accent)));
-  }
-  50% {
-    filter: drop-shadow(0 0 15px hsl(var(--primary))) drop-shadow(0 0 25px hsl(var(--accent))) drop-shadow(0 0 35px hsl(var(--primary)));
-  }
-}
-
-@keyframes text-3d-shift {
-  0%, 100% {
-    transform: translateX(0px) translateY(0px);
-  }
-  25% {
-    transform: translateX(1px) translateY(1px);
-  }
-  50% {
-    transform: translateX(2px) translateY(2px);
-  }
-  75% {
-    transform: translateX(1px) translateY(1px);
-  }
-}
-
-@keyframes gradient-shift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes hero-text-glow {
-  0%, 100% {
-    text-shadow: 
-      0 0 20px hsl(var(--primary)),
-      0 0 40px hsl(var(--accent));
-  }
-  50% {
-    text-shadow: 
-      0 0 30px hsl(var(--primary)),
-      0 0 60px hsl(var(--accent)),
-      0 0 80px hsl(var(--primary));
-  }
-}
-
-@keyframes logo-spin {
-  0% {
-    transform: rotate(0deg) scale(1);
-  }
-  50% {
-    transform: rotate(180deg) scale(1.1);
-  }
-  100% {
-    transform: rotate(360deg) scale(1);
-  }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-float-slow {
-  animation: float-slow 8s ease-in-out infinite;
-}
-
-.animate-spin-y {
-  animation: spin-y 10s linear infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.animate-logo-3d-float {
-  animation: logo-3d-float 8s ease-in-out infinite;
-}
-
-.animate-logo-3d-glow {
-  animation: logo-3d-glow 3s ease-in-out infinite;
-}
-
-.animate-text-3d-shift {
-  animation: text-3d-shift 4s ease-in-out infinite;
-}
-
-.animate-gradient-shift {
-  animation: gradient-shift 3s ease-in-out infinite;
-}
-
-.animate-hero-text-glow {
-  animation: hero-text-glow 4s ease-in-out infinite;
-}
-
-.animate-logo-spin {
-  animation: logo-spin 6s ease-in-out infinite;
 }
 
 html, body {

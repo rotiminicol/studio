@@ -8,13 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Download, Loader2, Share2, PieChart, BarChart3 } from "lucide-react";
+import { CalendarIcon, Download, Loader2, Share2, PieChart, BarChart3, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, isWithinInterval } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, Pie, PieChart as RechartsPieChart, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { staticExpenses, staticCategories, staticBudgets } from "@/lib/mock-data";
+import Link from "next/link";
+
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
@@ -59,7 +61,17 @@ function DesktopReports() {
   
     return (
       <div className="space-y-6">
-        <Card>
+        <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
+            <Link href="/dashboard/overview">
+              <Button variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Overview
+              </Button>
+            </Link>
+        </div>
+
+        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
           <CardHeader>
             <CardTitle>Filter Report</CardTitle>
             <CardDescription>Select filters to generate a new report.</CardDescription>
@@ -128,7 +140,7 @@ function DesktopReports() {
         </Card>
   
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '150ms'}}>
               <CardHeader>
                   <CardTitle>Category Breakdown</CardTitle>
               </CardHeader>
@@ -148,7 +160,7 @@ function DesktopReports() {
                   </ResponsiveContainer>
               </CardContent>
           </Card>
-          <Card className="lg:col-span-3">
+          <Card className="lg:col-span-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '300ms'}}>
               <CardHeader>
                   <CardTitle>Spend by Vendor</CardTitle>
               </CardHeader>
@@ -166,7 +178,7 @@ function DesktopReports() {
           </Card>
         </div>
         
-        <Card>
+        <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '450ms'}}>
           <CardHeader>
             <CardTitle>Filtered Expenses ({filteredExpenses.length})</CardTitle>
           </CardHeader>

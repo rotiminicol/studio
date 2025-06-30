@@ -1,4 +1,3 @@
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star } from "lucide-react";
@@ -37,7 +36,7 @@ export function Testimonials() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="p-6 glassmorphism animate-in fade-in-0 slide-in-from-bottom-8" style={{animationDelay: `${150 + index * 150}ms`}}>
+            <Card key={index} className="p-6 glassmorphism animate-in fade-in-0 slide-in-from-bottom-8 duration-500 hover:-translate-y-2 transition-transform" style={{animationDelay: `${150 + index * 150}ms`}}>
               <CardContent className="p-0">
                 <div className="flex mb-4">
                   {Array(testimonial.rating).fill(0).map((_, i) => (

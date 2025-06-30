@@ -1,1 +1,5 @@
-// This file has been removed as part of the backend deletion.
+import { OnboardingForm } from "@/components/onboarding/onboarding-form";
+
+export default function OnboardingPage() {
+    return <OnboardingForm />;
+}

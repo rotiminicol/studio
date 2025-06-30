@@ -34,7 +34,7 @@ export function Hero() {
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-tight">
               <span className="block text-foreground/90">Smart Finance</span>
               <span className="relative inline-block">
-                <span className="relative z-10 bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-300% animate-gradient">
+                <span className="relative z-10 bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-size-300 animate-gradient">
                   Management
                 </span>
                 <span className="absolute -bottom-2 left-0 w-full h-2 bg-primary/20 -z-0 rounded-full"></span>
@@ -55,8 +55,8 @@ export function Hero() {
                 size="lg" 
                 className="group relative overflow-hidden bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-bold text-lg px-8 py-6 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-primary/25 transition-all duration-300 transform hover:-translate-y-0.5"
               >
-                <Link href="/dashboard" className="flex items-center gap-2">
-                  <span className="relative z-10">Open Dashboard</span>
+                <Link href="/auth" className="flex items-center gap-2">
+                  <span className="relative z-10">Get Started Free</span>
                   <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-1">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />

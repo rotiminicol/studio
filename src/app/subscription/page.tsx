@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Star, Zap, Shield, Crown } from "lucide-react";
+import Link from "next/link";
 
 const plans = [
   {
@@ -150,10 +151,11 @@ export default function SubscriptionPage() {
                   
                   <CardFooter>
                     <Button 
+                      asChild
                       className={`w-full ${plan.popular ? 'button-glow' : ''}`}
                       variant={plan.popular ? 'default' : 'outline'}
                     >
-                      {plan.cta}
+                      <Link href="/auth">{plan.cta}</Link>
                     </Button>
                   </CardFooter>
                 </Card>

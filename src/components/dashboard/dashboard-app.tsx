@@ -337,9 +337,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
           </DropdownMenu>
         </header>
         <main className="flex-1 p-4 sm:p-6 md:p-8 min-h-screen pb-24 md:pb-8 relative z-10">
-          <div className="animate-in fade-in-0 slide-in-from-bottom-8 duration-500">
             {children}
-          </div>
         </main>
 
         <MobileBottomNav onAddExpenseClick={() => setIsAddExpenseOpen(true)} />

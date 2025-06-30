@@ -20,7 +20,7 @@ const navLinks = [
     ]
   },
   { href: "/#testimonials", label: "Testimonials" },
-  { href: "/pricing", label: "Pricing" },
+  { href: "/subscription", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ];
 
@@ -158,7 +158,7 @@ export function Header() {
                         asChild 
                         className="h-11 rounded-xl font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-200"
                       >
-                        <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>Open Dashboard</Link>
+                        <Link href="/auth" onClick={() => setIsMenuOpen(false)}>Open Dashboard</Link>
                       </Button>
                     </div>
                   </nav>
@@ -224,7 +224,7 @@ export function Header() {
                 asChild 
                 className="h-10 px-5 rounded-xl font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-200"
               >
-                <Link href="/dashboard">Open Dashboard</Link>
+                <Link href="/auth">Open Dashboard</Link>
               </Button>
             </div>
           </nav>

@@ -43,7 +43,7 @@ export default function TeamPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="glassmorphism border-primary/20">
+        <Card className="glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Members</CardTitle>
             <Users className="h-4 w-4 text-primary" />
@@ -54,7 +54,7 @@ export default function TeamPage() {
           </CardContent>
         </Card>
 
-        <Card className="glassmorphism border-green-500/20">
+        <Card className="glassmorphism border-green-500/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '100ms'}}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Users</CardTitle>
             <Activity className="h-4 w-4 text-green-500" />
@@ -65,7 +65,7 @@ export default function TeamPage() {
           </CardContent>
         </Card>
 
-        <Card className="glassmorphism border-amber-500/20">
+        <Card className="glassmorphism border-amber-500/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '200ms'}}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending</CardTitle>
             <UserPlus className="h-4 w-4 text-amber-500" />
@@ -76,7 +76,7 @@ export default function TeamPage() {
           </CardContent>
         </Card>
 
-        <Card className="glassmorphism border-blue-500/20">
+        <Card className="glassmorphism border-blue-500/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '300ms'}}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Admins</CardTitle>
             <Shield className="h-4 w-4 text-blue-500" />
@@ -88,7 +88,7 @@ export default function TeamPage() {
         </Card>
       </div>
 
-      <Card className="glassmorphism border-primary/20">
+      <Card className="glassmorphism border-primary/20 animate-in fade-in-0 slide-in-from-bottom-4 duration-500" style={{animationDelay: '400ms'}}>
         <CardHeader>
           <CardTitle>Team Members</CardTitle>
           <CardDescription>Manage your team members and their access levels</CardDescription>
@@ -96,7 +96,7 @@ export default function TeamPage() {
         <CardContent>
           <div className="space-y-4">
             {teamMembers.map((member, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border border-primary/10 rounded-lg hover:bg-primary/5 transition-colors">
+              <div key={index} className="flex items-center justify-between p-4 border border-primary/10 rounded-lg hover:bg-primary/5 transition-colors animate-in fade-in-0" style={{animationDelay: `${index * 100}ms`}}>
                 <div className="flex items-center gap-4">
                   <Avatar>
                     <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white">
