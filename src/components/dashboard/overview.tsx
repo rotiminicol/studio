@@ -1,10 +1,11 @@
+
 "use client";
 
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Receipt, TrendingUp, Target, Zap, ArrowRight, PieChart, BarChart3, Sparkles } from "lucide-react";
+import { DollarSign, Receipt, TrendingUp, Target, Zap, ArrowRight, PieChart, BarChart3, Sparkles, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +13,8 @@ import { Bar, BarChart as RechartsBarChart, XAxis, YAxis, CartesianGrid, Tooltip
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { staticExpenses, staticBudgets, demoUser } from "@/lib/mock-data";
+import { useData } from "@/contexts/data-context";
+import { useAuth } from "@/contexts/auth-context";
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
@@ -58,9 +60,10 @@ function OverviewSkeleton() {
 }
 
 const DesktopOverview = React.memo(function DesktopOverview() {
+    const { user } = useAuth();
+    const { expenses, budgets } = useData();
+
     const { totalSpent, totalBudget, topCategory, lineChartData } = useMemo(() => {
-        const expenses = staticExpenses;
-        const budgets = staticBudgets;
         const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
         const totalBudget = budgets.reduce((sum, cb) => sum + cb.amount, 0);
 
@@ -70,7 +73,9 @@ const DesktopOverview = React.memo(function DesktopOverview() {
             return acc;
         }, {} as Record<string, number>);
 
-        const topCategory = Object.keys(categorySpending).reduce((a, b) => categorySpending[a] > categorySpending[b] ? a : b, 'None');
+        const topCategory = Object.keys(categorySpending).length > 0
+          ? Object.keys(categorySpending).reduce((a, b) => categorySpending[a] > categorySpending[b] ? a : b)
+          : 'None';
 
         const lineChartData = expenses.reduce((acc, expense) => {
             const date = format(new Date(expense.date), 'MMM dd');
@@ -84,13 +89,13 @@ const DesktopOverview = React.memo(function DesktopOverview() {
         }, [] as {date: string; total: number}[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
         return { totalSpent, totalBudget, topCategory, lineChartData };
-    }, []);
+    }, [expenses, budgets]);
 
     return (
         <div className="space-y-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-extrabold tracking-tight mb-1">Welcome back, {demoUser.name?.split(' ')[0]}!</h1>
+              <h1 className="text-4xl font-extrabold tracking-tight mb-1">Welcome back, {user?.name?.split(' ')[0]}!</h1>
               <p className="text-muted-foreground text-lg">Here's your financial snapshot for this month.</p>
             </div>
             <Button className="button-glow flex items-center gap-2 mt-2 md:mt-0">
@@ -103,7 +108,7 @@ const DesktopOverview = React.memo(function DesktopOverview() {
             {[
               { title: "Total Spent", value: `$${totalSpent.toFixed(2)}`, change: "+20.1% vs last month", Icon: DollarSign, color: "text-primary", bg: "bg-gradient-to-br from-primary/10 to-primary/5" },
               { title: "Budget Remaining", value: `$${(totalBudget - totalSpent).toFixed(2)}`, change: `of $${totalBudget.toFixed(2)}`, Icon: Target, color: "text-accent", bg: "bg-gradient-to-br from-accent/10 to-accent/5" },
-              { title: "Expenses Logged", value: `+${staticExpenses.length}`, change: "+5 since last week", Icon: Receipt, color: "text-blue-500", bg: "bg-gradient-to-br from-blue-100/40 to-blue-50/40" },
+              { title: "Expenses Logged", value: `+${expenses.length}`, change: "+5 since last week", Icon: Receipt, color: "text-blue-500", bg: "bg-gradient-to-br from-blue-100/40 to-blue-50/40" },
               { title: "Top Category", value: topCategory, change: "Biggest spend area", Icon: Zap, color: "text-orange-500", bg: "bg-gradient-to-br from-orange-100/40 to-orange-50/40" },
             ].map((stat, index) => (
               <Card key={index} className={`shadow-xl glassmorphism border-0 hover:scale-[1.03] transition-transform duration-200 ${stat.bg} group animate-in fade-in-0 slide-in-from-bottom-4`} style={{animationDelay: `${index * 100}ms`}}>
@@ -147,7 +152,7 @@ const DesktopOverview = React.memo(function DesktopOverview() {
               <CardContent>
                 <Table>
                   <TableBody>
-                    {staticExpenses.slice(0, 5).map((expense) => (
+                    {expenses.slice(0, 5).map((expense) => (
                       <TableRow key={expense.id} className="hover:bg-primary/10 transition-colors group">
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -175,9 +180,9 @@ const DesktopOverview = React.memo(function DesktopOverview() {
 });
 
 const MobileOverview = React.memo(function MobileOverview() {
+    const { user } = useAuth();
+    const { expenses, budgets } = useData();
     const { totalSpent, totalBudget, budgetPercentage, topCategory, categorySpending, recentExpenses } = useMemo(() => {
-    const expenses = staticExpenses;
-    const budgets = staticBudgets;
     const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
     const totalBudget = budgets.reduce((sum, cb) => sum + cb.amount, 0);
     const budgetPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
@@ -188,17 +193,19 @@ const MobileOverview = React.memo(function MobileOverview() {
         return acc;
     }, {} as Record<string, number>);
 
-    const topCategory = Object.keys(categorySpending).reduce((a, b) => categorySpending[a] > categorySpending[b] ? a : b, 'None');
+    const topCategory = Object.keys(categorySpending).length > 0 
+      ? Object.keys(categorySpending).reduce((a, b) => categorySpending[a] > categorySpending[b] ? a : b) 
+      : 'None';
     
-    const recentExpenses = [...staticExpenses].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const recentExpenses = [...expenses].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return { totalSpent, totalBudget, budgetPercentage, topCategory, categorySpending: Object.entries(categorySpending).sort(([, a], [, b]) => b - a), recentExpenses };
-  }, []);
+  }, [expenses, budgets]);
 
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">Welcome, {demoUser.name?.split(' ')[0]}!</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Welcome, {user?.name?.split(' ')[0]}!</h1>
         <p className="text-muted-foreground">Here's a look at your finances.</p>
       </div>
 
@@ -292,9 +299,9 @@ const MobileOverview = React.memo(function MobileOverview() {
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold">Recent Transactions</h3>
           <Button variant="ghost" size="sm" asChild className="text-primary">
-            <a href="/dashboard/expenses">
+            <Link href="/dashboard/expenses">
               View All <ArrowRight className="w-3 h-3 ml-1" />
-            </a>
+            </Link>
           </Button>
         </div>
         
@@ -330,13 +337,9 @@ const MobileOverview = React.memo(function MobileOverview() {
 
 export function Overview() {
   const isMobile = useIsMobile();
-  const [clientReady, setClientReady] = useState(false);
+  const { loading } = useData();
   
-  useEffect(() => {
-    setClientReady(true);
-  }, []);
-
-  if (!clientReady) {
+  if (loading) {
     return <OverviewSkeleton />;
   }
   

@@ -1,12 +1,30 @@
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database, Tag, Plus, Settings, Edit, Trash2, ArrowLeft } from "lucide-react";
+import { Database, Tag, Plus, Settings, Edit, Trash2, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { staticCategories } from "@/lib/mock-data";
 import Link from 'next/link';
+import { useData } from "@/contexts/data-context";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function CategoriesPageSkeleton() {
+  return (
+    <div className="space-y-8">
+      <Skeleton className="h-10 w-1/3" />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-28" />)}
+      </div>
+      <Skeleton className="h-96" />
+    </div>
+  )
+}
 
 export default function CategoriesPage() {
+  const { categories, loading } = useData();
+
+  if(loading) return <CategoriesPageSkeleton />;
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -35,7 +53,7 @@ export default function CategoriesPage() {
             <Database className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">12</div>
+            <div className="text-2xl font-bold text-primary">{categories.length}</div>
             <p className="text-xs text-muted-foreground">Active categories</p>
           </CardContent>
         </Card>
@@ -78,7 +96,7 @@ export default function CategoriesPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {staticCategories.map((category, index) => (
+            {categories.map((category, index) => (
               <div key={category.id} className="group flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all animate-in fade-in-0" style={{animationDelay: `${500 + index * 100}ms`}}>
                 <div className="flex items-center gap-3">
                   <Tag className="w-5 h-5 text-primary" />

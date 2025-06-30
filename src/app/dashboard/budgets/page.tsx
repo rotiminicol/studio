@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from "react";
@@ -6,22 +7,53 @@ import { Target, TrendingUp, AlertTriangle, CheckCircle, ArrowLeft, Plus } from 
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 import { Progress } from "@/components/ui/progress";
-import { staticBudgets } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
+import { useData } from "@/contexts/data-context";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function BudgetPageSkeleton() {
+  return (
+    <div className="space-y-8">
+      <Skeleton className="h-10 w-1/3" />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-28" />)}
+      </div>
+      <Skeleton className="h-96" />
+    </div>
+  )
+}
 
 export default function BudgetsPage() {
+  const { budgets, expenses, loading } = useData();
+
   const { totalBudget, totalSpent, onTrackCount } = useMemo(() => {
-    const budgetTotal = staticBudgets.reduce((sum, b) => sum + b.amount, 0);
-    const spentTotal = staticBudgets.reduce((sum, b) => sum + b.spent, 0);
-    const trackCount = staticBudgets.filter(b => b.spent <= b.amount).length;
+    const budgetTotal = budgets.reduce((sum, b) => sum + b.amount, 0);
+    const spentTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+    const spentByCategory = expenses.reduce((acc, expense) => {
+        acc[expense.category_id] = (acc[expense.category_id] || 0) + expense.amount;
+        return acc;
+    }, {} as Record<number, number>);
+
+    const trackCount = budgets.filter(b => (spentByCategory[b.category_id] || 0) <= b.amount).length;
+
     return {
       totalBudget: budgetTotal,
       totalSpent: spentTotal,
       onTrackCount: trackCount,
     };
-  }, []);
+  }, [budgets, expenses]);
 
   const remainingBudget = totalBudget - totalSpent;
+
+  const spentByCategory = useMemo(() => {
+    return expenses.reduce((acc, expense) => {
+        acc[expense.category_id] = (acc[expense.category_id] || 0) + expense.amount;
+        return acc;
+    }, {} as Record<number, number>);
+  }, [expenses]);
+  
+  if (loading) return <BudgetPageSkeleton />;
 
   return (
     <div className="space-y-8">
@@ -37,10 +69,12 @@ export default function BudgetsPage() {
                 Back to Overview
             </Button>
             </Link>
-            <Button className="button-glow">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Budget
-            </Button>
+            <Link href="/dashboard/settings">
+              <Button className="button-glow">
+                <Plus className="mr-2 h-4 w-4" />
+                Create/Edit Budget
+              </Button>
+            </Link>
         </div>
         </div>
 
@@ -81,7 +115,7 @@ export default function BudgetsPage() {
             <CheckCircle className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-            <div className="text-2xl font-bold text-blue-500">{onTrackCount}/{staticBudgets.length}</div>
+            <div className="text-2xl font-bold text-blue-500">{onTrackCount}/{budgets.length}</div>
             <p className="text-xs text-muted-foreground">Categories on track</p>
             </CardContent>
         </Card>
@@ -94,8 +128,9 @@ export default function BudgetsPage() {
         </CardHeader>
         <CardContent>
             <div className="space-y-6">
-            {staticBudgets.map((budget, index) => {
-                const percentage = budget.amount > 0 ? (budget.spent / budget.amount) * 100 : 0;
+            {budgets.map((budget, index) => {
+                const spent = spentByCategory[budget.category_id] || 0;
+                const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
                 const overBudget = percentage > 100;
                 return (
                 <div key={budget.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors animate-in fade-in-0" style={{animationDelay: `${500 + index * 100}ms`}}>
@@ -103,7 +138,7 @@ export default function BudgetsPage() {
                     <div className="font-medium text-lg">{budget.category?.name}</div>
                     <div className="flex items-center gap-4">
                         <span className="text-sm text-muted-foreground">
-                        ${budget.spent.toFixed(2)} / <span className="font-semibold text-foreground">${budget.amount.toFixed(2)}</span>
+                        ${spent.toFixed(2)} / <span className="font-semibold text-foreground">${budget.amount.toFixed(2)}</span>
                         </span>
                         {overBudget && <Badge variant="destructive">Over Budget</Badge>}
                     </div>

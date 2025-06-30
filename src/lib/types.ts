@@ -1,9 +1,9 @@
+
 export interface User {
   id: number;
   created_at: number;
   name: string;
   email: string;
-  full_name: string | null;
   account_type: string | null;
   onboarding_complete: boolean | null;
 }
@@ -21,7 +21,6 @@ export interface Budget {
   id: number;
   created_at: number;
   amount: number;
-  spent: number;
   month: string;
   user_id: number;
   category_id: number;
@@ -38,7 +37,7 @@ export interface Expense {
   tax: number;
   source: 'Receipt' | 'Email' | 'Manual';
   notes: string | null;
-  items: string; // Stored as a JSON string
+  items: string; // Stored as a JSON string from Xano, which is text
   user_id: number;
   category_id: number;
   // This will be added client-side
@@ -55,5 +54,6 @@ export interface Notification {
     is_read: boolean;
 }
 
-// For creating a new expense
+export type LoginCredentials = Pick<User, 'email'> & { password: string };
+export type SignupCredentials = Pick<User, 'name' | 'email'> & { password: string };
 export type NewExpense = Omit<Expense, 'id' | 'created_at' | 'user_id' | 'category'>;

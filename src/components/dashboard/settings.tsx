@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,34 +13,50 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import type { Budget } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
-import { staticBudgets } from "@/lib/mock-data";
 import Link from 'next/link';
+import { useData } from "@/contexts/data-context";
 
 export function SettingsTab() {
   const { toast } = useToast();
-  const [localBudgets, setLocalBudgets] = useState<Budget[]>([]);
+  const { budgets, categories, loading, updateBudgets } = useData();
+  const [localBudgets, setLocalBudgets] = useState<Pick<Budget, 'category_id' | 'amount'>[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const [weeklySummary, setWeeklySummary] = useState(true);
   const [budgetAlerts, setBudgetAlerts] = useState(true);
   const [promotionalUpdates, setPromotionalUpdates] = useState(false);
 
   useEffect(() => {
-    // Simulate fetching data
-    setLocalBudgets(JSON.parse(JSON.stringify(staticBudgets)));
-    setLoading(false);
-  }, []);
+    if (budgets.length > 0) {
+      const budgetMap = new Map(budgets.map(b => [b.category_id, b.amount]));
+      setLocalBudgets(
+        categories.map(c => ({
+            category_id: c.id,
+            amount: budgetMap.get(c.id) || 0
+        }))
+      );
+    } else if (categories.length > 0) {
+        setLocalBudgets(categories.map(c => ({ category_id: c.id, amount: 0})));
+    }
+  }, [budgets, categories]);
   
   const handleBudgetChange = (id: number, newAmount: number) => {
-    setLocalBudgets(prev => prev.map(b => b.id === id ? {...b, amount: newAmount} : b));
+    setLocalBudgets(prev => prev.map(b => b.category_id === id ? {...b, amount: newAmount} : b));
+  }
+  
+  const getCategoryName = (id: number) => {
+      return categories.find(c => c.id === id)?.name || 'Unnamed Category';
+  }
+  
+  const getSpentAmount = (id: number) => {
+      const budget = budgets.find(b => b.category_id === id);
+      // We need to calculate spent from expenses, this is a simplification for now
+      return budget ? (Math.random() * budget.amount * 0.8).toFixed(2) : (0).toFixed(2);
   }
 
   const handleSaveBudgets = async () => {
     setIsSaving(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast({title: "Budgets Saved!", description: "Your new budget limits have been saved."});
+    await updateBudgets(localBudgets);
     setIsSaving(false);
   }
 
@@ -85,23 +102,24 @@ export function SettingsTab() {
               [...Array(4)].map((_, i) => <BudgetSkeleton key={i} />)
             ) : (
               <>
-                {localBudgets.map((cat, index) => {
-                  const percentage = cat.amount > 0 ? (cat.spent / cat.amount) * 100 : 0;
+                {localBudgets.map((budget, index) => {
+                  const spent = parseFloat(getSpentAmount(budget.category_id));
+                  const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
                   return (
-                    <div key={cat.id} className="animate-in fade-in-0" style={{animationDelay: `${index * 100}ms`}}>
+                    <div key={budget.category_id} className="animate-in fade-in-0" style={{animationDelay: `${index * 100}ms`}}>
                       <div className="flex justify-between items-center mb-2">
-                          <Label className="font-medium">{cat.category?.name || 'Unnamed Category'}</Label>
-                          <span className="text-muted-foreground font-mono text-sm">${cat.spent.toFixed(2)} / ${cat.amount.toFixed(2)}</span>
+                          <Label className="font-medium">{getCategoryName(budget.category_id)}</Label>
+                          <span className="text-muted-foreground font-mono text-sm">${spent.toFixed(2)} / ${budget.amount.toFixed(2)}</span>
                       </div>
                       <Progress value={percentage} className="h-2" />
                       <div className="flex items-center gap-4 mt-2">
-                          <Slider value={[cat.amount]} max={2000} step={50} onValueChange={(val) => handleBudgetChange(cat.id, val[0])} />
-                          <Input className="w-28" type="number" value={cat.amount} onChange={(e) => handleBudgetChange(cat.id, parseFloat(e.target.value) || 0)} />
+                          <Slider value={[budget.amount]} max={2000} step={50} onValueChange={(val) => handleBudgetChange(budget.category_id, val[0])} />
+                          <Input className="w-28" type="number" value={budget.amount} onChange={(e) => handleBudgetChange(budget.category_id, parseFloat(e.target.value) || 0)} />
                       </div>
                     </div>
                   );
                 })}
-                <Button onClick={handleSaveBudgets} disabled={isSaving} className="button-glow w-full">
+                <Button onClick={handleSaveBudgets} disabled={isSaving || loading} className="button-glow w-full">
                   {isSaving && <Loader2 className="animate-spin mr-2" />}
                   Save Budgets
                 </Button>

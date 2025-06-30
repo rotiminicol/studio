@@ -10,9 +10,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Logo } from '@/components/logo';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useAuth } from '@/contexts/auth-context';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+const signupSchema = z.object({
+  name: z.string().min(2, 'Name is required'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24" height="24" {...props}>
@@ -26,60 +41,53 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function AuthPage() {
   const router = useRouter();
-
-  // Login state
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
+  const { login, signup, loading: authLoading, isAuthenticated } = useAuth();
   const [loginPasswordVisible, setLoginPasswordVisible] = useState(false);
-  const [loginError, setLoginError] = useState('');
-  const [loginAgree, setLoginAgree] = useState(false);
-
-  // Signup state
-  const [signupName, setSignupName] = useState('');
-  const [signupEmail, setSignupEmail] = useState('');
-  const [signupPassword, setSignupPassword] = useState('');
   const [signupPasswordVisible, setSignupPasswordVisible] = useState(false);
-  const [signupError, setSignupError] = useState('');
-  const [signupAgree, setSignupAgree] = useState(false);
+  
+  const loginForm = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema)
+  });
+  
+  const signupForm = useForm<z.infer<typeof signupSchema>>({
+    resolver: zodResolver(signupSchema)
+  });
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-    if (!loginEmail || !loginPassword) {
-      setLoginError('Please fill in all required fields.');
-      return;
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard/overview');
     }
-    if (!loginAgree) {
-      setLoginError('You must agree to the Terms of Service and Privacy Policy.');
-      return;
+  }, [isAuthenticated, router]);
+  
+  const handleLogin = async (values: z.infer<typeof loginSchema>) => {
+    try {
+      await login(values);
+    } catch (error) {
+      // Toast is handled in the auth context
     }
-    // Simulate login
-    router.push('/dashboard');
   };
 
-  const handleSignup = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSignupError('');
-    if (!signupName || !signupEmail || !signupPassword) {
-      setSignupError('Please fill in all required fields.');
-      return;
+  const handleSignup = async (values: z.infer<typeof signupSchema>) => {
+     try {
+      await signup(values);
+    } catch (error) {
+      // Toast is handled in the auth context
     }
-    if (!signupAgree) {
-      setSignupError('You must agree to the Terms of Service and Privacy Policy.');
-      return;
-    }
-    // Simulate signup
-    router.push('/onboarding');
   };
 
   const handleGoogleAuth = (e: React.MouseEvent) => {
     e.preventDefault();
-    router.push('/dashboard');
+    // This is where you would trigger Xano's Google OAuth flow.
+    // For now, it will simulate a successful auth by redirecting.
+    router.push('/dashboard/overview');
   };
+
+  if (isAuthenticated === null || isAuthenticated) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
+  }
 
   return (
     <div className="relative min-h-screen w-full flex flex-col md:flex-row">
-      {/* Image Section (Right on desktop, background on mobile) */}
       <div
         className="hidden md:block md:w-1/2 h-screen"
         style={{ minHeight: '100vh' }}
@@ -92,7 +100,6 @@ export default function AuthPage() {
           priority
         />
       </div>
-      {/* Mobile background image */}
       <div className="absolute inset-0 z-0 md:hidden">
         <Image
           src="/2.jpg"
@@ -103,7 +110,6 @@ export default function AuthPage() {
         />
         <div className="absolute inset-0 bg-black/40" />
       </div>
-      {/* Form Section (Left on desktop, centered on mobile) */}
       <div className="relative z-10 flex w-full md:w-1/2 min-h-screen items-center justify-center p-4 sm:p-6 md:p-8">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -119,7 +125,6 @@ export default function AuthPage() {
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
-            {/* Login Tab */}
             <TabsContent value="login">
               <Card className="glassmorphism w-full">
                 <CardHeader className="text-center pb-2">
@@ -127,12 +132,7 @@ export default function AuthPage() {
                   <CardDescription className="mb-2">Enter your credentials to access your dashboard.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full mb-2"
-                    onClick={handleGoogleAuth}
-                  >
+                  <Button type="button" variant="outline" className="w-full mb-2" onClick={handleGoogleAuth} disabled={authLoading}>
                     <GoogleIcon /> Continue with Google
                   </Button>
                   <div className="flex items-center my-4">
@@ -140,43 +140,31 @@ export default function AuthPage() {
                     <span className="mx-3 text-xs text-muted-foreground">OR</span>
                     <span className="flex-1 h-px bg-border" />
                   </div>
-                  <form onSubmit={handleLogin} className="flex flex-col gap-4">
+                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="flex flex-col gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="login-email">Email</Label>
-                      <Input id="login-email" type="email" placeholder="you@example.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required />
+                      <Input id="login-email" type="email" placeholder="you@example.com" {...loginForm.register('email')} />
+                      {loginForm.formState.errors.email && <p className="text-destructive text-sm">{loginForm.formState.errors.email.message}</p>}
                     </div>
                     <div className="space-y-2 relative">
                       <Label htmlFor="login-password">Password</Label>
                       <div className="relative">
-                        <Input id="login-password" type={loginPasswordVisible ? 'text' : 'password'} placeholder="Password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
+                        <Input id="login-password" type={loginPasswordVisible ? 'text' : 'password'} placeholder="Password" {...loginForm.register('password')} />
                         <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" tabIndex={-1} onClick={() => setLoginPasswordVisible(v => !v)}>
                           {loginPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
+                       {loginForm.formState.errors.password && <p className="text-destructive text-sm">{loginForm.formState.errors.password.message}</p>}
                     </div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <input
-                        id="login-agree"
-                        type="checkbox"
-                        checked={loginAgree}
-                        onChange={e => setLoginAgree(e.target.checked)}
-                        className="accent-primary h-4 w-4 rounded border-border"
-                        required
-                      />
-                      <label htmlFor="login-agree" className="text-xs text-muted-foreground select-none">
-                        I agree to the{' '}
-                        <a href="#" className="underline hover:text-primary" tabIndex={0}>Terms of Service</a> and{' '}
-                        <a href="#" className="underline hover:text-primary" tabIndex={0}>Privacy Policy</a>.
-                      </label>
-                    </div>
-                    {loginError && <div className="text-destructive text-sm font-medium mt-1">{loginError}</div>}
-                    <Button type="submit" className="w-full button-glow mt-2">Login</Button>
+                    <Button type="submit" className="w-full button-glow mt-2" disabled={authLoading}>
+                      {authLoading && <Loader2 className="animate-spin mr-2" />}
+                      Login
+                    </Button>
                     <Link href="/auth/forgot-password" className="text-xs text-primary underline text-center mt-2">Forgot password?</Link>
                   </form>
                 </CardContent>
               </Card>
             </TabsContent>
-            {/* Signup Tab */}
             <TabsContent value="signup">
               <Card className="glassmorphism w-full">
                 <CardHeader className="text-center pb-2">
@@ -184,12 +172,7 @@ export default function AuthPage() {
                   <CardDescription className="mb-2">Start your journey to financial clarity in seconds.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full mb-2"
-                    onClick={handleGoogleAuth}
-                  >
+                  <Button type="button" variant="outline" className="w-full mb-2" onClick={handleGoogleAuth} disabled={authLoading}>
                     <GoogleIcon /> Continue with Google
                   </Button>
                   <div className="flex items-center my-4">
@@ -197,41 +180,31 @@ export default function AuthPage() {
                     <span className="mx-3 text-xs text-muted-foreground">OR</span>
                     <span className="flex-1 h-px bg-border" />
                   </div>
-                  <form onSubmit={handleSignup} className="flex flex-col gap-4">
+                  <form onSubmit={signupForm.handleSubmit(handleSignup)} className="flex flex-col gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="signup-name">Full Name</Label>
-                      <Input id="signup-name" type="text" placeholder="John Doe" value={signupName} onChange={e => setSignupName(e.target.value)} required />
+                      <Input id="signup-name" type="text" placeholder="John Doe" {...signupForm.register('name')} />
+                      {signupForm.formState.errors.name && <p className="text-destructive text-sm">{signupForm.formState.errors.name.message}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-email">Email</Label>
-                      <Input id="signup-email" type="email" placeholder="you@example.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required />
+                      <Input id="signup-email" type="email" placeholder="you@example.com" {...signupForm.register('email')} />
+                       {signupForm.formState.errors.email && <p className="text-destructive text-sm">{signupForm.formState.errors.email.message}</p>}
                     </div>
                     <div className="space-y-2 relative">
                       <Label htmlFor="signup-password">Password</Label>
                       <div className="relative">
-                        <Input id="signup-password" type={signupPasswordVisible ? 'text' : 'password'} placeholder="Password" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} required />
+                        <Input id="signup-password" type={signupPasswordVisible ? 'text' : 'password'} placeholder="Password (min. 6 characters)" {...signupForm.register('password')} />
                         <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" tabIndex={-1} onClick={() => setSignupPasswordVisible(v => !v)}>
                           {signupPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
+                       {signupForm.formState.errors.password && <p className="text-destructive text-sm">{signupForm.formState.errors.password.message}</p>}
                     </div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <input
-                        id="signup-agree"
-                        type="checkbox"
-                        checked={signupAgree}
-                        onChange={e => setSignupAgree(e.target.checked)}
-                        className="accent-primary h-4 w-4 rounded border-border"
-                        required
-                      />
-                      <label htmlFor="signup-agree" className="text-xs text-muted-foreground select-none">
-                        I agree to the{' '}
-                        <a href="#" className="underline hover:text-primary" tabIndex={0}>Terms of Service</a> and{' '}
-                        <a href="#" className="underline hover:text-primary" tabIndex={0}>Privacy Policy</a>.
-                      </label>
-                    </div>
-                    {signupError && <div className="text-destructive text-sm font-medium mt-1">{signupError}</div>}
-                    <Button type="submit" className="w-full button-glow mt-2">Sign Up</Button>
+                    <Button type="submit" className="w-full button-glow mt-2" disabled={authLoading}>
+                       {authLoading && <Loader2 className="animate-spin mr-2" />}
+                      Sign Up
+                    </Button>
                   </form>
                 </CardContent>
               </Card>

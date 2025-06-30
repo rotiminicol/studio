@@ -54,11 +54,11 @@ import { AddExpenseDialog } from "@/components/dashboard/add-expense-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/lib/types";
-import { staticNotifications, demoUser } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/auth-context";
 import React from "react";
 
 const mainMenuItems = [
-  { href: "/dashboard", label: "Overview", icon: Home, description: "Dashboard overview" },
+  { href: "/dashboard/overview", label: "Overview", icon: Home, description: "Dashboard overview" },
   { href: "/dashboard/expenses", label: "Expenses", icon: Receipt, description: "Manage expenses" },
   { href: "/dashboard/reports", label: "Reports", icon: BarChart2, description: "Analytics & insights" },
 ];
@@ -101,7 +101,7 @@ function MobileBottomNav({ onAddExpenseClick }: { onAddExpenseClick: () => void;
     <div className="fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-lg border-t border-border md:hidden z-50">
       <div className="flex justify-between items-center p-2">
         <Button variant="ghost" size="sm" asChild className="flex flex-col items-center gap-1 h-auto py-2">
-          <Link href="/dashboard">
+          <Link href="/dashboard/overview">
             <Home className="w-4 h-4" />
             <span className="text-xs">Home</span>
           </Link>
@@ -142,7 +142,8 @@ function DashboardAppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
-  const [notifications, setNotifications] = useState(staticNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { user, logout } = useAuth();
 
   const unreadNotificationCount = notifications.filter(n => !n.is_read).length;
 
@@ -247,12 +248,10 @@ function DashboardAppContent({ children }: { children: React.ReactNode }) {
         <SidebarFooter className="border-t border-primary/20">
           <SidebarMenu>
             <SidebarMenuItem>
-              <Link href="/" onClick={handleMobileLinkClick}>
-                <SidebarMenuButton tooltip={{ children: "Log out", side: 'right' }} className="hover:bg-destructive/10 hover:text-destructive hover:scale-105 transition-all duration-200">
+                <SidebarMenuButton onClick={logout} tooltip={{ children: "Log out", side: 'right' }} className="hover:bg-destructive/10 hover:text-destructive hover:scale-105 transition-all duration-200">
                     <LogOut />
                     <span>Log out</span>
                 </SidebarMenuButton>
-              </Link>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
@@ -308,11 +307,11 @@ function DashboardAppContent({ children }: { children: React.ReactNode }) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="rounded-full flex items-center gap-2 px-2 hover:bg-primary/10">
                 <div className="hidden md:block text-right">
-                  <p className="text-sm font-medium">{demoUser.name}</p>
-                  <p className="text-xs text-muted-foreground">{demoUser.email}</p>
+                  <p className="text-sm font-medium">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
                 <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white font-bold">
-                  {demoUser.name?.charAt(0).toUpperCase()}
+                  {user?.name?.charAt(0).toUpperCase()}
                 </div>
                 <span className="sr-only">Toggle user menu</span>
               </Button>
@@ -320,9 +319,9 @@ function DashboardAppContent({ children }: { children: React.ReactNode }) {
             <DropdownMenuContent align="end" className="w-56 animate-in fade-in-0 zoom-in-95">
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{demoUser.name}</p>
+                  <p className="text-sm font-medium leading-none">{user?.name}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {demoUser.email}
+                    {user?.email}
                   </p>
                 </div>
               </DropdownMenuLabel>
@@ -338,11 +337,9 @@ function DashboardAppContent({ children }: { children: React.ReactNode }) {
                 Support
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/" className="text-destructive focus:text-destructive w-full">
+              <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive w-full cursor-pointer">
                   <LogOut className="w-4 h-4 mr-2" />
                   Log out
-                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -367,7 +364,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
 }
 
 function MobileSidebarLogoButton() {
-  const { toggleSidebar } = require("@/components/ui/sidebar").useSidebar();
+  const { toggleSidebar } = useSidebar();
   return (
     <button
       onClick={toggleSidebar}

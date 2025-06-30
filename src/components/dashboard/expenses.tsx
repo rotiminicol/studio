@@ -11,26 +11,27 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, UploadCloud, Bot, CheckCircle, ArrowLeft, Mail, ScanLine } from "lucide-react";
 import Image from "next/image";
 import { Skeleton } from "../ui/skeleton";
-import type { Category, Expense } from "@/lib/types";
+import type { Category, NewExpense } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
-import { staticCategories, staticScannedData, staticImportedData } from "@/lib/mock-data";
 import Link from "next/link";
+import { mainApi } from "@/lib/xano";
+import { useData } from "@/contexts/data-context";
 
-type ScanReceiptOutput = Omit<Expense, 'id' | 'created_at' | 'user_id' | 'notes' | 'source' | 'category'>;
-type ImportExpenseDataFromEmailOutput = Omit<Expense, 'id' | 'created_at' | 'user_id' | 'notes' | 'source'>;
+type AIExtractedData = Omit<NewExpense, 'source'>;
 
 export function Expenses() {
   const { toast } = useToast();
+  const { categories, addExpense } = useData();
 
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
-  const [scannedData, setScannedData] = useState<ScanReceiptOutput | null>(null);
+  const [scannedData, setScannedData] = useState<AIExtractedData | null>(null);
 
   const [emailContent, setEmailContent] = useState("");
   const [isImporting, setIsImporting] = useState(false);
-  const [importedData, setImportedData] = useState<ImportExpenseDataFromEmailOutput | null>(null);
+  const [importedData, setImportedData] = useState<AIExtractedData | null>(null);
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -48,16 +49,24 @@ export function Expenses() {
   };
 
   const handleScanReceipt = async () => {
-    if (!previewUrl) {
+    if (!file) {
       toast({ title: "Error", description: "Please select a file first.", variant: "destructive" });
       return;
     }
     setIsScanning(true);
     setScannedData(null);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setScannedData(staticScannedData);
-    toast({ title: "Scan Complete!", description: "Expense data extracted successfully." });
-    setIsScanning(false);
+    try {
+        const formData = new FormData();
+        formData.append('image', file);
+        const { data } = await mainApi.post('/ai/scan-receipt', formData);
+        setScannedData(data);
+        toast({ title: "Scan Complete!", description: "Expense data extracted successfully." });
+    } catch (error) {
+        console.error("Error scanning receipt:", error);
+        toast({ title: "Scan Failed", description: "Could not extract data from the receipt.", variant: "destructive" });
+    } finally {
+        setIsScanning(false);
+    }
   };
 
   const handleEmailImport = async () => {
@@ -67,16 +76,22 @@ export function Expenses() {
     }
     setIsImporting(true);
     setImportedData(null);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setImportedData(staticImportedData);
-    toast({ title: "Import Complete!", description: "Expense data extracted successfully." });
-    setIsImporting(false);
+    try {
+        const { data } = await mainApi.post('/ai/import-email', { content: emailContent });
+        setImportedData(data);
+        toast({ title: "Import Complete!", description: "Expense data extracted successfully." });
+    } catch (error) {
+        console.error("Error importing email:", error);
+        toast({ title: "Import Failed", description: "Could not extract data from the email.", variant: "destructive" });
+    } finally {
+        setIsImporting(false);
+    }
   };
 
-  const handleSaveExpense = async (source: 'Receipt' | 'Email') => {
+  const handleSaveExpense = async (data: AIExtractedData, source: 'Receipt' | 'Email') => {
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast({ title: "Expense Saved!", description: `The expense from your ${source} has been saved.` });
+    await addExpense({ ...data, source });
+    
     if (source === 'Receipt') {
       setScannedData(null);
       setPreviewUrl(null);
@@ -89,11 +104,10 @@ export function Expenses() {
     setIsSaving(false);
   }
 
-  const DataForm = ({ data, source }: { data: ScanReceiptOutput | ImportExpenseDataFromEmailOutput, source: 'Receipt' | 'Email' }) => {
+  const DataForm = ({ data, source }: { data: AIExtractedData, source: 'Receipt' | 'Email' }) => {
     const [formData, setFormData] = useState({
       ...data,
       date: data.date ? format(new Date(data.date), 'yyyy-MM-dd') : '',
-      category_id: 'category_id' in data ? (data.category_id || 0) : 0,
     });
 
     const handleSave = () => {
@@ -101,7 +115,8 @@ export function Expenses() {
         toast({ title: "Category required", description: "Please select a category for this expense.", variant: "destructive" });
         return;
       }
-      handleSaveExpense(source);
+      const itemsString = Array.isArray(formData.items) ? JSON.stringify(formData.items) : formData.items;
+      handleSaveExpense({ ...formData, items: itemsString }, source);
     }
 
     return (
@@ -122,7 +137,7 @@ export function Expenses() {
           </div>
           <div className="space-y-1">
             <Label>Tax</Label>
-            <Input type="number" value={formData.tax} onChange={(e) => setFormData({ ...formData, tax: parseFloat(e.target.value) || 0 })} />
+            <Input type="number" value={formData.tax || 0} onChange={(e) => setFormData({ ...formData, tax: parseFloat(e.target.value) || 0 })} />
           </div>
         </div>
         <div className="space-y-1">
@@ -132,7 +147,7 @@ export function Expenses() {
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
-              {staticCategories.map((cat: Category) => (
+              {categories.map((cat: Category) => (
                 <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
               ))}
             </SelectContent>
@@ -244,5 +259,3 @@ export function Expenses() {
     </div>
   );
 }
-
-    

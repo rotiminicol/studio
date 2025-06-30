@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -33,8 +34,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { ScrollArea } from "../ui/scroll-area";
-import { useToast } from "@/hooks/use-toast";
-import { staticCategories } from "@/lib/mock-data";
+import { useData } from "@/contexts/data-context";
 
 const expenseSchema = z.object({
   vendor: z.string().min(2, "Vendor is required."),
@@ -52,7 +52,7 @@ interface AddExpenseDialogProps {
 }
 
 export function AddExpenseDialog({ open, onOpenChange }: AddExpenseDialogProps) {
-  const { toast } = useToast();
+  const { categories, addExpense } = useData();
   const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<z.infer<typeof expenseSchema>>({
@@ -70,9 +70,11 @@ export function AddExpenseDialog({ open, onOpenChange }: AddExpenseDialogProps) 
 
   async function onSubmit(values: z.infer<typeof expenseSchema>) {
     setIsSaving(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast({ title: "Expense Added!", description: "Your expense has been saved." });
+    await addExpense({
+        ...values,
+        source: 'Manual',
+        items: JSON.stringify(values.items.split(',').map(item => item.trim())),
+    });
     setIsSaving(false);
     onOpenChange(false);
     form.reset();
@@ -157,7 +159,7 @@ export function AddExpenseDialog({ open, onOpenChange }: AddExpenseDialogProps) 
                                 </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                {staticCategories.map((cat) => (
+                                {categories.map((cat) => (
                                     <SelectItem key={cat.id} value={String(cat.id)}>
                                     {cat.name}
                                     </SelectItem>

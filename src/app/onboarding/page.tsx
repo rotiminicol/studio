@@ -15,6 +15,7 @@ import { Check, User, Building, Mail, PiggyBank, Users, PartyPopper, ArrowRight,
 import { Logo } from "@/components/logo";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/contexts/auth-context";
 
 const steps = [
   { id: 1, title: "Welcome!", icon: PartyPopper, image: "/3.jpg" },
@@ -53,6 +54,7 @@ const slideVariants = {
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { completeOnboarding, loading } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [isFinishing, setIsFinishing] = useState(false);
@@ -71,10 +73,11 @@ export default function OnboardingPage() {
     }
   };
   
-  const finishOnboarding = () => {
+  const finishOnboarding = async () => {
     setIsFinishing(true);
+    await completeOnboarding();
     setTimeout(() => {
-        router.push('/dashboard');
+        router.push('/dashboard/overview');
     }, 1500);
   }
 
@@ -83,7 +86,6 @@ export default function OnboardingPage() {
 
   return (
     <div className="relative h-screen w-full flex flex-col md:flex-row overflow-hidden">
-      {/* Image Section (Right on desktop, background on mobile) */}
       <div
         className="hidden md:block md:w-1/2 h-full relative"
       >
@@ -95,7 +97,6 @@ export default function OnboardingPage() {
           priority
         />
       </div>
-      {/* Mobile background image */}
       <div className="absolute inset-0 z-0 md:hidden">
         <Image
           src={steps[currentStep].image}
@@ -106,7 +107,6 @@ export default function OnboardingPage() {
         />
         <div className="absolute inset-0 bg-black/40" />
       </div>
-      {/* Form Section (Left on desktop, centered on mobile) */}
       <div className="relative z-10 flex w-full md:w-1/2 h-full items-center justify-center p-4 sm:p-6 md:p-8 overflow-y-auto no-scrollbar">
         <motion.div
           key={steps[currentStep].id}
@@ -147,7 +147,7 @@ export default function OnboardingPage() {
               </AnimatePresence>
             </div>
             <CardFooter className="flex flex-col md:flex-row justify-between border-t pt-6 gap-4 md:gap-0">
-              <Button variant="outline" onClick={prevStep} disabled={currentStep === 0 || isFinishing} className="w-full md:w-auto">
+              <Button variant="outline" onClick={prevStep} disabled={currentStep === 0 || isFinishing || loading} className="w-full md:w-auto">
                 <ArrowLeft className="mr-2" /> Previous
               </Button>
               {currentStep < steps.length - 2 ? (
@@ -159,7 +159,7 @@ export default function OnboardingPage() {
                   Finish Setup <Check className="ml-2" />
                 </Button>
               ) : (
-                <Button onClick={finishOnboarding} className="w-full md:w-auto button-glow bg-green-500 hover:bg-green-600" disabled={isFinishing}>
+                <Button onClick={finishOnboarding} className="w-full md:w-auto button-glow bg-green-500 hover:bg-green-600" disabled={isFinishing || loading}>
                   {isFinishing ? "Redirecting..." : "Go to Dashboard"}
                   {!isFinishing && <ArrowRight className="ml-2" />}
                 </Button>
