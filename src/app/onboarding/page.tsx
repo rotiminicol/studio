@@ -51,7 +51,7 @@ const slideVariants = {
   }),
 };
 
-export function OnboardingForm() {
+export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -242,3 +242,5 @@ function StepContent({ step }: { step: number }) {
       return null;
   }
 }
+
+    
