@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,6 +9,7 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { Logo } from '../logo';
 
 const navLinks = [
   { 
@@ -64,40 +66,12 @@ export function Header() {
       )}
     >
       <div className="container flex h-20 max-w-screen-2xl items-center justify-between px-4 md:px-8">
-        {/* Logo */}
         <Link 
           href="/" 
           className="group relative z-10"
           onClick={() => setOpenDropdown(null)}
         >
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl shadow-lg group-hover:shadow-xl group-hover:shadow-primary/25 transition-all duration-300 group-hover:scale-105 group-hover:rotate-1 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl animate-pulse"></div>
-                <div className="relative w-full h-full flex items-center justify-center p-1.5">
-                  <Image
-                    src="/big bird.jpg"
-                    alt="Fluxpense Logo"
-                    width={40}
-                    height={40}
-                    className="object-cover rounded-lg group-hover:brightness-110 group-hover:contrast-110 transition-all duration-300"
-                    priority
-                  />
-                </div>
-              </div>
-              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-all duration-500"></div>
-              <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-accent rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-all duration-500 delay-100"></div>
-            </div>
-            
-            <div className="flex flex-col">
-              <span className="text-2xl font-black bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent leading-none group-hover:scale-105 transition-transform duration-300">
-                Fluxpense
-              </span>
-              <span className="text-xs font-semibold tracking-wider text-muted-foreground group-hover:text-primary transition-colors duration-300">
-                AI FINANCE
-              </span>
-            </div>
-          </div>
+          <Logo variant="default" size="md" />
         </Link>
 
         {isMobile ? (
@@ -154,11 +128,14 @@ export function Header() {
                     ))}
                     
                     <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-border/20">
+                      <Button asChild variant="outline" className="h-11 rounded-xl font-medium">
+                        <Link href="/auth" onClick={() => setIsMenuOpen(false)}>Login</Link>
+                      </Button>
                       <Button 
                         asChild 
                         className="h-11 rounded-xl font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-200"
                       >
-                        <Link href="/auth" onClick={() => setIsMenuOpen(false)}>Open Dashboard</Link>
+                        <Link href="/auth" onClick={() => setIsMenuOpen(false)}>Sign Up</Link>
                       </Button>
                     </div>
                   </nav>
@@ -219,12 +196,15 @@ export function Header() {
               </div>
             ))}
             
-            <div className="flex items-center gap-2 ml-2">
+            <div className="flex items-center gap-2 ml-4">
+              <Button asChild variant="ghost" className="h-10 px-5 rounded-xl font-medium">
+                  <Link href="/auth">Login</Link>
+              </Button>
               <Button 
                 asChild 
                 className="h-10 px-5 rounded-xl font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-200"
               >
-                <Link href="/auth">Open Dashboard</Link>
+                <Link href="/auth">Sign Up</Link>
               </Button>
             </div>
           </nav>

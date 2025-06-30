@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -76,17 +77,19 @@ const accountMenuItems = [
 function NotificationItem({ notification, onRead }: { notification: Notification; onRead: (id: number) => void; }) {
   const Icon = notification.type === 'budget' ? FileWarning : Check;
   return (
-    <DropdownMenuItem
-      className={`flex flex-col items-start p-3 cursor-pointer transition-all duration-200 hover:bg-primary/5 ${!notification.is_read ? 'bg-primary/10' : ''}`}
-      onClick={() => onRead(notification.id)}
-    >
-      <div className="flex items-center gap-2 w-full">
-        <Icon className={cn("mt-1 h-4 w-4 shrink-0", notification.type === 'budget' ? "text-amber-500" : "text-green-500")} />
-        <span className="font-medium text-sm">{notification.title}</span>
-        {!notification.is_read && <Badge variant="secondary" className="ml-auto text-xs">New</Badge>}
-      </div>
-      <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
-    </DropdownMenuItem>
+    <Link href="/dashboard/notifications" passHref>
+      <DropdownMenuItem
+        className={`flex flex-col items-start p-3 cursor-pointer transition-all duration-200 hover:bg-primary/5 ${!notification.is_read ? 'bg-primary/10' : ''}`}
+        onClick={() => onRead(notification.id)}
+      >
+        <div className="flex items-center gap-2 w-full">
+          <Icon className={cn("mt-1 h-4 w-4 shrink-0", notification.type === 'budget' ? "text-amber-500" : "text-green-500")} />
+          <span className="font-medium text-sm">{notification.title}</span>
+          {!notification.is_read && <Badge variant="secondary" className="ml-auto text-xs">New</Badge>}
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
+      </DropdownMenuItem>
+    </Link>
   );
 }
 
@@ -239,7 +242,7 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
 
-      <main className="peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))] md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow md:peer-data-[state=expanded]:peer-data-[variant=sidebar]:ml-[--sidebar-width] peer-data-[state=expanded]:peer-data-[variant=floating]:ml-[calc(var(--sidebar-width)_+_theme(spacing.2))] relative flex min-h-svh flex-1 flex-col bg-background">
+      <main className="relative flex min-h-svh flex-1 flex-col bg-background transition-all duration-300 peer-data-[state=expanded]:peer-data-[variant=floating]:md:ml-[var(--sidebar-width)] peer-data-[state=collapsed]:peer-data-[variant=floating]:md:ml-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]">
         <AddExpenseDialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen} />
 
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-muted/20 to-background">
