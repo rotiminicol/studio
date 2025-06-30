@@ -106,9 +106,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
         await mainApi.post('/onboarding/complete');
-        if(user){
-            setUser({ ...user, onboarding_complete: true });
-        }
+        // Re-fetch user to get the updated onboarding status
+        const { data: updatedUser } = await authApi.get('/auth/me');
+        setUser(updatedUser);
         toast({ title: "Setup Complete!", description: "Welcome to your new dashboard." });
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Onboarding Error', description: error.response?.data?.message || 'Could not complete onboarding.' });
