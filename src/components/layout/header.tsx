@@ -40,11 +40,16 @@ export function Header() {
   }, []);
 
   const handleScrollTo = (e: React.MouseEvent, href: string) => {
-    e.preventDefault();
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setOpenDropdown(null);
+    if (href.startsWith('/#')) {
+      e.preventDefault();
+      const element = document.querySelector(href.substring(1));
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        setOpenDropdown(null);
+        setIsMenuOpen(false);
+      }
+    } else {
+        setIsMenuOpen(false);
     }
   };
 
@@ -124,10 +129,7 @@ export function Header() {
                       <div key={link.href} className="border-b border-border/20 last:border-0">
                         <Link
                           href={link.href}
-                          onClick={(e) => {
-                            handleScrollTo(e, link.href);
-                            setIsMenuOpen(false);
-                          }}
+                          onClick={(e) => handleScrollTo(e, link.href)}
                           className="flex items-center justify-between py-4 text-base font-medium text-foreground/90 hover:text-primary transition-colors duration-200"
                         >
                           {link.label}
@@ -140,10 +142,7 @@ export function Header() {
                               <Link
                                 key={subItem.href}
                                 href={subItem.href}
-                                onClick={(e) => {
-                                  handleScrollTo(e, subItem.href);
-                                  setIsMenuOpen(false);
-                                }}
+                                onClick={() => setIsMenuOpen(false)}
                                 className="block py-2 text-sm text-muted-foreground hover:text-primary transition-colors"
                               >
                                 {subItem.label}
@@ -156,17 +155,10 @@ export function Header() {
                     
                     <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-border/20">
                       <Button 
-                        variant="outline" 
-                        asChild 
-                        className="h-11 rounded-xl font-medium hover:bg-primary/5 hover:border-primary/50 transition-all duration-200"
-                      >
-                        <Link href="/auth" onClick={() => setIsMenuOpen(false)}>Log In</Link>
-                      </Button>
-                      <Button 
                         asChild 
                         className="h-11 rounded-xl font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-200"
                       >
-                        <Link href="/auth" onClick={() => setIsMenuOpen(false)}>Get Started Free</Link>
+                        <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>Open Dashboard</Link>
                       </Button>
                     </div>
                   </nav>
@@ -215,10 +207,7 @@ export function Header() {
                         <Link
                           key={subItem.href}
                           href={subItem.href}
-                          onClick={(e) => {
-                            handleScrollTo(e, subItem.href);
-                            setOpenDropdown(null);
-                          }}
+                          onClick={() => setOpenDropdown(null)}
                           className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-primary hover:bg-foreground/5 rounded-lg transition-colors duration-150"
                         >
                           {subItem.label}
@@ -232,17 +221,10 @@ export function Header() {
             
             <div className="flex items-center gap-2 ml-2">
               <Button 
-                variant="ghost" 
-                asChild 
-                className="h-10 px-5 rounded-xl font-medium text-foreground/80 hover:text-primary hover:bg-foreground/5 transition-all duration-200"
-              >
-                <Link href="/auth">Log In</Link>
-              </Button>
-              <Button 
                 asChild 
                 className="h-10 px-5 rounded-xl font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-200"
               >
-                <Link href="/auth">Get Started Free</Link>
+                <Link href="/dashboard">Open Dashboard</Link>
               </Button>
             </div>
           </nav>

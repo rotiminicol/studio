@@ -76,7 +76,7 @@ export function Pricing() {
               </CardContent>
               <CardFooter>
                 <Button className="w-full" variant={plan.popular ? 'default' : 'outline'} asChild>
-                  <Link href="/auth">{plan.cta}</Link>
+                  <Link href="/dashboard">{plan.cta}</Link>
                 </Button>
               </CardFooter>
             </Card>

@@ -1,15 +1,19 @@
 "use client";
 
-import { useData } from "@/contexts/data-context";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bell, Check, FileWarning, Wallet } from "lucide-react";
 import { format, formatRelative, isSameDay, isYesterday } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "../ui/skeleton";
+import { staticNotifications } from "@/lib/mock-data";
 
 export function Notifications() {
-  const { notifications, markAllNotificationsRead, loading } = useData();
+  const [notifications, setNotifications] = useState(staticNotifications);
+
+  const markAllNotificationsRead = () => {
+    setNotifications(prev => prev.map(n => ({...n, is_read: true})));
+  }
 
   const groupedNotifications = notifications.reduce((acc, notification) => {
     const date = new Date(notification.created_at);
@@ -37,17 +41,6 @@ export function Notifications() {
     }
   }
 
-  const NotificationSkeleton = () => (
-    <div className="flex items-start gap-4 p-4 rounded-lg border">
-        <Skeleton className="w-10 h-10 rounded-full" />
-        <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-        </div>
-        <Skeleton className="h-4 w-20" />
-    </div>
-  )
-
   return (
     <Card className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
       <CardHeader>
@@ -63,11 +56,7 @@ export function Notifications() {
         </div>
       </CardHeader>
       <CardContent>
-        {loading ? (
-           <div className="space-y-4">
-             {[...Array(5)].map((_, i) => <NotificationSkeleton key={i} />)}
-           </div>
-        ) : Object.keys(groupedNotifications).length > 0 ? (
+        {Object.keys(groupedNotifications).length > 0 ? (
           <div className="space-y-8">
             {Object.entries(groupedNotifications).map(([groupTitle, notifs]) => (
               <div key={groupTitle}>

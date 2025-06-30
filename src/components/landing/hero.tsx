@@ -1,6 +1,4 @@
-
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/logo";
 import Link from "next/link";
 
 export function Hero() {
@@ -47,7 +45,7 @@ export function Hero() {
             {/* Description */}
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 leading-relaxed">
               Automate your expense tracking, gain powerful insights, and take control of your financial future with our AI-driven platform. 
-              <span className="block mt-2 text-primary font-medium">Start for free — no credit card required.</span>
+              <span className="block mt-2 text-primary font-medium">Explore the dashboard and see it in action.</span>
             </p>
             
             {/* CTA Buttons */}
@@ -57,8 +55,8 @@ export function Hero() {
                 size="lg" 
                 className="group relative overflow-hidden bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-bold text-lg px-8 py-6 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-primary/25 transition-all duration-300 transform hover:-translate-y-0.5"
               >
-                <Link href="/auth" className="flex items-center gap-2">
-                  <span className="relative z-10">Get Started Free</span>
+                <Link href="/dashboard" className="flex items-center gap-2">
+                  <span className="relative z-10">Open Dashboard</span>
                   <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-1">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -74,8 +72,8 @@ export function Hero() {
                 className="group relative overflow-hidden bg-background/50 backdrop-blur-md border-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5 text-foreground font-bold text-lg px-8 py-6 rounded-xl transition-all duration-300 transform hover:-translate-y-0.5"
                 asChild
               >
-                <Link href="/demo" className="flex items-center gap-2">
-                  <span className="relative z-10">Live Demo</span>
+                <Link href="/logo-demo" className="flex items-center gap-2">
+                  <span className="relative z-10">Asset Showcase</span>
                   <span className="relative z-10 w-5 h-5 flex items-center justify-center">
                     <span className="absolute w-1.5 h-1.5 bg-primary rounded-full group-hover:animate-ping"></span>
                     <span className="w-1.5 h-1.5 bg-primary rounded-full"></span>

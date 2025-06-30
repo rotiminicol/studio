@@ -29,12 +29,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useData } from "@/contexts/data-context";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import type { NewExpense } from "@/lib/types";
 import { format } from "date-fns";
 import { ScrollArea } from "../ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
+import { staticCategories } from "@/lib/mock-data";
 
 const expenseSchema = z.object({
   vendor: z.string().min(2, "Vendor is required."),
@@ -52,7 +52,7 @@ interface AddExpenseDialogProps {
 }
 
 export function AddExpenseDialog({ open, onOpenChange }: AddExpenseDialogProps) {
-  const { categories, addExpense, refetchData } = useData();
+  const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<z.infer<typeof expenseSchema>>({
@@ -70,12 +70,9 @@ export function AddExpenseDialog({ open, onOpenChange }: AddExpenseDialogProps) 
 
   async function onSubmit(values: z.infer<typeof expenseSchema>) {
     setIsSaving(true);
-    const newExpense: NewExpense = {
-        ...values,
-        source: 'Manual',
-        items: JSON.stringify(values.items.split(',').map(item => item.trim())),
-    };
-    await addExpense(newExpense);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    toast({ title: "Expense Added!", description: "Your expense has been saved." });
     setIsSaving(false);
     onOpenChange(false);
     form.reset();
@@ -160,7 +157,7 @@ export function AddExpenseDialog({ open, onOpenChange }: AddExpenseDialogProps) 
                                 </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                {categories.map((cat) => (
+                                {staticCategories.map((cat) => (
                                     <SelectItem key={cat.id} value={String(cat.id)}>
                                     {cat.name}
                                     </SelectItem>

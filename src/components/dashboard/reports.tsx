@@ -1,21 +1,20 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useData } from "@/contexts/data-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Download, Loader2, Share2, PieChart, BarChart3, TrendingUp } from "lucide-react";
+import { CalendarIcon, Download, Loader2, Share2, PieChart, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, isWithinInterval } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, Pie, PieChart as RechartsPieChart, ResponsiveContainer } from "recharts";
+import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, Pie, PieChart as RechartsPieChart, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { staticExpenses, staticCategories, staticBudgets } from "@/lib/mock-data";
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
@@ -24,20 +23,19 @@ function ReportsSkeleton() {
 }
 
 function DesktopReports() {
-    const { expenses, categories, loading } = useData();
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedVendor, setSelectedVendor] = useState<string>('all');
   
     const filteredExpenses = useMemo(() => {
-      return expenses.filter(expense => {
+      return staticExpenses.filter(expense => {
         const expenseDate = new Date(expense.date);
         const inDateRange = dateRange?.from && dateRange?.to ? isWithinInterval(expenseDate, { start: dateRange.from, end: dateRange.to }) : true;
         const inCategory = selectedCategory === 'all' || expense.category_id === parseInt(selectedCategory);
         const inVendor = selectedVendor === 'all' || expense.vendor === selectedVendor;
         return inDateRange && inCategory && inVendor;
       });
-    }, [expenses, dateRange, selectedCategory, selectedVendor]);
+    }, [dateRange, selectedCategory, selectedVendor]);
   
     const { categoryBreakdown, vendorSpend } = useMemo(() => {
       const categoryBreakdown = filteredExpenses.reduce((acc, expense) => {
@@ -57,12 +55,7 @@ function DesktopReports() {
       };
     }, [filteredExpenses]);
   
-  
-    const vendors = useMemo(() => [...new Set(expenses.map(e => e.vendor))], [expenses]);
-  
-    if (loading) {
-      return <ReportsSkeleton />;
-    }
+    const vendors = useMemo(() => [...new Set(staticExpenses.map(e => e.vendor))], []);
   
     return (
       <div className="space-y-6">
@@ -114,7 +107,7 @@ function DesktopReports() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
+                {staticCategories.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
   
@@ -141,7 +134,7 @@ function DesktopReports() {
               </CardHeader>
               <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={categoryBreakdown} layout="horizontal" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                      <RechartsBarChart data={categoryBreakdown} layout="horizontal" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="name" type="category" tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
                           <YAxis dataKey="amount" type="number" tickFormatter={(value) => `$${value}`} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickLine={false} axisLine={false} />
@@ -151,7 +144,7 @@ function DesktopReports() {
                                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                               ))}
                           </Bar>
-                      </BarChart>
+                      </RechartsBarChart>
                   </ResponsiveContainer>
               </CardContent>
           </Card>
@@ -161,13 +154,13 @@ function DesktopReports() {
               </CardHeader>
               <CardContent>
                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={vendorSpend.slice(0, 10)} layout="vertical" margin={{ left: 30, right: 20 }}>
+                      <RechartsBarChart data={vendorSpend.slice(0, 10)} layout="vertical" margin={{ left: 30, right: 20 }}>
                           <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                           <XAxis type="number" hide />
                           <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={100} interval={0} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} />
                           <RechartsTooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))'}}/>
                           <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                      </BarChart>
+                      </RechartsBarChart>
                   </ResponsiveContainer>
               </CardContent>
           </Card>
@@ -194,7 +187,7 @@ function DesktopReports() {
                     <TableCell className="font-medium">{expense.vendor}</TableCell>
                     <TableCell>{expense.category?.name || 'N/A'}</TableCell>
                     <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-muted-foreground max-w-xs truncate">{(JSON.parse(expense.items || '[]')).join(', ')}</TableCell>
+                    <TableCell className="text-muted-foreground max-w-xs truncate">{JSON.parse(expense.items || '[]').join(', ')}</TableCell>
                     <TableCell className="text-right font-semibold">${expense.amount.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
@@ -208,9 +201,9 @@ function DesktopReports() {
 }
 
 function MobileReports() {
-  const { expenses, budgets, loading } = useData();
-  
   const { totalSpent, totalBudget, categoryBreakdown, spendingByMonth } = useMemo(() => {
+    const expenses = staticExpenses;
+    const budgets = staticBudgets;
     const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
     const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
     
@@ -240,9 +233,7 @@ function MobileReports() {
     }));
     
     return { totalSpent, totalBudget, categoryBreakdown, spendingByMonth: spendingData };
-  }, [expenses, budgets]);
-
-  if (loading) return <ReportsSkeleton />;
+  }, []);
 
   return (
     <div className="space-y-6">

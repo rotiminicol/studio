@@ -1,11 +1,8 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/contexts/auth-context";
-import { useData } from "@/contexts/data-context";
 import {
   SidebarProvider,
   Sidebar,
@@ -39,7 +36,6 @@ import {
   Settings,
   LogOut,
   Bell,
-  Loader2,
   FileWarning,
   Check,
   Target,
@@ -49,12 +45,14 @@ import {
   Zap,
   Database,
   Crown,
-  Plus
+  Plus,
+  Shield
 } from "lucide-react";
 import { AddExpenseDialog } from "@/components/dashboard/add-expense-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/lib/types";
+import { staticNotifications, demoUser } from "@/lib/mock-data";
 
 const mainMenuItems = [
   { href: "/dashboard", label: "Overview", icon: Home, description: "Dashboard overview" },
@@ -78,7 +76,7 @@ const accountMenuItems = [
 function NotificationItem({ notification, onRead }: { notification: Notification; onRead: (id: number) => void; }) {
   const Icon = notification.type === 'budget' ? FileWarning : Check;
   return (
-    <DropdownMenuItem 
+    <DropdownMenuItem
       className={`flex flex-col items-start p-3 cursor-pointer transition-all duration-200 hover:bg-primary/5 ${!notification.is_read ? 'bg-primary/10' : ''}`}
       onClick={() => onRead(notification.id)}
     >
@@ -110,9 +108,9 @@ function MobileBottomNav({ onAddExpenseClick }: { onAddExpenseClick: () => void;
             </Link>
           </Button>
         ))}
-        <Button 
+        <Button
           onClick={onAddExpenseClick}
-          size="sm" 
+          size="sm"
           className="flex flex-col items-center justify-center gap-1 h-12 w-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
         >
           <Plus className="w-5 h-5" />
@@ -130,232 +128,222 @@ function MobileBottomNav({ onAddExpenseClick }: { onAddExpenseClick: () => void;
 
 export function DashboardApp({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
-  const { notifications, unreadNotificationCount, markNotificationRead, loading } = useData();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
-  
-  if (loading) {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-accent/10">
-            <div className="text-center space-y-4 animate-in fade-in duration-500">
-              <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Loading your dashboard...</h3>
-                <p className="text-muted-foreground">Setting up your personalized experience</p>
-              </div>
-            </div>
-        </div>
-    )
-  }
-  
-  if (!user) {
-    return null;
-  }
+  const [notifications, setNotifications] = useState(staticNotifications);
+
+  const unreadNotificationCount = notifications.filter(n => !n.is_read).length;
+
+  const markNotificationRead = (id: number) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+  };
 
   return (
-      <SidebarProvider>
-        <Sidebar variant="floating" collapsible="icon" className="border-primary/20">
-          <SidebarHeader className="border-b border-primary/20">
-            <Logo variant="aiiit" size="md" />
-          </SidebarHeader>
-          
-          <SidebarContent className="no-scrollbar">
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-primary font-semibold flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                Main
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {mainMenuItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <Link href={item.href}>
-                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group data-[active=true]:bg-primary/20 data-[active=true]:border-primary/30 hover:scale-105 transition-all duration-200">
-                          <item.icon className="group-hover:text-primary transition-colors" />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </Link>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+    <SidebarProvider>
+      <Sidebar variant="floating" collapsible="icon" className="border-primary/20">
+        <SidebarHeader className="border-b border-primary/20">
+          <Logo variant="aiiit" size="md" />
+        </SidebarHeader>
 
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-accent font-semibold flex items-center gap-2">
-                <Zap className="w-4 h-4" />
-                Tools
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {toolsMenuItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <Link href={item.href}>
-                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group data-[active=true]:bg-accent/20 hover:scale-105 transition-all duration-200">
-                          <item.icon className="group-hover:text-accent transition-colors" />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </Link>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-muted-foreground font-semibold flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                Account
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {accountMenuItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <Link href={item.href}>
-                         <SidebarMenuButton tooltip={{children: item.description, side:'right'}} isActive={pathname === item.href} className="group hover:scale-105 transition-all duration-200">
-                          <item.icon className="group-hover:text-foreground transition-colors" />
-                          <span>{item.label}</span>
-                           {item.href === '/dashboard/notifications' && unreadNotificationCount > 0 && (
-                              <SidebarMenuBadge>{unreadNotificationCount}</SidebarMenuBadge>
-                           )}
-                        </SidebarMenuButton>
-                      </Link>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton tooltip={{children: "Help & Support", side:'right'}} className="hover:scale-105 transition-all duration-200">
-                      <HelpCircle />
-                      <span>Help & Support</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-          
-          <SidebarFooter className="border-t border-primary/20">
+        <SidebarContent className="no-scrollbar">
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-primary font-semibold flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Main
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
               <SidebarMenu>
-                  <SidebarMenuItem>
-                      <SidebarMenuButton tooltip={{children: "Log out", side:'right'}} onClick={() => logout()} className="hover:bg-destructive/10 hover:text-destructive hover:scale-105 transition-all duration-200">
-                          <LogOut />
-                          <span>Log out</span>
+                {mainMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <Link href={item.href}>
+                      <SidebarMenuButton tooltip={{ children: item.description, side: 'right' }} isActive={pathname === item.href} className="group data-[active=true]:bg-primary/20 data-[active=true]:border-primary/30 hover:scale-105 transition-all duration-200">
+                        <item.icon className="group-hover:text-primary transition-colors" />
+                        <span>{item.label}</span>
                       </SidebarMenuButton>
+                    </Link>
                   </SidebarMenuItem>
+                ))}
               </SidebarMenu>
-          </SidebarFooter>
-        </Sidebar>
-        
-        <SidebarInset>
-          <AddExpenseDialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen} />
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-          {/* Background */}
-          <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-muted/20 to-background">
-            <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[10px_10px] dark:bg-grid-slate-400/[0.05]"></div>
-          </div>
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-accent font-semibold flex items-center gap-2">
+              <Zap className="w-4 h-4" />
+              Tools
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {toolsMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <Link href={item.href}>
+                      <SidebarMenuButton tooltip={{ children: item.description, side: 'right' }} isActive={pathname === item.href} className="group data-[active=true]:bg-accent/20 hover:scale-105 transition-all duration-200">
+                        <item.icon className="group-hover:text-accent transition-colors" />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </Link>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-          <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-lg px-4 md:px-6 border-primary/20">
-             <div className="flex-1"></div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full relative hover:bg-primary/10">
-                  <Bell className="h-5 w-5" />
-                  {unreadNotificationCount > 0 && (
-                      <span className="absolute -top-1 -right-1 block h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold animate-pulse">
-                        {unreadNotificationCount}
-                      </span>
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-muted-foreground font-semibold flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Account
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {accountMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <Link href={item.href}>
+                      <SidebarMenuButton tooltip={{ children: item.description, side: 'right' }} isActive={pathname.startsWith(item.href)} className="group hover:scale-105 transition-all duration-200">
+                        <item.icon className="group-hover:text-foreground transition-colors" />
+                        <span>{item.label}</span>
+                        {item.href === '/dashboard/notifications' && unreadNotificationCount > 0 && (
+                          <SidebarMenuBadge>{unreadNotificationCount}</SidebarMenuBadge>
+                        )}
+                      </SidebarMenuButton>
+                    </Link>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton tooltip={{ children: "Help & Support", side: 'right' }} className="hover:scale-105 transition-all duration-200">
+                    <HelpCircle />
+                    <span>Help & Support</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+
+        <SidebarFooter className="border-t border-primary/20">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <Link href="/">
+                <SidebarMenuButton tooltip={{ children: "Log out", side: 'right' }} className="hover:bg-destructive/10 hover:text-destructive hover:scale-105 transition-all duration-200">
+                    <LogOut />
+                    <span>Log out</span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+
+      <main className="peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))] md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow md:peer-data-[state=expanded]:peer-data-[variant=sidebar]:ml-[--sidebar-width] peer-data-[state=expanded]:peer-data-[variant=floating]:ml-[calc(var(--sidebar-width)_+_theme(spacing.2))] relative flex min-h-svh flex-1 flex-col bg-background">
+        <AddExpenseDialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen} />
+
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-muted/20 to-background">
+          <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[10px_10px] dark:bg-grid-slate-400/[0.05]"></div>
+        </div>
+
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-lg px-4 md:px-6 border-primary/20">
+          <div className="flex-1"></div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full relative hover:bg-primary/10">
+                <Bell className="h-5 w-5" />
+                {unreadNotificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 block h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold animate-pulse">
+                    {unreadNotificationCount}
+                  </span>
+                )}
+                <span className="sr-only">Toggle notifications</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80 animate-in fade-in-0 zoom-in-95">
+              <DropdownMenuLabel className="flex items-center justify-between">
+                <span>Notifications</span>
+                {unreadNotificationCount > 0 && (
+                  <Badge variant="secondary" className="bg-primary/10 text-primary">
+                    {unreadNotificationCount} New
+                  </Badge>
+                )}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <ScrollArea className="h-[300px] no-scrollbar">
+                <DropdownMenuGroup>
+                  {notifications.length > 0 ? (
+                    notifications.slice(0, 10).map(n => <NotificationItem key={n.id} notification={n} onRead={markNotificationRead} />)
+                  ) : (
+                    <p className="text-center text-sm text-muted-foreground py-4">No notifications yet.</p>
                   )}
-                  <span className="sr-only">Toggle notifications</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 animate-in fade-in-0 zoom-in-95">
-                  <DropdownMenuLabel className="flex items-center justify-between">
-                    <span>Notifications</span>
-                    {unreadNotificationCount > 0 && (
-                      <Badge variant="secondary" className="bg-primary/10 text-primary">
-                        {unreadNotificationCount} New
-                      </Badge>
-                    )}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <ScrollArea className="h-[300px] no-scrollbar">
-                    <DropdownMenuGroup>
-                      {notifications.length > 0 ? (
-                        notifications.slice(0,10).map(n => <NotificationItem key={n.id} notification={n} onRead={markNotificationRead} />)
-                      ) : (
-                        <p className="text-center text-sm text-muted-foreground py-4">No notifications yet.</p>
-                      )}
-                    </DropdownMenuGroup>
-                  </ScrollArea>
-                   <DropdownMenuSeparator />
-                   <DropdownMenuItem asChild>
-                     <Link href="/dashboard/notifications" className="justify-center">View all notifications</Link>
-                   </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuGroup>
+              </ScrollArea>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/notifications" className="justify-center">View all notifications</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="rounded-full flex items-center gap-2 px-2 hover:bg-primary/10">
-                   <div className="hidden md:block text-right">
-                     <p className="text-sm font-medium">{user?.name}</p>
-                     <p className="text-xs text-muted-foreground">{user?.email}</p>
-                   </div>
-                   <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white font-bold">
-                     {user?.name?.charAt(0).toUpperCase()}
-                   </div>
-                  <span className="sr-only">Toggle user menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 animate-in fade-in-0 zoom-in-95">
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user?.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user?.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings" className="flex items-center">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/subscription" className="flex items-center">
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Subscription
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <HelpCircle className="w-4 h-4 mr-2" />
-                  Support
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => logout()} className="text-destructive focus:text-destructive">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="rounded-full flex items-center gap-2 px-2 hover:bg-primary/10">
+                <div className="hidden md:block text-right">
+                  <p className="text-sm font-medium">{demoUser.name}</p>
+                  <p className="text-xs text-muted-foreground">{demoUser.email}</p>
+                </div>
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white font-bold">
+                  {demoUser.name?.charAt(0).toUpperCase()}
+                </div>
+                <span className="sr-only">Toggle user menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 animate-in fade-in-0 zoom-in-95">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{demoUser.name}</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {demoUser.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/settings" className="flex items-center">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/subscription" className="flex items-center">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Subscription
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <HelpCircle className="w-4 h-4 mr-2" />
+                Support
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/" className="text-destructive focus:text-destructive w-full">
                   <LogOut className="w-4 h-4 mr-2" />
                   Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </header>
-          <main className="flex-1 p-4 sm:p-6 md:p-8 min-h-screen pb-24 md:pb-8 relative z-10">
-            <div className="animate-in fade-in-0 slide-in-from-bottom-8 duration-500">
-                {children}
-            </div>
-          </main>
-          
-          <MobileBottomNav onAddExpenseClick={() => setIsAddExpenseOpen(true)} />
-        </SidebarInset>
-      </SidebarProvider>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </header>
+        <main className="flex-1 p-4 sm:p-6 md:p-8 min-h-screen pb-24 md:pb-8 relative z-10">
+          <div className="animate-in fade-in-0 slide-in-from-bottom-8 duration-500">
+            {children}
+          </div>
+        </main>
+
+        <MobileBottomNav onAddExpenseClick={() => setIsAddExpenseOpen(true)} />
+      </main>
+    </SidebarProvider>
   );
 }

@@ -1,20 +1,18 @@
-
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Receipt, TrendingUp, Target, Zap, ArrowRight, PieChart, BarChart3, Sparkles } from "lucide-react";
-import { useData } from "@/contexts/data-context";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pie, PieChart as RechartsPieChart, Cell, Bar, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+import { Bar, BarChart as RechartsBarChart, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
-import { useAuth } from "@/contexts/auth-context";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { staticExpenses, staticBudgets, demoUser } from "@/lib/mock-data";
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
@@ -60,10 +58,9 @@ function OverviewSkeleton() {
 }
 
 function DesktopOverview() {
-    const { user } = useAuth();
-    const { expenses, budgets, loading } = useData();
-
-    const { totalSpent, totalBudget, topCategory, pieChartData, lineChartData } = useMemo(() => {
+    const { totalSpent, totalBudget, topCategory, lineChartData } = useMemo(() => {
+        const expenses = staticExpenses;
+        const budgets = staticBudgets;
         const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
         const totalBudget = budgets.reduce((sum, cb) => sum + cb.amount, 0);
 
@@ -74,8 +71,6 @@ function DesktopOverview() {
         }, {} as Record<string, number>);
 
         const topCategory = Object.keys(categorySpending).reduce((a, b) => categorySpending[a] > categorySpending[b] ? a : b, 'None');
-
-        const pieChartData = Object.entries(categorySpending).map(([name, value]) => ({ name, value })).filter(d => d.value > 0).sort((a, b) => b.value - a.value);
 
         const lineChartData = expenses.reduce((acc, expense) => {
             const date = format(new Date(expense.date), 'MMM dd');
@@ -88,17 +83,13 @@ function DesktopOverview() {
             return acc;
         }, [] as {date: string; total: number}[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-        return { totalSpent, totalBudget, topCategory, pieChartData, lineChartData };
-    }, [expenses, budgets]);
-
-    if (loading) {
-        return <OverviewSkeleton />;
-    }
+        return { totalSpent, totalBudget, topCategory, lineChartData };
+    }, []);
 
     return (
         <div className="space-y-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.name?.split(' ')[0]}!</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Welcome back, {demoUser.name?.split(' ')[0]}!</h1>
             <p className="text-muted-foreground">Here's your financial snapshot for this month.</p>
           </div>
 
@@ -106,7 +97,7 @@ function DesktopOverview() {
             {[
               { title: "Total Spent", value: `$${totalSpent.toFixed(2)}`, change: "+20.1% vs last month", Icon: DollarSign, color: "text-primary" },
               { title: "Budget Remaining", value: `$${(totalBudget - totalSpent).toFixed(2)}`, change: `of $${totalBudget.toFixed(2)}`, Icon: Target, color: "text-accent" },
-              { title: "Expenses Logged", value: `+${expenses.length}`, change: "+5 since last week", Icon: Receipt, color: "text-blue-500" },
+              { title: "Expenses Logged", value: `+${staticExpenses.length}`, change: "+5 since last week", Icon: Receipt, color: "text-blue-500" },
               { title: "Top Category", value: topCategory, change: "Biggest spend area", Icon: Zap, color: "text-orange-500" },
             ].map((stat, index) => (
               <Card key={index} className="animate-in fade-in-0 slide-in-from-bottom-4" style={{animationDelay: `${index * 100}ms`}}>
@@ -147,7 +138,7 @@ function DesktopOverview() {
               <CardContent>
                 <Table>
                   <TableBody>
-                    {expenses.slice(0, 5).map((expense) => (
+                    {staticExpenses.slice(0, 5).map((expense) => (
                       <TableRow key={expense.id} className="hover:bg-primary/5 transition-colors">
                         <TableCell>
                           <div className="font-medium">{expense.vendor}</div>
@@ -168,10 +159,9 @@ function DesktopOverview() {
 }
 
 function MobileOverview() {
-  const { user } = useAuth();
-  const { expenses, budgets } = useData();
-
-  const { totalSpent, totalBudget, budgetPercentage, topCategory, categorySpending, recentExpenses } = useMemo(() => {
+    const { totalSpent, totalBudget, budgetPercentage, topCategory, categorySpending, recentExpenses } = useMemo(() => {
+    const expenses = staticExpenses;
+    const budgets = staticBudgets;
     const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
     const totalBudget = budgets.reduce((sum, cb) => sum + cb.amount, 0);
     const budgetPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
@@ -187,12 +177,12 @@ function MobileOverview() {
     const recentExpenses = [...expenses].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return { totalSpent, totalBudget, budgetPercentage, topCategory, categorySpending: Object.entries(categorySpending).sort(([, a], [, b]) => b - a), recentExpenses };
-  }, [expenses, budgets]);
+  }, []);
 
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">Welcome, {user?.name?.split(' ')[0]}!</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Welcome, {demoUser.name?.split(' ')[0]}!</h1>
         <p className="text-muted-foreground">Here's a look at your finances.</p>
       </div>
 
@@ -323,17 +313,16 @@ function MobileOverview() {
 } 
 
 export function Overview() {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const isMobile = useIsMobile();
+  const [clientReady, setClientReady] = useState(false);
   
-  // To prevent hydration mismatch, we'll only render the mobile view on the client-side
-  const [showMobile, setShowMobile] = useState(false);
   useEffect(() => {
-    setShowMobile(isMobile);
-  }, [isMobile]);
+    setClientReady(true);
+  }, []);
 
-  if (showMobile) {
-    return <MobileOverview />;
+  if (!clientReady) {
+    return <OverviewSkeleton />;
   }
   
-  return <DesktopOverview />;
+  return isMobile ? <MobileOverview /> : <DesktopOverview />;
 }

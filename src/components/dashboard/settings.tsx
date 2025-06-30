@@ -8,26 +8,27 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { useData } from "@/contexts/data-context";
 import { Loader2 } from "lucide-react";
 import type { Budget } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
+import { staticBudgets } from "@/lib/mock-data";
 
 export function SettingsTab() {
-  const { budgets, loading, updateBudget } = useData();
   const { toast } = useToast();
   const [localBudgets, setLocalBudgets] = useState<Budget[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [weeklySummary, setWeeklySummary] = useState(true);
   const [budgetAlerts, setBudgetAlerts] = useState(true);
   const [promotionalUpdates, setPromotionalUpdates] = useState(false);
 
-
   useEffect(() => {
-    setLocalBudgets(JSON.parse(JSON.stringify(budgets)));
-  }, [budgets]);
+    // Simulate fetching data
+    setLocalBudgets(JSON.parse(JSON.stringify(staticBudgets)));
+    setLoading(false);
+  }, []);
   
   const handleBudgetChange = (id: number, newAmount: number) => {
     setLocalBudgets(prev => prev.map(b => b.id === id ? {...b, amount: newAmount} : b));
@@ -35,24 +36,10 @@ export function SettingsTab() {
 
   const handleSaveBudgets = async () => {
     setIsSaving(true);
-    const budgetsToUpdate = localBudgets.filter((localBudget) => {
-        const originalBudget = budgets.find(b => b.id === localBudget.id);
-        return originalBudget && originalBudget.amount !== localBudget.amount;
-    });
-    
-    if (budgetsToUpdate.length === 0) {
-        toast({title: "No changes to save", description: "You haven't made any changes to your budgets."});
-        setIsSaving(false);
-        return;
-    }
-
-    try {
-      await Promise.all(
-          budgetsToUpdate.map(b => updateBudget(b.id, { amount: b.amount }))
-      );
-    } finally {
-      setIsSaving(false);
-    }
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    toast({title: "Budgets Saved!", description: "Your new budget limits have been saved."});
+    setIsSaving(false);
   }
 
   const BudgetSkeleton = () => (

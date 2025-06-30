@@ -1,5 +1,1 @@
-import { config } from 'dotenv';
-config();
-
-import '@/ai/flows/scan-receipt.ts';
-import '@/ai/flows/email-import.ts';
+// This file has been removed as part of the backend deletion.
