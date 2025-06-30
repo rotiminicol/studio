@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -15,7 +16,8 @@ import {
   SidebarMenuBadge,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarGroupContent
+  SidebarGroupContent,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -136,16 +138,9 @@ function MobileBottomNav({ onAddExpenseClick }: { onAddExpenseClick: () => void;
   );
 }
 
-export function DashboardContainer({ children, className = "" }: { children: React.ReactNode, className?: string }) {
-  return (
-    <div className={cn("max-w-5xl w-full mx-auto p-4 sm:p-6 md:p-8", className)}>
-      {children}
-    </div>
-  );
-}
-
-export function DashboardApp({ children }: { children: React.ReactNode }) {
+function DashboardAppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [notifications, setNotifications] = useState(staticNotifications);
 
@@ -154,206 +149,218 @@ export function DashboardApp({ children }: { children: React.ReactNode }) {
   const markNotificationRead = (id: number) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
   };
+  
+  const handleMobileLinkClick = () => {
+    setOpenMobile(false);
+  }
 
   return (
-    <div className="flex min-h-svh w-full">
-      <SidebarProvider>
-        <Sidebar variant="floating" collapsible="icon" className="border-primary/20">
-          <SidebarHeader className="border-b border-primary/20">
-            <Logo variant="aiiit" size="md" />
-          </SidebarHeader>
+    <>
+      <Sidebar variant="floating" collapsible="icon" className="border-primary/20">
+        <SidebarHeader className="border-b border-primary/20">
+          <Logo variant="aiiit" size="md" />
+        </SidebarHeader>
 
-          <SidebarContent className="no-scrollbar">
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-primary font-semibold flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                Main
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {mainMenuItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <Link href={item.href}>
-                        <SidebarMenuButton tooltip={{ children: item.description, side: 'right' }} isActive={pathname === item.href} className="group data-[active=true]:bg-primary/20 data-[active=true]:border-primary/30 hover:scale-105 transition-all duration-200">
-                          <item.icon className="group-hover:text-primary transition-colors" />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </Link>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-accent font-semibold flex items-center gap-2">
-                <Zap className="w-4 h-4" />
-                Tools
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {toolsMenuItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <Link href={item.href}>
-                        <SidebarMenuButton tooltip={{ children: item.description, side: 'right' }} isActive={pathname === item.href} className="group data-[active=true]:bg-accent/20 hover:scale-105 transition-all duration-200">
-                          <item.icon className="group-hover:text-accent transition-colors" />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </Link>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-muted-foreground font-semibold flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                Account
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {accountMenuItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <Link href={item.href}>
-                        <SidebarMenuButton tooltip={{ children: item.description, side: 'right' }} isActive={pathname.startsWith(item.href)} className="group hover:scale-105 transition-all duration-200">
-                          <item.icon className="group-hover:text-foreground transition-colors" />
-                          <span>{item.label}</span>
-                          {item.href === '/dashboard/notifications' && unreadNotificationCount > 0 && (
-                            <SidebarMenuBadge>{unreadNotificationCount}</SidebarMenuBadge>
-                          )}
-                        </SidebarMenuButton>
-                      </Link>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <Link href="/dashboard/help-support">
-                      <SidebarMenuButton tooltip={{ children: "Help & Support", side: 'right' }} className="hover:scale-105 transition-all duration-200">
-                        <HelpCircle />
-                        <span>Help & Support</span>
+        <SidebarContent className="no-scrollbar">
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-primary font-semibold flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Main
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {mainMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <Link href={item.href} onClick={handleMobileLinkClick}>
+                      <SidebarMenuButton tooltip={{ children: item.description, side: 'right' }} isActive={pathname === item.href} className="group data-[active=true]:bg-primary/20 data-[active=true]:border-primary/30 hover:scale-105 transition-all duration-200">
+                        <item.icon className="group-hover:text-primary transition-colors" />
+                        <span>{item.label}</span>
                       </SidebarMenuButton>
                     </Link>
                   </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-          <SidebarFooter className="border-t border-primary/20">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <Link href="/">
-                  <SidebarMenuButton tooltip={{ children: "Log out", side: 'right' }} className="hover:bg-destructive/10 hover:text-destructive hover:scale-105 transition-all duration-200">
-                      <LogOut />
-                      <span>Log out</span>
-                  </SidebarMenuButton>
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-accent font-semibold flex items-center gap-2">
+              <Zap className="w-4 h-4" />
+              Tools
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {toolsMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <Link href={item.href} onClick={handleMobileLinkClick}>
+                      <SidebarMenuButton tooltip={{ children: item.description, side: 'right' }} isActive={pathname === item.href} className="group data-[active=true]:bg-accent/20 hover:scale-105 transition-all duration-200">
+                        <item.icon className="group-hover:text-accent transition-colors" />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </Link>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-muted-foreground font-semibold flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Account
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {accountMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <Link href={item.href} onClick={handleMobileLinkClick}>
+                      <SidebarMenuButton tooltip={{ children: item.description, side: 'right' }} isActive={pathname.startsWith(item.href)} className="group hover:scale-105 transition-all duration-200">
+                        <item.icon className="group-hover:text-foreground transition-colors" />
+                        <span>{item.label}</span>
+                        {item.href === '/dashboard/notifications' && unreadNotificationCount > 0 && (
+                          <SidebarMenuBadge>{unreadNotificationCount}</SidebarMenuBadge>
+                        )}
+                      </SidebarMenuButton>
+                    </Link>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <Link href="/dashboard/help-support" onClick={handleMobileLinkClick}>
+                    <SidebarMenuButton tooltip={{ children: "Help & Support", side: 'right' }} className="hover:scale-105 transition-all duration-200">
+                      <HelpCircle />
+                      <span>Help & Support</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+
+        <SidebarFooter className="border-t border-primary/20">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <Link href="/" onClick={handleMobileLinkClick}>
+                <SidebarMenuButton tooltip={{ children: "Log out", side: 'right' }} className="hover:bg-destructive/10 hover:text-destructive hover:scale-105 transition-all duration-200">
+                    <LogOut />
+                    <span>Log out</span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+      <main className="flex-1 relative flex flex-col bg-background transition-all duration-300 pt-14 md:pt-0">
+        <AddExpenseDialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen} />
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-muted/20 to-background">
+          <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[10px_10px] dark:bg-grid-slate-400/[0.05]"></div>
+        </div>
+        <header className="static z-40 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-lg px-4 md:px-6 border-primary/20">
+          <MobileSidebarLogoButton />
+          <div className="flex-1"></div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full relative hover:bg-primary/10">
+                <Bell className="h-5 w-5" />
+                {unreadNotificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 block h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold animate-pulse">
+                    {unreadNotificationCount}
+                  </span>
+                )}
+                <span className="sr-only">Toggle notifications</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80 animate-in fade-in-0 zoom-in-95">
+              <DropdownMenuLabel className="flex items-center justify-between">
+                <span>Notifications</span>
+                {unreadNotificationCount > 0 && (
+                  <Badge variant="secondary" className="bg-primary/10 text-primary">
+                    {unreadNotificationCount} New
+                  </Badge>
+                )}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <ScrollArea className="h-[300px] no-scrollbar">
+                <DropdownMenuGroup>
+                  {notifications.length > 0 ? (
+                    notifications.slice(0, 10).map(n => <NotificationItem key={n.id} notification={n} onRead={markNotificationRead} />)
+                  ) : (
+                    <p className="text-center text-sm text-muted-foreground py-4">No notifications yet.</p>
+                  )}
+                </DropdownMenuGroup>
+              </ScrollArea>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/notifications" className="justify-center">View all notifications</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="rounded-full flex items-center gap-2 px-2 hover:bg-primary/10">
+                <div className="hidden md:block text-right">
+                  <p className="text-sm font-medium">{demoUser.name}</p>
+                  <p className="text-xs text-muted-foreground">{demoUser.email}</p>
+                </div>
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white font-bold">
+                  {demoUser.name?.charAt(0).toUpperCase()}
+                </div>
+                <span className="sr-only">Toggle user menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 animate-in fade-in-0 zoom-in-95">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{demoUser.name}</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {demoUser.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/settings" className="flex items-center">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
                 </Link>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarFooter>
-        </Sidebar>
-        <main className="flex-1 relative flex flex-col bg-background transition-all duration-300 pt-14 md:pt-0">
-          <AddExpenseDialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen} />
-          <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-muted/20 to-background">
-            <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[10px_10px] dark:bg-grid-slate-400/[0.05]"></div>
-          </div>
-          <header className="static z-40 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-lg px-4 md:px-6 border-primary/20">
-            <MobileSidebarLogoButton />
-            <div className="flex-1"></div>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <HelpCircle className="w-4 h-4 mr-2" />
+                Support
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/" className="text-destructive focus:text-destructive w-full">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Log out
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </header>
+        <div className="flex-1 relative z-10 pb-24 md:pb-0 p-4 sm:p-6 md:p-8">
+          {children}
+        </div>
+        <MobileBottomNav onAddExpenseClick={() => setIsAddExpenseOpen(true)} />
+      </main>
+    </>
+  );
+}
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full relative hover:bg-primary/10">
-                  <Bell className="h-5 w-5" />
-                  {unreadNotificationCount > 0 && (
-                    <span className="absolute -top-1 -right-1 block h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold animate-pulse">
-                      {unreadNotificationCount}
-                    </span>
-                  )}
-                  <span className="sr-only">Toggle notifications</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 animate-in fade-in-0 zoom-in-95">
-                <DropdownMenuLabel className="flex items-center justify-between">
-                  <span>Notifications</span>
-                  {unreadNotificationCount > 0 && (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary">
-                      {unreadNotificationCount} New
-                    </Badge>
-                  )}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <ScrollArea className="h-[300px] no-scrollbar">
-                  <DropdownMenuGroup>
-                    {notifications.length > 0 ? (
-                      notifications.slice(0, 10).map(n => <NotificationItem key={n.id} notification={n} onRead={markNotificationRead} />)
-                    ) : (
-                      <p className="text-center text-sm text-muted-foreground py-4">No notifications yet.</p>
-                    )}
-                  </DropdownMenuGroup>
-                </ScrollArea>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/notifications" className="justify-center">View all notifications</Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="rounded-full flex items-center gap-2 px-2 hover:bg-primary/10">
-                  <div className="hidden md:block text-right">
-                    <p className="text-sm font-medium">{demoUser.name}</p>
-                    <p className="text-xs text-muted-foreground">{demoUser.email}</p>
-                  </div>
-                  <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white font-bold">
-                    {demoUser.name?.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="sr-only">Toggle user menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 animate-in fade-in-0 zoom-in-95">
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{demoUser.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {demoUser.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings" className="flex items-center">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <HelpCircle className="w-4 h-4 mr-2" />
-                  Support
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/" className="text-destructive focus:text-destructive w-full">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Log out
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </header>
-          <div className="flex-1 relative z-10 pb-24 md:pb-0 p-4 sm:p-6 md:p-8">
-            {children}
-          </div>
-          <MobileBottomNav onAddExpenseClick={() => setIsAddExpenseOpen(true)} />
-        </main>
+export function DashboardApp({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-svh w-full">
+      <SidebarProvider>
+        <DashboardAppContent>{children}</DashboardAppContent>
       </SidebarProvider>
     </div>
   );
