@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     };
     validateToken();
-  }, []);
+  }, [isMockAuth]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -185,32 +185,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [router, toast]);
 
   const completeOnboarding = useCallback(async (data: { account_type: string }) => {
-    if (!token) {
-        toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to complete onboarding.' });
-        return;
-    }
-
-    try {
-        const authMethod = isMockAuth ? mockAuth : xanoAuth;
-        const updatedUser = await authMethod.updateMe(token, {
-            account_type: data.account_type,
-            onboarding_complete: true
-        });
-        setUser(updatedUser);
-    } catch (error: any) {
-        console.error('Onboarding API call failed:', error);
-        toast({ 
-            variant: 'destructive', 
-            title: 'Onboarding Not Saved', 
-            description: 'Could not save status to the server. You may see this screen again on next login.' 
-        });
-        setUser(prev => prev ? { ...prev, onboarding_complete: true, account_type: data.account_type } : null);
-    }
-  }, [token, isMockAuth, toast]);
+    // We will no longer save to the backend, just update the local state to proceed.
+    // This means onboarding will appear again on next login as requested.
+    setUser(prev => prev ? { 
+        ...prev, 
+        onboarding_complete: true, 
+        account_type: data.account_type 
+    } : null);
+  }, []);
 
   const value = { user, token, login, signup, logout, isLoading, isAuthenticated: !!user && !!token, continueWithGoogle, completeOnboarding };
 
-  if (isLoading && (!user || !authPages.includes(pathname))) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
