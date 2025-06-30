@@ -42,13 +42,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const isMockAuth = useMockAuth();
 
+  const isPublicPage = publicPages.includes(pathname);
+  const isAuthPage = authPages.includes(pathname);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const isPublicPage = publicPages.some(p => pathname.startsWith(p) && (p.length === pathname.length || pathname[p.length] === '/'));
-  const isAuthPage = authPages.some(p => pathname.startsWith(p));
-  
   const handleRedirects = useCallback(() => {
       const storedToken = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
       const isAuthenticated = !!storedToken && !!user;
@@ -64,11 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (isAuthPage) {
           router.push(isOnboarded ? '/dashboard' : '/onboarding');
-      } else if (pathname === '/onboarding') {
-          if (isOnboarded) {
-              router.push('/dashboard');
-          }
-      } else if (!isPublicPage && !isOnboarded) {
+      } else if (!isPublicPage && !isOnboarded && pathname !== '/onboarding') {
           router.push('/onboarding');
       }
 
@@ -241,9 +237,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       // Regardless of API success or failure, update the local state to unblock the user.
       setUser(updatedUser);
-      toast({ title: 'Setup Complete!', description: 'Welcome to your dashboard!' });
       setIsLoading(false);
-      // The main useEffect will handle the redirection to /dashboard because the user object is now updated.
+      // Do not redirect here; let the onboarding form handle it after animations.
     }
   };
 
